@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>finetune demo</title>
+  <style>
+    :root {
+      --hero-size: 40.6px;
+      --hero-weight: 400;
+      --hero-leading: 1.12;
+      --hero-tracking: -0.02em;
+      --hero-ink: #F6F4EF;
+      --hero-italic: normal;
+    }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      background: #111111;
+      color: var(--hero-ink);
+      font-family: system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .hero { width: min(90vw, 880px); }
+    .eyebrow {
+      margin: 0 0 16px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    h1 {
+      margin: 0;
+      font-size: var(--hero-size);
+      font-weight: var(--hero-weight);
+      line-height: var(--hero-leading);
+      letter-spacing: var(--hero-tracking);
+      font-style: var(--hero-italic);
+    }
+  </style>
+</head>
+<body>
+  <main class="hero">
+    <p class="eyebrow">Meta · Redesign</p>
+    <h1>Sliders for the last 10% of a design.</h1>
+  </main>
+
+  <script src="../src/finetune.js"></script>
+  <script>
+  finetune({
+    id: "hero",                 // panel title and the localStorage key
+    key: "t",                   // hotkey that shows and hides the panel
+    target: ":root",            // where the CSS variables are written; any selector
+    controls: {
+      "--hero-size":     { type: "range",  value: 40.6, min: 24, max: 96, step: 0.1, unit: "px", label: "size" },
+      "--hero-weight":   { type: "select", value: 400, options: [300, 400, 500, 600], label: "weight" },
+      "--hero-leading":  { type: "range",  value: 1.12, min: 0.9, max: 1.6, step: 0.01, label: "leading" },
+      "--hero-tracking": { type: "range",  value: -0.02, min: -0.05, max: 0.05, step: 0.001, unit: "em", label: "tracking" },
+      "--hero-ink":      { type: "color",  value: "#F6F4EF", chips: ["#F6F4EF", "#1C1914", "#C08562", "#C3D1CF"], label: "ink" },
+      "--hero-italic":   { type: "toggle", value: false, on: "italic", off: "normal", label: "italic" },
+      "eyebrow":         { type: "text",   value: "Meta · Redesign", label: "eyebrow" },   // no "--": onChange only
+      "speed":           { type: "range",  value: 1, min: 0.25, max: 3, step: 0.05, label: "speed" },
+    },
+    presets: {
+      committed: { "--hero-size": 40.6, "--hero-weight": 400, "--hero-leading": 1.12, "--hero-tracking": -0.02 },
+    },
+    onChange(values) {
+      document.querySelector(".eyebrow").textContent = values.eyebrow;
+    },
+  });
+  </script>
+</body>
+</html>

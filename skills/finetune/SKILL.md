@@ -1,0 +1,39 @@
+---
+name: finetune
+description: Use whenever a prototype needs sliders or pickers to tune values live in the browser, or a finetune tuner's values need to be baked into code.
+---
+
+# finetune
+
+finetune is one classic script, `src/finetune.js`, that puts a floating panel of controls on a page. Each control's key is the CSS custom property it writes. Keys without `--` only reach `onChange`. This skill covers two requests and nothing else.
+
+Every option and default, the two Copy formats and the bake checklist: `references/api.md`.
+
+## "Add a tuner for X"
+
+Write a `finetune()` schema for the values she named. Nothing else.
+
+1. Find where each named value lives now: a CSS custom property (usually in a stylesheet's `:root`) or a value in a config or script.
+2. If a named value is hard-coded and not a custom property yet, say so and ask before turning it into one.
+3. Load the library once with a classic script tag, never `type="module"`:
+   - inside this repo, a relative path to `src/finetune.js`;
+   - anywhere else, `https://cdn.jsdelivr.net/gh/monica-makes/finetune@main/src/finetune.js`.
+4. Write one `finetune({ ... })` call:
+   - `id` named after the thing being tuned (`"hero"`).
+   - One control per named value. No extra controls, no presets unless asked.
+   - Each key is the CSS custom property it writes (`--hero-size`). A JavaScript-only value (a speed, a line of copy) gets a key without `--` and is applied in `onChange`.
+   - `value` is the committed value today, so the panel opens on what ships.
+   - Type: a number is `range` (with `min`, `max`, `step`, `unit` around the current value); a token vocabulary is `select` (a button grid, never a dropdown); on/off is `toggle`; a color is `color` with chips from the colors the project already uses; copy is `text`.
+5. No bespoke panel code, no styling, no wrappers around the panel. The look lives in the library's PANEL LOOK block.
+6. Tell her the id and the hotkey. Stop.
+
+## "Bake the <id> tuner"
+
+She pastes the panel's Copy JSON. Follow the bake checklist in `references/api.md`:
+
+1. Find the `finetune()` call with that `id`.
+2. Write each value where its committed value lives, in that file's format: a `range` gets its `unit`, a `toggle` writes its `on` or `off`. Skip values that already match.
+3. A key with no committed home: don't invent one. List it and ask.
+4. Remove the `finetune()` call, code that only fed it, and the script tag that loads `finetune.js` (keep the tag if another `finetune()` call on the page still uses it).
+5. List every file and line touched.
+6. Ask before committing. Do not commit until she says yes.

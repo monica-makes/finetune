@@ -1,0 +1,8 @@
+{
+  "name": "finetune",
+  "version": "0.1.0",
+  "description": "Sliders for the last 10% of a design: tune in the browser, copy the values, bake them into code.",
+  "license": "MIT",
+  "main": "src/finetune.js",
+  "files": ["src"]
+}
