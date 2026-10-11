@@ -20,7 +20,7 @@
   width: 280px; max-height: calc(100vh - 32px); overflow: auto;
   background: #1c1c1c; color: #e8e8e8;
   border: 1px solid #3a3a3a; border-radius: 8px;
-  font: 12px/1.4 system-ui, -apple-system, sans-serif;
+  font: 12px/1.4 "Inter", system-ui, -apple-system, sans-serif;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .ft-panel[hidden] { display: none; }
@@ -54,7 +54,7 @@
 .ft-presets, .ft-foot { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-top: 1px solid #3a3a3a; }
 .ft-out {
   display: block; width: calc(100% - 24px); height: 120px; margin: 0 12px 12px;
-  resize: vertical; font-family: ui-monospace, Menlo, monospace;
+  resize: vertical;
 }
 .ft-out[hidden] { display: none; }
 `;
