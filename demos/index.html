@@ -42,12 +42,18 @@
       letter-spacing: var(--hero-tracking);
       font-style: var(--hero-italic);
     }
+    .placeholder { display: block; width: 480px; max-width: 100%; height: auto; margin-top: 32px; }
+    .card { width: 320px; max-width: 100%; margin-top: 24px; padding: 20px 24px; border-radius: 12px; background: #262626; }
+    .card-label { margin: 0; font-size: 16px; line-height: 1.4; }
   </style>
 </head>
 <body>
   <main class="hero">
     <p class="eyebrow">Meta · Redesign</p>
     <h1>Sliders for the last 10% of a design.</h1>
+    <!-- Placeholder image, inline so the page still opens straight from Finder. -->
+    <img class="placeholder" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%3E%3Crect%20width%3D%221600%22%20height%3D%221000%22%20fill%3D%22%23262626%22%2F%3E%3Cpath%20transform%3D%22translate(672%20372)%22%20fill%3D%22%234D4D4D%22%20d%3D%22M216%2C40H40A16%2C16%2C0%2C0%2C0%2C24%2C56V200a16%2C16%2C0%2C0%2C0%2C16%2C16H216a16%2C16%2C0%2C0%2C0%2C16-16V56A16%2C16%2C0%2C0%2C0%2C216%2C40Zm0%2C16V158.75l-26.07-26.06a16%2C16%2C0%2C0%2C0-22.63%2C0l-20%2C20-44-44a16%2C16%2C0%2C0%2C0-22.62%2C0L40%2C149.37V56ZM40%2C172l52-52%2C80%2C80H40Zm176%2C28H194.63l-36-36%2C20-20L216%2C181.38V200ZM144%2C100a12%2C12%2C0%2C1%2C1%2C12%2C12A12%2C12%2C0%2C0%2C1%2C144%2C100Z%22%2F%3E%3C%2Fsvg%3E" width="1600" height="1000" alt="Placeholder image">
+    <div class="card"><p class="card-label">A rectangle with text in it.</p></div>
   </main>
 
   <script src="../src/finetune.js"></script>

@@ -14,6 +14,7 @@ These override default behavior. Follow them exactly.
 - The library never writes to disk and never persists beyond localStorage. Bake is a separate, deliberate step, done by a person or by the skill.
 - `docs/PLAN.md` is the spec for v0. Anything not in it is a question, not a feature.
 - Type: every component finetune makes (the panel, the demo pages, the finetune page on her main site) is set in Inter. The page loads Inter (Google Fonts); the library itself never loads a font, it just puts `"Inter"` first in PANEL LOOK's font stack.
+- Scope: finetune edits what's already on the page (select it, retype it, restyle it), and not much more. It doesn't add new elements. Anything past editing what exists is a question for her first.
 
 ## Writing
 - Plain English in the README, the comments and the skill. Short sentences. No em dashes.

@@ -12,8 +12,13 @@ One call makes one panel. It returns nothing.
 | `controls` | `{}` | Key to control. A key starting with `--` is the CSS custom property it writes. Any other key only reaches `onChange`. |
 | `presets` | `{}` | Name to values. A preset sets the keys it names and leaves the rest. |
 | `onChange` | none | Called with every value: once when the panel mounts, then after each change. |
+| `open` | `true` | Whether the inspector and toolbar show on load. `false` starts them hidden, for a page where the hotkey or a button opens them. |
 
-The panel starts hidden. It mounts as soon as the page has a body, so the call can sit in `<head>` or at the end of `<body>`.
+It mounts as soon as the page has a body, so the call can sit in `<head>` or at the end of `<body>`.
+
+`finetune.toggle()` shows or hides the inspector and toolbar, the same as the hotkey; `finetune.toggle(true)` and `finetune.toggle(false)` set them. Use it for a page's own "open the panel" button, or to hide them when a single-page app leaves the page.
+
+Mark a page's own controls (its nav, its buttons) with `data-finetune-ui`: the Move tool never selects them, and they keep working while the inspector is open.
 
 ## Controls
 
