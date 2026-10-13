@@ -45,7 +45,6 @@
   margin: 0; padding: 0; border: 0; background: none; outline: none;
 }
 .ft-tabs { display: flex; gap: 4px; padding: 12px 8px 8px 12px; border-bottom: 1px solid var(--ft-i-line); }
-.ft-tabs-end { display: flex; margin-left: auto; }
 .ft-icon-btn:disabled { opacity: 0.4; pointer-events: none; }
 .ft-toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 2147483647; transform: translateX(-50%);
@@ -54,6 +53,7 @@
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .ft-toast[hidden] { display: none; }
+.ft-tabs-end { display: flex; margin-left: auto; }
 .ft-tab { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 5px; font-weight: 550; }
 .ft-tab[aria-selected="true"] { background: var(--ft-i-field); }
 .ft-section { padding: 0 8px 12px 16px; border-bottom: 1px solid var(--ft-i-line); }
@@ -91,11 +91,14 @@
 .ft-pct { color: var(--ft-i-text-2); }
 .ft-fill-row.is-hidden .ft-fill-color, .ft-fill-row.is-hidden .ft-fill-alpha > * { opacity: 0.4; }
 
+/* Inside the panel, overlays stack in a set order over its rows (a faded row, at 40% opacity, is a layer
+   of its own and would otherwise paint over them): popovers, then the color picker opened from one, then menus. */
 .ft-pop {
-  position: fixed; width: 240px; background: #FFFFFF; border-radius: 13px;
+  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 13px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-pop[hidden] { display: none; }
+.ft-pop.ft-picker-pop { z-index: 3; }
 .ft-pop-head {
   display: flex; align-items: center; justify-content: space-between;
   height: 40px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--ft-i-line); font-weight: 550;
@@ -139,7 +142,7 @@
 .ft-select:hover { border-color: var(--ft-i-stroke); }
 .ft-mode { flex: none; min-width: 54px; }
 .ft-menu {
-  position: fixed; z-index: 1; min-width: 104px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 8px;
+  position: fixed; z-index: 4; min-width: 104px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 8px;
   background: #1E1E1E; color: #FFFFFF; border-radius: 13px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -151,6 +154,11 @@
 .ft-menu-item:hover { background: #0D99FF; }
 .ft-menu-check { display: grid; place-items: center; width: 16px; height: 16px; }
 .ft-menu-check svg { display: block; width: 12px; height: 12px; }
+.ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
+.ft-menu-heading:not(:first-child) { margin-top: 4px; }
+.ft-menu-trash { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin: 0 -12px 0 auto; padding-left: 8px; opacity: 0; }
+.ft-menu-item:hover .ft-menu-trash { opacity: 1; }
+.ft-menu-trash svg { display: block; width: 12px; height: 12px; }
 .ft-caret { display: grid; place-items: center; width: 16px; height: 16px; color: var(--ft-i-text-2); }
 .ft-caret svg { display: block; width: 10px; height: 10px; }
 
@@ -159,27 +167,31 @@
   padding: 4px 8px; border-radius: 5px; background: #1E1E1E; color: #FFFFFF;
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .ft-tip[hidden] { display: none; }
+.ft-tip-key { margin-left: 8px; color: rgba(255, 255, 255, 0.5); }
 .ft-tip::before {
   content: ""; position: absolute; top: -4px; left: calc(var(--ft-caret, 50%) - 4px);
   border-style: solid; border-width: 0 4px 4px; border-color: transparent transparent #1E1E1E;
 }
 .ft-tip[data-side="right"]::before {
-  top: calc(50% - 4px); left: -4px;
-  border-width: 4px 4px 4px 0; border-color: transparent #1E1E1E transparent transparent;
+  top: calc(50% - 4px); left: -5px;
+  border-width: 4px 5px 4px 0; border-color: transparent #1E1E1E transparent transparent;
 }
 
 .ft-toolbar {
   position: fixed; top: 12px; left: 12px; z-index: 2147483646;
   display: flex; flex-direction: column; gap: 8px; padding: 8px;
-  background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 999px;
+  background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
 }
 .ft-toolbar[hidden] { display: none; }
+/* Hide UI folds the toolbar down to its own button, the one that brings everything back. */
+.ft-toolbar[data-min] .ft-tool:not(:last-child) { display: none; }
 .ft-toolbar, .ft-toolbar * { box-sizing: border-box; }
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
-.ft-tool { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; }
+.ft-tool { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
 .ft-tool:hover { background: var(--ft-i-hover); }
 .ft-tool[aria-pressed="true"] { background: rgba(0, 0, 0, 0.08); }
 .ft-tool svg { display: block; width: 20px; height: 20px; }
@@ -203,12 +215,51 @@
 .ft-labeled { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ft-field-label { color: var(--ft-i-text-2); }
 .ft-type-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.ft-seg { display: flex; height: 24px; border-radius: 5px; background: var(--ft-i-field); }
-.ft-seg-btn { display: grid; place-items: center; flex: 1; height: 24px; border-radius: 5px; }
-.ft-seg-btn:hover { background: var(--ft-i-hover); }
+/* Figma's segmented boxes: each button its own grey cell, 1px apart so the panel shows between them, the
+   group's outer corners rounded. Hover darkens a cell; the chosen one is white. */
+.ft-seg { display: flex; gap: 1px; height: 24px; }
+.ft-seg-btn { display: grid; place-items: center; flex: 1; height: 24px; background: var(--ft-i-field); }
+.ft-seg-btn:first-child { border-radius: 5px 0 0 5px; }
+.ft-seg-btn:last-child { border-radius: 0 5px 5px 0; }
+.ft-seg-btn:hover { background: rgba(0, 0, 0, 0.1); }
 .ft-seg-btn[aria-pressed="true"] { background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
 .ft-seg-btn svg { display: block; width: 16px; height: 16px; }
 .ft-head-actions, .ft-btn-group { display: flex; }
+/* Figma's layout guides: drawn over the page, one layer each, never in the way of a click. */
+.ft-guides { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
+.ft-inspector[hidden] ~ .ft-guides, .ft-inspector[hidden] ~ .ft-panel { display: none; }
+.ft-guides > div { position: absolute; inset: 0; box-sizing: border-box; }
+.ft-guide-list { display: flex; flex-direction: column; gap: 8px; }
+.ft-guide { display: flex; flex-direction: column; gap: 8px; }
+.ft-guide-row { display: flex; align-items: center; gap: 8px; }
+/* Full width of the section. */
+.ft-guide-align { display: flex; flex-direction: column; gap: 4px; }
+.ft-type.ft-guide-set { margin-right: 0; }
+/* No layout yet: a warning, then a way to add one. */
+.ft-guide-empty { display: flex; flex-direction: column; gap: 8px; }
+.ft-guide-warn { display: flex; align-items: center; gap: 6px; color: var(--ft-i-text-2); }
+.ft-guide-warn svg { display: block; flex: none; width: 16px; height: 16px; }
+/* Save as style: where it applies, two buttons in place. */
+.ft-pop.ft-save-pop { width: auto; }
+.ft-save-body { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
+/* Plain until she points at one, as in Figma's option lists: no choice looks picked before she's touched it. */
+.ft-choice { height: 28px; padding: 0 12px; border-radius: 5px; background: none; text-align: left; white-space: nowrap; }
+.ft-choice:hover { background: var(--ft-i-field); }
+/* Figma's secondary button: white, a hairline border, the + left of a centered label. */
+.ft-choice.ft-choice-icon {
+  display: flex; align-items: center; justify-content: center; gap: 4px; height: 24px; padding: 0 8px;
+  background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); font-weight: 500;
+}
+.ft-choice.ft-choice-icon:hover { background: var(--ft-i-hover); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-choice-icon svg { display: block; width: 12px; height: 12px; }
+.ft-seg-act .ft-seg-btn:active { background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-guide-row > .ft-dd { flex: 1; }
+.ft-dd-static, .ft-dd-static:hover { box-shadow: none; }
+.ft-guide-row.is-hidden > .ft-dd, .ft-guide-row.is-hidden > .ft-guide-icon { opacity: 0.4; }
+.ft-pop-body.ft-guide-fields { display: grid; grid-template-columns: 56px 1fr; align-items: center; gap: 8px; }
+.ft-guide-pop .ft-pop-head .ft-dd { background: none; }
+.ft-guide-pop .ft-fill-actions { display: none; }
+.ft-num-input:disabled { color: var(--ft-i-text-2); }
 .ft-with-action { display: flex; align-items: center; gap: 8px; margin-right: -32px; }
 .ft-with-action > .ft-type-pair { flex: 1; min-width: 0; }
 .ft-icon-btn[aria-pressed="true"] { background: rgba(13, 153, 255, 0.12); color: #0D99FF; }
@@ -245,6 +296,9 @@
   border: 1px solid #0D99FF;
 }
 .ft-hover-box[hidden], .ft-sel-box[hidden] { display: none; }
+/* Figma's marquee: drag on the page to select what the box touches. */
+.ft-marquee { position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none; border: 1px solid #0D99FF; background: rgba(13, 153, 255, 0.08); }
+.ft-marquee[hidden] { display: none; }
 .ft-handle {
   position: absolute; width: 7px; height: 7px; box-sizing: border-box;
   background: #FFFFFF; border: 1px solid #0D99FF;
@@ -403,17 +457,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
   }
 
-  // Phosphor icons (MIT), regular weight, inlined so the file stays dependency-free.
+  // Phosphor icons (MIT), regular weight, inlined so the file stays dependency-free. The toolbar's three
+  // (copy, floppyDisk, sidebarSimple) are Light, so at 20px their line (0.94px) weighs what Regular's
+  // does at the panel's 16px (1px). The flips and the
+  // guide alignments are Lucide (ISC, lucide.dev, v1.56.0) at stroke 1.5, a weight under Lucide's default;
+  // the alignments' bars are filled with no stroke around them (her call), their alignment line stays a stroke.
+  // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round.
   const ICON = {
     angle: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M96,72a8,8,0,0,1,8-8A104.11,104.11,0,0,1,208,168a8,8,0,0,1-16,0,88.1,88.1,0,0,0-88-88A8,8,0,0,1,96,72ZM240,192H80V32a8,8,0,0,0-16,0V64H32a8,8,0,0,0,0,16H64V200a8,8,0,0,0,8,8H240a8,8,0,0,0,0-16Z"/></svg>',
     arrowClockwise: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>',
-    flipVertical: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M56,120H216a16,16,0,0,0,6.23-30.74l-.14-.06-159.93-64A16,16,0,0,0,40,40v64A16,16,0,0,0,56,120Zm0-80,.15.06L216,104H56l0-64Zm160,96H56a16,16,0,0,0-16,16v64a16,16,0,0,0,22.15,14.78l159.93-64,.14-.06A16,16,0,0,0,216,136ZM56.15,215.93,56,216V152H216Z"/></svg>',
+    refresh: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>',
     drop: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z"/></svg>',
     checkerboard: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm-12.69,88L136,60.69V48h12.69L208,107.32V120ZM136,83.31,172.69,120H136Zm72,1.38L171.31,48H208ZM120,48v72H48V48ZM107.31,208,48,148.69V136H60.69L120,195.31V208ZM120,172.69,83.31,136H120Zm-72-1.38L84.69,208H48ZM208,208H136V136h72v72Z"/></svg>',
     frameCorners: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,80v32a8,8,0,0,1-16,0V88H160a8,8,0,0,1,0-16h32A8,8,0,0,1,200,80ZM96,168H72V144a8,8,0,0,0-16,0v32a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16ZM232,56V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></svg>',
     linkSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,90.34a8,8,0,0,1,0,11.32l-64,64a8,8,0,0,1-11.32-11.32l64-64A8,8,0,0,1,165.66,90.34ZM215.6,40.4a56,56,0,0,0-79.2,0L106.34,70.45a8,8,0,0,0,11.32,11.32l30.06-30a40,40,0,0,1,56.57,56.56l-30.07,30.06a8,8,0,0,0,11.31,11.32L215.6,119.6a56,56,0,0,0,0-79.2ZM138.34,174.22l-30.06,30.06a40,40,0,1,1-56.56-56.57l30.05-30.05a8,8,0,0,0-11.32-11.32L40.4,136.4a56,56,0,0,0,79.2,79.2l30.06-30.07a8,8,0,0,0-11.32-11.31Z"/></svg>',
-    copy: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>',
-    arrowCounterClockwise: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg>',
+    floppyDisk: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M217.9,73.42,182.58,38.1a13.9,13.9,0,0,0-9.89-4.1H48A14,14,0,0,0,34,48V208a14,14,0,0,0,14,14H208a14,14,0,0,0,14-14V83.31A13.9,13.9,0,0,0,217.9,73.42ZM170,210H86V152a2,2,0,0,1,2-2h80a2,2,0,0,1,2,2Zm40-2a2,2,0,0,1-2,2H182V152a14,14,0,0,0-14-14H88a14,14,0,0,0-14,14v58H48a2,2,0,0,1-2-2V48a2,2,0,0,1,2-2H172.69a2,2,0,0,1,1.41.58L209.42,81.9a2,2,0,0,1,.58,1.41ZM158,72a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h56A6,6,0,0,1,158,72Z"/></svg>',
+    undo: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,85.66,45.66L51.31,80H168A64.07,64.07,0,0,1,232,144Z"/></svg>',
+    redo: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M170.34,130.34,204.69,96H88a48,48,0,0,0,0,96h88a8,8,0,0,1,0,16H88A64,64,0,0,1,88,80H204.69L170.34,45.66a8,8,0,0,1,11.32-11.32l48,48a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32-11.32Z"/></svg>',
+    warning: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></svg>',
+    trash: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>',
+    bookmark: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z"/></svg>',
+    sidebarSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,42H40A14,14,0,0,0,26,56V200a14,14,0,0,0,14,14H216a14,14,0,0,0,14-14V56A14,14,0,0,0,216,42ZM38,200V56a2,2,0,0,1,2-2H82V202H40A2,2,0,0,1,38,200Zm180,0a2,2,0,0,1-2,2H94V54H216a2,2,0,0,1,2,2Z"/></svg>',
+    copy: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,34H88a6,6,0,0,0-6,6V82H40a6,6,0,0,0-6,6V216a6,6,0,0,0,6,6H168a6,6,0,0,0,6-6V174h42a6,6,0,0,0,6-6V40A6,6,0,0,0,216,34ZM162,210H46V94H162Zm48-48H174V88a6,6,0,0,0-6-6H94V46H210Z"/></svg>',
     textAlignLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64Zm8,48H168a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm176,24H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-48,40H40a8,8,0,0,0,0,16H168a8,8,0,0,0,0-16Z"/></svg>',
     textAlignCenter: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM64,96a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Zm152,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-24,40H64a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Z"/></svg>',
     textAlignRight: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM216,96H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>',
@@ -426,19 +491,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     arrowsVertical: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,194.34a8,8,0,0,1,0,11.32l-32,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32L120,212.69V43.31L101.66,61.66A8,8,0,0,1,90.34,50.34l32-32a8,8,0,0,1,11.32,0l32,32a8,8,0,0,1-11.32,11.32L136,43.31V212.69l18.34-18.35A8,8,0,0,1,165.66,194.34Z"/></svg>',
     arrowsHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M237.66,133.66l-32,32a8,8,0,0,1-11.32-11.32L212.69,136H43.31l18.35,18.34a8,8,0,0,1-11.32,11.32l-32-32a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,11.32L43.31,120H212.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,133.66Z"/></svg>',
     check: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>',
-    cursor: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M168,132.69,214.08,115l.33-.13A16,16,0,0,0,213,85.07L52.92,32.8A15.95,15.95,0,0,0,32.8,52.92L85.07,213a15.82,15.82,0,0,0,14.41,11l.78,0a15.84,15.84,0,0,0,14.61-9.59l.13-.33L132.69,168,184,219.31a16,16,0,0,0,22.63,0l12.68-12.68a16,16,0,0,0,0-22.63ZM195.31,208,144,156.69a16,16,0,0,0-26,4.93c0,.11-.09.22-.13.32l-17.65,46L48,48l159.85,52.2-45.95,17.64-.32.13a16,16,0,0,0-4.93,26h0L208,195.31Z"/></svg>',
-    square: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208V208Z"/></svg>',
-    penNib: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M248,92.68a15.86,15.86,0,0,0-4.69-11.31L174.63,12.68a16,16,0,0,0-22.63,0L123.57,41.11l-58,21.77A16.06,16.06,0,0,0,55.35,75.23L32.11,214.68A8,8,0,0,0,40,224a8.4,8.4,0,0,0,1.32-.11l139.44-23.24a16,16,0,0,0,12.35-10.17l21.77-58L243.31,104A15.87,15.87,0,0,0,248,92.68Zm-69.87,92.19L63.32,204l47.37-47.37a28,28,0,1,0-11.32-11.32L52,192.7,71.13,77.86,126,57.29,198.7,130ZM112,132a12,12,0,1,1,12,12A12,12,0,0,1,112,132Zm96-15.32L139.31,48l24-24L232,92.68Z"/></svg>',
     plus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>',
+    minus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></svg>',
     eye: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></svg>',
+    eyeClosed: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228,175a8,8,0,0,1-10.92-3l-19-33.2A123.23,123.23,0,0,1,162,155.46l5.87,35.22a8,8,0,0,1-6.58,9.21A8.4,8.4,0,0,1,160,200a8,8,0,0,1-7.88-6.69l-5.77-34.58a133.06,133.06,0,0,1-36.68,0l-5.77,34.58A8,8,0,0,1,96,200a8.4,8.4,0,0,1-1.32-.11,8,8,0,0,1-6.58-9.21L94,155.46a123.23,123.23,0,0,1-36.06-16.69L39,172A8,8,0,1,1,25.06,164l20-35a153.47,153.47,0,0,1-19.3-20A8,8,0,1,1,38.22,99c16.6,20.54,45.64,45,89.78,45s73.18-24.49,89.78-45A8,8,0,1,1,230.22,109a153.47,153.47,0,0,1-19.3,20l20,35A8,8,0,0,1,228,175Z"/></svg>',
     x: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>',
     eyedropper: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,67.3a35.79,35.79,0,0,0-11.26-25.66c-14-13.28-36.72-12.78-50.62,1.13L142.8,62.2a24,24,0,0,0-33.14.77l-9,9a16,16,0,0,0,0,22.64l2,2.06-51,51a39.75,39.75,0,0,0-10.53,38l-8,18.41A13.68,13.68,0,0,0,36,219.3a15.92,15.92,0,0,0,17.71,3.35L71.23,215a39.89,39.89,0,0,0,37.06-10.75l51-51,2.06,2.06a16,16,0,0,0,22.62,0l9-9a24,24,0,0,0,.74-33.18l19.75-19.87A35.75,35.75,0,0,0,224,67.3ZM97,193a24,24,0,0,1-24,6,8,8,0,0,0-5.55.31l-18.1,7.91L57,189.41a8,8,0,0,0,.25-5.75A23.88,23.88,0,0,1,63,159l51-51,33.94,34ZM202.13,82l-25.37,25.52a8,8,0,0,0,0,11.3l4.89,4.89a8,8,0,0,1,0,11.32l-9,9L112,83.26l9-9a8,8,0,0,1,11.31,0l4.89,4.89a8,8,0,0,0,11.33,0l24.94-25.09c7.81-7.82,20.5-8.18,28.29-.81a20,20,0,0,1,.39,28.7Z"/></svg>',
     caretDown: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>',
-    minus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></svg>',
-    eyeClosed: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228,175a8,8,0,0,1-10.92-3l-19-33.2A123.23,123.23,0,0,1,162,155.46l5.87,35.22a8,8,0,0,1-6.58,9.21A8.4,8.4,0,0,1,160,200a8,8,0,0,1-7.88-6.69l-5.77-34.58a133.06,133.06,0,0,1-36.68,0l-5.77,34.58A8,8,0,0,1,96,200a8.4,8.4,0,0,1-1.32-.11,8,8,0,0,1-6.58-9.21L94,155.46a123.23,123.23,0,0,1-36.06-16.69L39,172A8,8,0,1,1,25.06,164l20-35a153.47,153.47,0,0,1-19.3-20A8,8,0,1,1,38.22,99c16.6,20.54,45.64,45,89.78,45s73.18-24.49,89.78-45A8,8,0,1,1,230.22,109a153.47,153.47,0,0,1-19.3,20l20,35A8,8,0,0,1,228,175Z"/></svg>',
+    guideStyles: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M80,40a40,40,0,1,0,40,40A40,40,0,0,0,80,40Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,104Zm96,16a40,40,0,1,0-40-40A40,40,0,0,0,176,120Zm0-64a24,24,0,1,1-24,24A24,24,0,0,1,176,56ZM80,136a40,40,0,1,0,40,40A40,40,0,0,0,80,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,200Zm96-64a40,40,0,1,0,40,40A40,40,0,0,0,176,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,176,200Z"/></svg>',
+    flipHorizontal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14v2"/><path d="M12 20v2"/><path d="M12 2v2"/><path d="M12 8v2"/><path d="M20.288 16.703A1 1 0 0022 16V8a1 1 0 00-1.712-.703l-3.99 3.991a1 1 0 00-.001 1.424z"/><path d="M3.712 16.703A1 1 0 012 16V8a1 1 0 011.712-.703l3.99 3.991a1 1 0 01.001 1.424z"/></svg>',
+    flipVertical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="M4 12H2"/><path d="M7.298 20.288A1 1 0 008 22h8a1 1 0 00.703-1.712l-3.991-3.99a1 1 0 00-1.424-.001z"/><path d="M7.298 3.712A1 1 0 018 2h8a1 1 0 01.703 1.712l-3.991 3.99a1 1 0 01-1.424.001z"/></svg>',
+    alignLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="9" height="6" x="6" y="14" rx="2"/><rect fill="currentColor" stroke="none" width="16" height="6" x="6" y="4" rx="2"/><path d="M2 2v20"/></svg>',
+    alignHCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path fill="currentColor" stroke="none" d="M8 10H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h4"/><path fill="currentColor" stroke="none" d="M16 10h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4"/><path fill="currentColor" stroke="none" d="M8 20H7a2 2 0 0 1-2-2v-2c0-1.1.9-2 2-2h1"/><path fill="currentColor" stroke="none" d="M16 14h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/></svg>',
+    alignRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="16" height="6" x="2" y="4" rx="2"/><rect fill="currentColor" stroke="none" width="9" height="6" x="9" y="14" rx="2"/><path d="M22 22V2"/></svg>',
   };
-  // Phosphor has no horizontal flip in this set; it is the vertical one turned a quarter.
-  ICON.flipHorizontal = ICON.flipVertical.replace("<svg ", "<svg style=\"transform: rotate(90deg)\" ");
 
 
   // Tooltips behave like Figma's: a short wait the first time, then instant
@@ -455,6 +521,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.body.appendChild(tipEl);
     }
     tipEl.textContent = text;
+    const key = target.getAttribute("data-ft-tip-key");
+    if (key) tipEl.appendChild(el("span", "ft-tip-key", key));
     tipEl.hidden = false;
     const r = target.getBoundingClientRect();
     // In a vertical bar the tip sits beside the button, so it never covers the next one.
@@ -563,9 +631,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       eye.setAttribute("aria-label", tip);
     }
 
+    // As with the number fields, leaving a field unchanged records nothing.
     hex.addEventListener("blur", () => {
       const v = parseHex(hex.value);
-      if (v) {
+      if (v && v !== layer.hex) {
         layer.hex = v;
         onChange();
       }
@@ -573,8 +642,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
     alpha.addEventListener("blur", () => {
       const v = parseFloat(alpha.value);
-      if (isNum(v)) {
-        layer.opacity = Math.min(100, Math.max(0, Math.round(v)));
+      const o = Math.min(100, Math.max(0, Math.round(v)));
+      if (isNum(v) && o !== layer.opacity) {
+        layer.opacity = o;
         onChange();
       }
       draw(true);
@@ -660,6 +730,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // A Figma field: a click selects all of it, Enter or blur commits, Escape puts the old value back.
   function editable(input, show, commit) {
+    let shown = "";
+    input.addEventListener("focus", () => { shown = input.value; });
     input.addEventListener("pointerdown", (e) => {
       if (document.activeElement === input) return;
       e.preventDefault();
@@ -674,7 +746,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
     });
     input.addEventListener("blur", () => {
-      commit(input.value);
+      // Only a typed change commits: clicking into a field and out again records nothing.
+      if (input.value !== shown) commit(input.value);
       show(false);
     });
   }
@@ -765,7 +838,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     let mode = "Hex";
     let inputs = [];
 
-    const pop = el("div", "ft-pop");
+    const pop = el("div", "ft-pop ft-picker-pop");
     pop.hidden = true;
 
     const head = el("div", "ft-pop-head");
@@ -993,52 +1066,120 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let inspector = null;
   let toolbar = null;
   let selection = null;
-  let tool = "Move";
   // Set by the inspector: shows a selected element's sections, or the page when given null.
   let showInPanel = () => {};
   // Set by the inspector: redraws the selection's numbers after the element changes size.
   let refreshPanel = () => {};
 
-  // Left toolbar, after pen.dev's. Move selects and edits what's on the page;
-  // Rectangle and Pen are placeholders: picking one only selects it.
-  function makeToolbar() {
+  // Left toolbar, after pen.dev's: Copy the changes for the bake skill, Save them so a reload keeps
+  // them, Hide UI. They're actions, not tools, so none stays pressed. (Reset sits in the panel's header.)
+  function makeToolbar(hotkey) {
     const bar = el("div", "ft-toolbar");
-    const tools = [["cursor", "Move"], ["square", "Rectangle"], ["penNib", "Pen"]].map(([icon, name], i) => {
-      const b = button("ft-tool", null, () => {
-        tools.forEach((t) => t.setAttribute("aria-pressed", String(t === b)));
-        tool = name;
-        if (selection) selection.sync();
-      });
+    const actions = [
+      ["copy", "Copy changes", copyChanges],
+      ["floppyDisk", "Save changes in this browser", saveNow],
+      ["sidebarSimple", "Hide UI", toggleUi],
+    ].map(([icon, name, onClick]) => {
+      const b = button("ft-tool", null, onClick);
       b.innerHTML = ICON[icon];
       b.setAttribute("aria-label", name);
-      b.setAttribute("aria-pressed", String(i === 0));
       b.setAttribute("data-ft-tip", name);
       b.setAttribute("data-ft-tip-side", "right");
       withTip(b);
       return b;
     });
-    bar.append(...tools);
+    bar.append(...actions);
+    uiButton = actions[2];
+    uiButton.setAttribute("data-ft-tip-key", hotkey.toUpperCase());
     document.body.appendChild(bar);
     return bar;
   }
 
+  // Hide UI, as Figma's Minimize UI: the panel, the grid, the selection and the toolbar's other buttons go
+  // at once, leaving only this button to bring them back. The hotkey (T), ⌘\ and ⇧⌘\ (Figma's Show/Hide UI and Minimize UI; Ctrl on Windows) do
+  // the same. From fully hidden (open: false, finetune.toggle(false)) it shows everything.
+  let minimized = false;
+  let uiButton = null;
+  function drawUiButton() {
+    if (!uiButton) return;
+    const name = minimized ? "Show UI" : "Hide UI";
+    uiButton.setAttribute("data-ft-tip", name);
+    uiButton.setAttribute("aria-label", name);
+    toolbar.toggleAttribute("data-min", minimized);
+  }
+  function toggleUi() {
+    if (!inspector) return;
+    if (inspector.hidden && toolbar.hidden) return showPanel(true);
+    minimized = !minimized;
+    inspector.hidden = minimized;
+    selection.sync();
+    hideTip();
+    drawUiButton();
+  }
+  window.addEventListener("keydown", (e) => {
+    if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== "Backslash" || typing(e.target)) return;
+    e.preventDefault();
+    toggleUi();
+  });
+
   // Text means an element with words of its own, not just inside its children.
   const hasText = (e) => Array.from(e.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim());
   // [data-finetune-ui] marks a page's own controls (its nav, its buttons): never selected, and they keep
-  // working while the Move tool is on.
+  // working while the inspector is open.
   const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-tip, .ft-toast, [data-finetune-ui]");
 
-  // Every edit made in the panel, kept per page in localStorage so a reload puts it back,
-  // and copied out as a list for the bake skill to write into the code. Never written to disk.
+  // Figma's layout guide, columns: bands stretched between margins, or packed to a side (or the middle)
+  // at a set width, an offset from that side.
+  const GUIDE_ALIGN = [["stretch", "Stretch"], ["left", "Left"], ["center", "Center"], ["right", "Right"]];
+  // The usual layout: 12 stretched columns, 40 margin, 20 gutter; Figma's red at 10%.
+  const newGuide = () => ({
+    type: "columns", visible: true, color: { hex: "FF0000", opacity: 10, visible: true },
+    count: 12, align: "stretch", width: 0, offset: 40, gutter: 20,
+  });
+  function validGuide(g) {
+    return !!g && g.type === "columns" && typeof g.visible === "boolean"
+      && !!g.color && /^[0-9A-F]{6}$/.test(g.color.hex) && isNum(g.color.opacity)
+      && ["count", "width", "offset", "gutter"].every((k) => isNum(g[k]) && g[k] >= 0)
+      && g.count >= 1 && GUIDE_ALIGN.some(([a]) => a === g.align);
+  }
+  const copyGuides = (list) => list.map((g) => Object.assign({}, g, { color: Object.assign({}, g.color) }));
+  // A style's name, from its numbers: "12 col · 20 gutter · 50 margin".
+  const styleName = (g) => g.count + " col · " + g.gutter + " gutter · " + (g.align === "stretch" ? g.offset + " margin"
+    : g.width + " wide · " + (g.align === "center" ? "centered" : g.align + " " + g.offset));
+
+  // Her horizontal-layout styles, for every page or just this one. A style library, not a page edit:
+  // kept in the browser the moment she saves one, not with Save.
+  const STYLES_ALL = "finetune:styles";
+  const STYLES_PAGE = "finetune:styles:" + location.pathname;
+  function loadStyles(key) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(key));
+      return Array.isArray(raw) ? raw.filter((st) => st && typeof st.name === "string" && validGuide(st.guide)) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  function storeStyles(key, list) {
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  const guideName = (g) => "Columns (" + g.count + ")";
+
+  // Every edit made in the panel, kept in memory until Save puts it in localStorage (per page) so a
+  // reload brings it back, and copied out as a list for the bake skill to write into the code.
+  // Never written to disk.
   // Figma's image adjustments, -100 to 100 each; zero is untouched.
   const NO_ADJUST = { exposure: 0, contrast: 0, saturation: 0, temperature: 0, tint: 0, highlights: 0, shadows: 0 };
   const EDITS_KEY = "finetune:edits:" + location.pathname;
   let edits = loadEdits();
-  let editsChanged = () => {};
 
   // Anything stored in a shape this file no longer writes is dropped, not trusted.
   function loadEdits() {
-    const out = { page: null, elements: {} };
+    const out = { page: null, elements: {}, guides: [], groups: [] };
     let raw = null;
     try {
       raw = JSON.parse(localStorage.getItem(EDITS_KEY));
@@ -1049,6 +1190,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (Array.isArray(raw.page) && raw.page.length && raw.page.every((l) =>
       l && /^[0-9A-F]{6}$/.test(l.hex) && isNum(l.opacity) && typeof l.visible === "boolean")) {
       out.page = raw.page.map((l) => ({ hex: l.hex, opacity: l.opacity, visible: l.visible }));
+    }
+    // One horizontal layout at a time.
+    if (Array.isArray(raw.guides)) out.guides = raw.guides.filter(validGuide).slice(0, 1);
+    if (Array.isArray(raw.groups)) {
+      out.groups = raw.groups.filter((g) => Array.isArray(g) && g.length > 1 && g.every((sel) => typeof sel === "string"));
     }
     if (raw.elements && typeof raw.elements === "object") {
       Object.keys(raw.elements).forEach((sel) => {
@@ -1072,28 +1218,39 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return out;
   }
 
-  // Saved a beat after the last change, so dragging a slider doesn't write on every frame.
-  // A reload inside that beat still saves, on pagehide; Reset turns saving off first.
-  let saveTimer = 0;
-  let saving = true;
-  function writeEdits() {
-    clearTimeout(saveTimer);
-    if (!saving) return;
+  // Nothing is saved until she presses Save; a reload before that drops the unsaved edits.
+  function saveNow() {
     try {
       localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+      const n = editCount();
+      toast(n ? "Saved " + n + (n === 1 ? " change" : " changes") : "Saved");
     } catch (e) {
       // Storage blocked or full (a large swapped-in image): edits still show, they just won't survive a reload.
+      toast("Couldn't save: storage is blocked or full");
     }
   }
-  window.addEventListener("pagehide", writeEdits);
 
-  function saveEdits() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(writeEdits, 150);
-    editsChanged();
+  function copyChanges() {
+    const n = editCount();
+    if (!n) return toast("No changes to copy");
+    copyText(changesText()).then((ok) => {
+      toast(ok ? "Copied " + n + (n === 1 ? " change" : " changes") + ". Paste into Claude Code and say bake." : "Couldn't reach the clipboard");
+    });
   }
 
-  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0);
+  // Forget every saved edit and reload the page as written. A page with state of its own (its own
+  // controls, its own storage) hears "finetune:reset" on window first, so one Reset clears everything.
+  function resetEdits() {
+    window.dispatchEvent(new CustomEvent("finetune:reset"));
+    try {
+      localStorage.removeItem(EDITS_KEY);
+    } catch (e) {
+      // Nothing stored to clear.
+    }
+    location.reload();
+  }
+
+  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0) + edits.groups.length;
 
   // A short selector that finds the element again after a reload: as few steps as stay
   // unique, each a tag, its first class, and a position when siblings share both.
@@ -1112,13 +1269,66 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return "body > " + steps.join(" > ");
   }
 
+  // What the page had before finetune touched each element (inline style values, words, image source),
+  // so undoing past the first edit puts back exactly what was there.
+  const originals = {};
+  function originalOf(t) {
+    const sel = selectorFor(t);
+    return originals[sel] || (originals[sel] = { styles: {} });
+  }
+
+  // Undo and redo, as in Figma. A step is the whole set of edits once a change settles (a drag, a scrub
+  // or a burst of typing is one step); hover previews never count (quiet). Going back hands the step to
+  // the inspector, which puts the page and the panel where it had them.
+  const history = { past: [], future: [], now: null, timer: 0, quiet: 0 };
+  let applyEdits = () => {};
+  let historyChanged = () => {};
+  let finishTyping = () => {};
+  const snapshot = () => JSON.stringify(edits);
+  function noteChange() {
+    if (history.quiet || history.now == null) return;
+    clearTimeout(history.timer);
+    history.timer = setTimeout(commitStep, 250);
+    historyChanged();
+  }
+  function commitStep() {
+    clearTimeout(history.timer);
+    history.timer = 0;
+    const now = snapshot();
+    if (now !== history.now) {
+      history.past.push(history.now);
+      history.now = now;
+      history.future = [];
+    }
+    historyChanged();
+  }
+  function startHistory() {
+    clearTimeout(history.timer);
+    history.timer = 0;
+    history.now = snapshot();
+    historyChanged();
+  }
+  function step(from, to) {
+    finishTyping();
+    if (history.timer) commitStep();
+    if (!from.length) return;
+    to.push(history.now);
+    history.now = from.pop();
+    history.quiet++;
+    applyEdits(JSON.parse(history.now));
+    history.quiet--;
+    historyChanged();
+  }
+  const undo = () => step(history.past, history.future);
+  const redo = () => step(history.future, history.past);
+
   function record(target, change) {
     const sel = selectorFor(target);
     const entry = edits.elements[sel] || { styles: {} };
     change(entry);
     if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src) edits.elements[sel] = entry;
     else delete edits.elements[sel];
-    saveEdits();
+    noteChange();
   }
 
   // Exposure, Contrast and Saturation are CSS
@@ -1193,7 +1403,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // Every style the panel changes goes through here, so it shows live and is remembered.
+  // Inline text (a span) ignores translate, rotate, scale, width and height. Figma's text is a box, so
+  // the first box edit makes it inline-block; that's recorded too, so it bakes with the edit.
+  function boxed(target) {
+    if (getComputedStyle(target).display === "inline") setStyle(target, "display", "inline-block");
+  }
+
   function setStyle(target, prop, value) {
+    const o = originalOf(target);
+    if (!(prop in o.styles)) o.styles[prop] = target.style.getPropertyValue(prop);
     if (value) target.style.setProperty(prop, value);
     else target.style.removeProperty(prop);
     record(target, (entry) => {
@@ -1212,6 +1430,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
       if (!t || isUi(t)) return;
       const entry = edits.elements[sel];
+      const o = originalOf(t);
+      if (entry.html != null && !("html" in o)) o.html = t.innerHTML;
+      if (entry.src && !("src" in o)) Object.assign(o, { src: t.getAttribute("src"), srcset: t.getAttribute("srcset") });
+      Object.keys(entry.styles).forEach((p) => { if (!(p in o.styles)) o.styles[p] = t.style.getPropertyValue(p); });
       if (entry.html != null) t.innerHTML = entry.html;
       if (entry.src) {
         t.removeAttribute("srcset");
@@ -1220,6 +1442,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (entry.adjust) setToneFilter(toneId(sel), entry.adjust);
       Object.keys(entry.styles).forEach((p) => t.style.setProperty(p, entry.styles[p]));
     });
+  }
+
+  // The page's fill is what paints behind everything: the body, unless a wrapper with a background
+  // of its own covers the whole window (an app's <main>), then that one, or the edit wouldn't show.
+  let pageEl = null;
+  function pageCanvas() {
+    const w = document.documentElement.clientWidth;
+    const h = document.documentElement.clientHeight;
+    for (const e of document.elementsFromPoint(w - 1, h - 1)) {
+      if (e === document.body || e === document.documentElement) break;
+      if (isUi(e)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width >= w - 1 && r.height >= h - 1 && toFill(getComputedStyle(e).backgroundColor)) return e;
+    }
+    return document.body;
   }
 
   // The page fill as one CSS background: the top layer first, the bottom one as the color.
@@ -1232,7 +1469,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // The list the bake skill reads: the file, then one line per changed element.
   function changesText() {
     const lines = [];
-    if (edits.page) lines.push(["page", "background: " + pageBackground(edits.page)]);
+    // A wrapper that paints the page is named, so the bake writes its background, not the body's.
+    const pageName = pageEl && pageEl !== document.body ? "page (" + selectorFor(pageEl) + ")" : "page";
+    if (edits.page) lines.push([pageName, "background: " + pageBackground(edits.page)]);
     Object.keys(edits.elements).forEach((sel) => {
       const e = edits.elements[sel];
       const parts = Object.keys(e.styles).map((p) => p + ": " + e.styles[p]);
@@ -1242,6 +1481,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // The SVG filter its url() points at, for the bake to put in the page.
       if (e.adjust && hasTone(e.adjust)) lines.push([sel + " svg", toneMarkup(toneId(sel), e.adjust)]);
     });
+    // A group: the layers the bake wraps in one new layer in the code.
+    edits.groups.forEach((g, i) => lines.push(["group " + (i + 1), g.join(", ")]));
     const width = Math.max.apply(null, lines.map((l) => l[0].length)) + 2;
     return "finetune changes · " + decodeURIComponent(location.pathname) + "\n"
       + lines.map(([sel, decl]) => sel.padEnd(width) + decl).join("\n");
@@ -1288,18 +1529,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Figma's size label under the selection.
     const sizeLabel = el("span", "ft-size-label");
     selBox.appendChild(sizeLabel);
+    const marquee = el("div", "ft-marquee");
     hoverBox.hidden = true;
     selBox.hidden = true;
-    document.body.append(hoverBox, selBox);
+    marquee.hidden = true;
+    document.body.append(hoverBox, selBox, marquee);
+    // One layer, or two or more: a group, or what shift-clicks gathered.
     let selected = null;
+    let many = [];
+    let group = null;
+    // The group she double-clicked into: inside it, its layers select one at a time.
+    let inside = null;
     let editing = null;
     let before = "";
 
-    const active = () => tool === "Move" && !!inspector && !inspector.hidden;
-    const pickable = (t) => (t && t !== document.body && t !== document.documentElement && !isUi(t) ? t : null);
+    const active = () => !!inspector && !inspector.hidden;
+    // The page itself (the body, or the wrapper that paints the page) is the canvas, as in Figma: clicking
+    // it selects nothing and shows the Page panel.
+    const pickable = (t) => (t && t !== document.body && t !== document.documentElement && t !== pageEl && !isUi(t) ? t : null);
+    // A click picks a layer's whole group, unless she's inside that group.
+    function unitOf(t) {
+      const g = t && groupOf(t);
+      return g && g !== inside ? { list: groupMembers(g), g } : null;
+    }
+    const current = () => (selected ? [selected] : many);
 
-    function frame(b, t) {
-      const r = t.getBoundingClientRect();
+    function frameRect(b, r) {
       b.style.left = r.left + "px";
       b.style.top = r.top + "px";
       b.style.width = r.width + "px";
@@ -1307,13 +1562,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
 
     function place() {
-      if (!selected) return;
-      frame(selBox, selected);
-      // offsetWidth is the size before any rotation, as Figma shows it; SVG elements have none.
-      const r = selected.getBoundingClientRect();
-      const w = selected.offsetWidth != null ? selected.offsetWidth : r.width;
-      const h = selected.offsetHeight != null ? selected.offsetHeight : r.height;
-      sizeLabel.textContent = Math.round(w) + " × " + Math.round(h);
+      if (selected) {
+        frameRect(selBox, selected.getBoundingClientRect());
+        // offsetWidth is the size before any rotation, as Figma shows it; SVG elements have none.
+        const r = selected.getBoundingClientRect();
+        const w = selected.offsetWidth != null ? selected.offsetWidth : r.width;
+        const h = selected.offsetHeight != null ? selected.offsetHeight : r.height;
+        sizeLabel.textContent = Math.round(w) + " × " + Math.round(h);
+      } else if (many.length) {
+        const u = unionRect(many);
+        frameRect(selBox, u);
+        sizeLabel.textContent = Math.round(u.width) + " × " + Math.round(u.height);
+      }
     }
     function moved() {
       place();
@@ -1321,18 +1581,101 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     const sizes = new ResizeObserver(moved);
 
-    function select(t) {
-      if (t === selected) return;
+    function show(one, list, g) {
       stopEditing();
-      if (selected) sizes.unobserve(selected);
-      selected = t;
-      selBox.hidden = !t;
+      current().forEach((t) => sizes.unobserve(t));
+      selected = one;
+      many = list;
+      group = g;
+      const now = current();
+      selBox.hidden = !now.length;
       hoverBox.hidden = true;
-      if (t) {
-        sizes.observe(t);
-        place();
-      }
-      showInPanel(t);
+      now.forEach((t) => sizes.observe(t));
+      if (now.length) place();
+      showInPanel(selected || (many.length ? many : null), group ? "group" : "selected");
+    }
+    // After an undo or redo: the same layers, redrawn, as a group if they still are one.
+    function reshow() {
+      inside = null;
+      const one = selected;
+      const list = many.slice();
+      if (one) show(one, [], null);
+      else if (list.length) {
+        const sels = list.map(selectorFor);
+        show(null, list, edits.groups.find((g) => g.length === sels.length && g.every((x) => sels.includes(x))) || null);
+      } else showInPanel(null);
+    }
+    finishTyping = () => stopEditing();
+
+    function select(t) {
+      if (t === selected && !many.length) return;
+      show(t, [], null);
+    }
+    function selectMany(list, g) {
+      if (list.length < 2) return select(list[0] || null);
+      show(null, list, g || null);
+    }
+
+    // A set of layers as the selection: a group if it's exactly one, else "N selected". No change, no redraw.
+    function pick(next) {
+      const now = current();
+      if (next.length === now.length && next.every((t) => now.includes(t))) return;
+      const sels = next.map(selectorFor);
+      const g = edits.groups.find((gr) => gr.length === sels.length && gr.every((s) => sels.includes(s)));
+      selectMany(next, g);
+    }
+
+    // Figma's marquee: a drag that starts on the page draws a box and selects every layer it touches
+    // (a group as one), live; shift keeps what was selected. A click without a drag clears it.
+    function startMarquee(e) {
+      const x0 = e.clientX;
+      const y0 = e.clientY;
+      const base = e.shiftKey ? current().slice() : [];
+      let dragging = false;
+      const move = (ev) => {
+        if (!dragging && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 3) return;
+        if (!dragging) {
+          dragging = true;
+          inside = null;
+          hoverBox.hidden = true;
+        }
+        const r = { left: Math.min(x0, ev.clientX), top: Math.min(y0, ev.clientY), right: Math.max(x0, ev.clientX), bottom: Math.max(y0, ev.clientY) };
+        frameRect(marquee, { left: r.left, top: r.top, width: r.right - r.left, height: r.bottom - r.top });
+        marquee.hidden = false;
+        const touches = (b) => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
+        const hit = pageUnits().filter((u) => u.some((t) => touches(t.getBoundingClientRect()))).flat();
+        pick(base.concat(hit.filter((h) => !base.includes(h))));
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", up, true);
+        marquee.hidden = true;
+        if (!dragging && !e.shiftKey) select(null);
+      };
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", up, true);
+    }
+
+    // ⌘G: the selected layers become one group (a layer in one group at a time, so grouping takes
+    // it out of any other). ⌘⇧G: the group goes, its layers stay selected.
+    function groupSelection() {
+      const list = current();
+      if (list.length < 2) return toast("Select two or more layers to group");
+      const sels = list.map(selectorFor);
+      edits.groups = edits.groups.map((g) => g.filter((s) => !sels.includes(s))).filter((g) => g.length > 1);
+      edits.groups.push(sels);
+      inside = null;
+      show(null, list, sels);
+      noteChange();
+      toast("Grouped " + list.length + " layers");
+    }
+    function ungroup() {
+      if (!group) return toast("Select a group to ungroup");
+      edits.groups = edits.groups.filter((g) => g !== group);
+      const list = many.slice();
+      show(null, list, null);
+      noteChange();
+      toast("Ungrouped " + list.length + " layers");
     }
 
     // Double-click puts the caret where you clicked; Enter selects all the text.
@@ -1362,13 +1705,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       window.getSelection().removeAllRanges();
       selBox.classList.remove("is-editing");
       editing = null;
-      if (t.innerHTML !== before) record(t, (entry) => { entry.html = t.innerHTML; });
+      if (t.innerHTML === before) return;
+      const o = originalOf(t);
+      if (!("html" in o)) o.html = before;
+      record(t, (entry) => { entry.html = t.innerHTML; });
     }
 
+    // Hover outlines what a click would pick: a group as one box.
     document.addEventListener("pointermove", (e) => {
-      const t = active() && !editing ? pickable(e.target) : null;
-      hoverBox.hidden = !t || t === selected;
-      if (!hoverBox.hidden) frame(hoverBox, t);
+      const t = active() && !editing && marquee.hidden ? pickable(e.target) : null;
+      const unit = unitOf(t);
+      const over = unit ? unit.list : t ? [t] : [];
+      const now = current();
+      hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
+      if (!hoverBox.hidden) frameRect(hoverBox, unionRect(over));
     }, { passive: true });
 
     // mousedown, not pointerdown: preventing it is what stops the page starting a text selection.
@@ -1376,10 +1726,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!active() || e.button !== 0 || isUi(e.target)) return;
       if (editing && editing.contains(e.target)) return;
       e.preventDefault();
-      select(pickable(e.target));
+      const t = pickable(e.target);
+      if (inside && !(t && groupOf(t) === inside)) inside = null;
+      if (!t) return startMarquee(e);
+      const unit = unitOf(t);
+      const picked = unit ? unit.list : t ? [t] : [];
+      // Shift adds what's clicked, or takes it back out, as in Figma.
+      if (e.shiftKey) {
+        const now = current().slice();
+        const has = picked.every((p) => now.includes(p));
+        return pick(has ? now.filter((n) => !picked.includes(n)) : now.concat(picked.filter((p) => !now.includes(p))));
+      }
+      if (unit) return show(null, unit.list, unit.g);
+      select(t);
     }, true);
 
-    // While Move is on, the page's own links and buttons don't fire.
+    // While the inspector is open, the page's own links and buttons don't fire.
     document.addEventListener("click", (e) => {
       if (!active() || isUi(e.target) || (editing && editing.contains(e.target))) return;
       e.preventDefault();
@@ -1389,7 +1751,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     document.addEventListener("dblclick", (e) => {
       if (!active() || editing || isUi(e.target)) return;
       const t = pickable(e.target);
-      if (!t || !hasText(t)) return;
+      if (!t) return;
+      // Into a group, as in Figma: the first double-click selects the layer under the pointer.
+      const g = groupOf(t);
+      if (g && g !== inside) {
+        inside = g;
+        return select(t);
+      }
+      if (!hasText(t)) return;
       select(t);
       startEditing(t, e.clientX, e.clientY);
     }, true);
@@ -1403,9 +1772,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         }
         return;
       }
-      if (!selected || typing(e.target)) return;
-      if (e.key === "Escape") select(null);
-      else if (e.key === "Enter" && hasText(selected)) {
+      if (typing(e.target)) return;
+      // Figma's ⌘Z and ⌘⇧Z (Ctrl on Windows); a field or text being typed in keeps its own.
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      // Figma's ⌘G and ⌘⇧G (Ctrl on Windows).
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === "g") {
+        e.preventDefault();
+        if (e.shiftKey) ungroup();
+        else groupSelection();
+        return;
+      }
+      if (!current().length) return;
+      if (e.key === "Escape") {
+        // Out a level: from a layer inside a group to the group, then to nothing.
+        if (selected && inside && groupOf(selected) === inside) {
+          const g = inside;
+          inside = null;
+          return show(null, groupMembers(g), g);
+        }
+        inside = null;
+        select(null);
+      } else if (e.key === "Enter" && selected && hasText(selected)) {
         e.preventDefault();
         startEditing(selected);
       }
@@ -1422,12 +1814,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.documentElement.classList.toggle("ft-moving", active());
       if (!active()) {
         hoverBox.hidden = true;
+        inside = null;
         select(null);
       }
     }
     sync();
 
-    return { sync, refresh: place };
+    return { sync, refresh: place, reshow };
   }
 
   const WEIGHT_NAMES = {
@@ -1457,15 +1850,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // Figma's dark dropdown menu, shared by the panel's dropdowns: opens with the current
   // item over its button, one at a time, closes on a pick, a click elsewhere, or Escape.
+  // An onHover previews each item as the pointer passes over it; onHover(null) puts it back,
+  // so a menu that closes without a pick leaves the page as it was.
   function makeMenu(root) {
     const menu = el("div", "ft-menu");
     menu.hidden = true;
     root.appendChild(menu);
     let anchor = null;
+    let hover = null;
 
     function close() {
       menu.hidden = true;
       anchor = null;
+      if (hover) hover(null);
+      hover = null;
     }
 
     document.addEventListener("pointerdown", (e) => {
@@ -1479,26 +1877,49 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     return {
       close,
-      toggle(btn, items, current, onPick) {
+      toggle(btn, items, current, onPick, onHover) {
         if (anchor === btn) return close();
+        if (hover) hover(null);
         anchor = btn;
+        hover = onHover || null;
+        // Read at leave time: a pick may have closed the menu (and dropped the preview) first.
+        menu.onpointerleave = () => { if (hover) hover(null); };
         menu.textContent = "";
         items.forEach((it) => {
+          // A heading names the items under it; it isn't one.
+          if (it.heading) {
+            menu.appendChild(el("div", "ft-menu-heading", it.label));
+            return;
+          }
           const item = button("ft-menu-item", null, () => {
             close();
             onPick(it.value);
           });
+          if (hover) item.addEventListener("pointerenter", () => hover(it.value));
           const check = el("span", "ft-menu-check");
           if (same(it.value, current)) check.innerHTML = ICON.check;
           item.append(check, el("span", null, it.label));
+          // An item that can be deleted shows a trash can on hover.
+          if (it.remove) {
+            const trash = el("span", "ft-menu-trash");
+            trash.innerHTML = ICON.trash;
+            trash.setAttribute("aria-label", "Delete");
+            trash.addEventListener("click", (e) => {
+              e.stopPropagation();
+              it.remove();
+            });
+            item.appendChild(trash);
+          }
           menu.appendChild(item);
         });
         menu.hidden = false;
         const r = btn.getBoundingClientRect();
-        const i = Math.max(0, items.findIndex((it) => same(it.value, current)));
-        // Kept on screen: a button near the right edge opens its menu leftward.
+        const i = items.findIndex((it) => same(it.value, current));
+        // Kept on screen: a button near the right edge opens its menu leftward. With no current item it
+        // opens below the button, so nothing starts under the pointer (and a preview menu stays still).
         menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + "px";
-        menu.style.top = Math.max(8, Math.min(r.top - 8 - i * 24, window.innerHeight - menu.offsetHeight - 8)) + "px";
+        const top = i < 0 ? r.bottom + 4 : r.top - 8 - i * 24;
+        menu.style.top = Math.max(8, Math.min(top, window.innerHeight - menu.offsetHeight - 8)) + "px";
       },
     };
   }
@@ -1582,6 +2003,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!f || !t) return;
       const reader = new FileReader();
       reader.onload = () => {
+        const o = originalOf(t);
+        if (!("src" in o)) Object.assign(o, { src: t.getAttribute("src"), srcset: t.getAttribute("srcset") });
         t.removeAttribute("srcset");
         t.src = String(reader.result);
         record(t, (entry) => { entry.src = { name: f.name, data: String(reader.result) }; });
@@ -1665,6 +2088,242 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     };
   }
 
+  // Leaving Stretch, the bands keep the width they had, as in Figma.
+  function setGuideAlign(g, align) {
+    if (g.align === "stretch" && align !== "stretch") {
+      const span = document.documentElement.clientWidth;
+      g.width = Math.max(1, Math.round((span - 2 * g.offset - (g.count - 1) * g.gutter) / g.count));
+    }
+    g.align = align;
+  }
+
+  // Groups, as in Figma (⌘G, ⌘⇧G): each is a list of its layers' selectors, saved with Save and copied
+  // for the bake, which wraps them in a real layer in the code. The live page is never rewrapped: moving
+  // a React page's elements under a new parent breaks it, so a group here is how they select and move.
+  const groupMembers = (g) => g.map((sel) => {
+    try {
+      return document.querySelector(sel);
+    } catch (e) {
+      return null;
+    }
+  }).filter(Boolean);
+  function groupOf(t) {
+    const sel = selectorFor(t);
+    return edits.groups.find((g) => g.includes(sel)) || null;
+  }
+
+  // The box around several layers, in window coordinates.
+  function unionRect(list) {
+    const rs = list.map((t) => t.getBoundingClientRect());
+    const left = Math.min(...rs.map((r) => r.left));
+    const top = Math.min(...rs.map((r) => r.top));
+    const right = Math.max(...rs.map((r) => r.right));
+    const bottom = Math.max(...rs.map((r) => r.bottom));
+    return { left, top, right, bottom, width: right - left, height: bottom - top };
+  }
+
+  // A move by dx, dy as a translate, recorded like one typed into the Position fields.
+  function nudge(t, dx, dy) {
+    const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
+    const tx = Math.round(((cur[0] || 0) + dx) * 10) / 10;
+    const ty = Math.round(((cur[1] || 0) + dy) * 10) / 10;
+    boxed(t);
+    setStyle(t, "translate", tx || ty ? tx + "px " + ty + "px" : "");
+  }
+
+  // "All items" for the guide alignments: what she could select (text, images, boxes with a fill),
+  // outermost only, so a card moves with the words inside it.
+  function pageItems() {
+    const all = Array.from(document.body.querySelectorAll("*")).filter((e) => {
+      if (e === pageEl || isUi(e) || e.closest(".ft-guides, .ft-hover-box, .ft-sel-box, .ft-marquee, .ft-panel")) return false;
+      const r = e.getBoundingClientRect();
+      if (!r.width || !r.height || getComputedStyle(e).visibility === "hidden") return false;
+      return hasText(e) || e.tagName === "IMG" || !!toFill(getComputedStyle(e).backgroundColor);
+    });
+    return all.filter((e) => !all.some((o) => o !== e && o.contains(e)));
+  }
+
+  // The grid the page's code already has, read as a horizontal layout: its widest CSS grid with four or
+  // more equal columns, at least half the window wide (a two-column list is content, not the page's grid).
+  // Count and gutter are the grid's own; equal margins read as Stretch, otherwise Left with an offset.
+  function pageGrid() {
+    const W = document.documentElement.clientWidth;
+    let best = null;
+    for (const e of document.body.querySelectorAll("*")) {
+      if (isUi(e) || e.closest(".ft-guides, .ft-panel")) continue;
+      const cs = getComputedStyle(e);
+      if (cs.display !== "grid" && cs.display !== "inline-grid") continue;
+      const tracks = cs.gridTemplateColumns.split(/\s+/).map(parseFloat).filter(isNum);
+      if (tracks.length < 4) continue;
+      const avg = tracks.reduce((a, b) => a + b, 0) / tracks.length;
+      if (tracks.some((t) => Math.abs(t - avg) > 1)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width < W / 2 || (best && r.width <= best.r.width)) continue;
+      best = { e, r, cs, n: tracks.length, w: avg };
+    }
+    if (!best) return null;
+    const { r, cs } = best;
+    const left = r.left + parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth);
+    const right = r.right - parseFloat(cs.paddingRight) - parseFloat(cs.borderRightWidth);
+    const g = Object.assign(newGuide(), { count: best.n, gutter: Math.round(parseFloat(cs.columnGap) || 0) });
+    if (Math.abs(left - (W - right)) <= 1) Object.assign(g, { align: "stretch", offset: Math.round(left) });
+    else Object.assign(g, { align: "left", offset: Math.round(left), width: Math.round(best.w) });
+    return g;
+  }
+
+  // A guide's column edges across the window, as drawn.
+  function guideEdges(g) {
+    const span = document.documentElement.clientWidth;
+    const n = g.count;
+    const stretch = g.align === "stretch";
+    const w = stretch ? (span - 2 * g.offset - (n - 1) * g.gutter) / n : g.width;
+    const total = n * w + (n - 1) * g.gutter;
+    const start = stretch ? g.offset : g.align === "center" ? (span - total) / 2
+      : g.align === "right" ? span - g.offset - total : g.offset;
+    const starts = [];
+    const ends = [];
+    for (let i = 0; i < n; i++) {
+      starts.push(start + i * (w + g.gutter));
+      ends.push(start + i * (w + g.gutter) + w);
+    }
+    return { starts, ends };
+  }
+
+  // What the guide alignments move: each group as one, then every other item on its own.
+  function pageUnits() {
+    const groups = edits.groups.map(groupMembers).filter((m) => m.length);
+    const grouped = groups.flat();
+    const loose = pageItems().filter((t) => !grouped.some((m) => m === t || m.contains(t) || t.contains(m)));
+    return groups.concat(loose.map((t) => [t]));
+  }
+
+  const nearest = (list, v) => list.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+  const ALIGN_WORD = { left: "left", right: "right", hcenter: "horizontally" };
+
+  // Align items to nearest column: each item's left or right edge snaps to the nearest column edge;
+  // horizontally puts each item in the middle of the page instead. Every move is recorded.
+  function alignAll(g, how) {
+    const W = document.documentElement.clientWidth;
+    pageUnits().forEach((unit) => {
+      const r = unionRect(unit);
+      const dx = how === "left" ? nearest(guideEdges(g).starts, r.left) - r.left
+        : how === "right" ? nearest(guideEdges(g).ends, r.right) - r.right
+          : W / 2 - (r.left + r.width / 2);
+      if (Math.abs(dx) >= 0.05) unit.forEach((t) => nudge(t, dx, 0));
+    });
+    toast("Align all items " + ALIGN_WORD[how]);
+  }
+
+  function guideLayer(g) {
+    const d = el("div");
+    const c = rgba(g.color);
+    const start = g.align === "left";
+    const end = g.align === "right";
+    d.style.display = "flex";
+    d.style.justifyContent = end ? "flex-end" : g.align === "center" ? "center" : "flex-start";
+    d.style.gap = g.gutter + "px";
+    const pad = (a, b) => "0 " + b + "px 0 " + a + "px";
+    d.style.padding = g.align === "stretch" ? pad(g.offset, g.offset) : pad(start ? g.offset : 0, end ? g.offset : 0);
+    for (let i = 0; i < g.count; i++) {
+      const band = el("div");
+      band.style.background = c;
+      band.style.flex = g.align === "stretch" ? "1" : "none";
+      if (g.align !== "stretch") band.style.width = g.width + "px";
+      d.appendChild(band);
+    }
+    return d;
+  }
+
+  // A number field for one of a guide's values. Live: each keystroke redraws the guide, so 16 and 20 can
+  // be compared as fast as they're typed. Its Escape listener goes before editable's, so the old value
+  // comes back before the field resets.
+  function guideNum(g, key, min, whole, onChange) {
+    const f = numField(null);
+    f.set(g[key], true);
+    let start = g[key];
+    const parse = (v) => (whole ? Math.round(parseFloat(v)) : parseFloat(v));
+    f.input.addEventListener("focus", () => { start = g[key]; });
+    f.input.addEventListener("input", () => {
+      const n = parse(f.input.value);
+      if (!isNum(n) || n < min) return;
+      g[key] = n;
+      onChange();
+    });
+    f.input.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      g[key] = start;
+      onChange();
+    });
+    editable(f.input, (force) => f.set(g[key], force), (v) => {
+      const n = parse(v);
+      if (!isNum(n) || n < min) return;
+      g[key] = n;
+      onChange();
+    });
+    return f.wrap;
+  }
+
+  // Figma's layout guide settings, from the guide's icon: its color. (Its layout is in the panel.)
+  function makeGuidePop(root, menu, picker, onChange) {
+    let g = null;
+    let anchor = null;
+    const pop = el("div", "ft-pop ft-guide-pop");
+    pop.hidden = true;
+    const head = el("div", "ft-pop-head");
+    head.append(el("span", null, "Columns"), iconButton(ICON.x, "Close", close));
+    const body = el("div", "ft-pop-body ft-guide-fields");
+    pop.append(head, body);
+    root.appendChild(pop);
+
+    function build() {
+      body.replaceChildren(el("span", "ft-field-label", "Color"), fillRow(g.color, onChange, null, picker));
+    }
+
+    function open(guide, rowEl, icon) {
+      g = guide;
+      anchor = icon;
+      pop.hidden = false;
+      build();
+      // Just left of the panel, level with the row, kept on screen.
+      const r = rowEl.getBoundingClientRect();
+      const panel = root.getBoundingClientRect();
+      pop.style.left = Math.max(8, panel.left - 8 - pop.offsetWidth) + "px";
+      pop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - pop.offsetHeight - 8)) + "px";
+    }
+
+    function close() {
+      if (!g) return;
+      if (pop.contains(document.activeElement)) document.activeElement.blur();
+      picker.closeFor(g.color);
+      menu.close();
+      pop.hidden = true;
+      g = anchor = null;
+    }
+
+    // Closes on a click anywhere else, or Escape. Its own menus and the color picker count as inside;
+    // the icon that opened it toggles it instead.
+    document.addEventListener("pointerdown", (e) => {
+      if (!g || pop.contains(e.target) || anchor.contains(e.target) || e.target.closest(".ft-menu, .ft-pop")) return;
+      close();
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !g || e.defaultPrevented || typing(e.target)) return;
+      e.preventDefault();
+      close();
+    });
+
+    return {
+      close,
+      closeFor(guide) {
+        if (g === guide) close();
+      },
+      toggle(guide, rowEl, icon) {
+        if (g === guide) close();
+        else open(guide, rowEl, icon);
+      },
+    };
+  }
+
   function makeInspector() {
     // Shown on load, like Figma's panel.
     const root = el("div", "ft-inspector");
@@ -1672,51 +2331,47 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const tabs = el("div", "ft-tabs");
     const design = el("div", "ft-tab", "Design");
     design.setAttribute("aria-selected", "true");
-    // Copy changes: the list the bake skill reads. Reset: forget them and reload the page as written.
-    const copyBtn = iconButton(ICON.copy, "Copy changes", () => {
-      const n = editCount();
-      copyText(changesText()).then((ok) => {
-        toast(ok ? "Copied " + n + (n === 1 ? " change" : " changes") + ". Paste into Claude Code and say bake." : "Couldn't reach the clipboard");
-      });
-    });
-    const resetBtn = iconButton(ICON.arrowCounterClockwise, "Reset changes", () => {
-      saving = false;
-      try {
-        localStorage.removeItem(EDITS_KEY);
-      } catch (e) {
-        // Nothing stored to clear.
-      }
-      location.reload();
-    });
+    // Undo and redo the latest change, as in Figma (also ⌘Z and ⌘⇧Z); Reset goes back to the code.
+    const undoBtn = iconButton(ICON.undo, "Undo", undo);
+    const redoBtn = iconButton(ICON.redo, "Redo", redo);
     const tabActions = el("div", "ft-tabs-end");
-    tabActions.append(copyBtn, resetBtn);
+    tabActions.append(undoBtn, redoBtn, iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits));
     tabs.append(design, tabActions);
-    editsChanged = () => {
-      copyBtn.disabled = resetBtn.disabled = !editCount();
+    historyChanged = () => {
+      undoBtn.disabled = !history.past.length && !history.timer;
+      redoBtn.disabled = !history.future.length;
     };
-    editsChanged();
 
     // A page fill saved from an earlier visit comes back; the bottom layer is the base.
+    pageEl = pageCanvas();
+    // The page's own fill (before any paint), for undoing back to it.
+    const pageOwn = {
+      layer: toFill(getComputedStyle(pageEl).backgroundColor)
+        || toFill(getComputedStyle(document.body).backgroundColor)
+        || { hex: "FFFFFF", opacity: 100, visible: true },
+      color: pageEl.style.backgroundColor,
+      image: pageEl.style.backgroundImage,
+    };
     const layers = edits.page ? edits.page.map((l) => Object.assign({}, l)) : [
-      toFill(getComputedStyle(document.body).backgroundColor)
+      toFill(getComputedStyle(pageEl).backgroundColor)
+        || toFill(getComputedStyle(document.body).backgroundColor)
         || toFill(getComputedStyle(document.documentElement).backgroundColor)
         || { hex: "FFFFFF", opacity: 100, visible: true },
     ];
-    const base = layers[layers.length - 1];
     const picker = makePicker(root);
 
     // Fills stack like Figma's: the top row paints on top.
     function paint() {
       const shown = layers.filter((l) => l.visible).map((l) => "linear-gradient(" + rgba(l) + ", " + rgba(l) + ")");
-      document.body.style.backgroundColor = "transparent";
-      document.body.style.backgroundImage = shown.length ? shown.join(", ") : "none";
+      pageEl.style.backgroundColor = "transparent";
+      pageEl.style.backgroundImage = shown.length ? shown.join(", ") : "none";
       picker.sync();
     }
 
     function paintAndSave() {
       paint();
       edits.page = layers.map((l) => Object.assign({}, l));
-      saveEdits();
+      noteChange();
     }
 
     function remove(layer, row) {
@@ -1735,12 +2390,229 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       list.prepend(fillRow(layer, paintAndSave, remove, picker));
       paintAndSave();
     }));
-    layers.forEach((l) => list.appendChild(fillRow(l, paintAndSave, l === base ? null : remove, picker)));
+    // The bottom row is the base: no remove.
+    const drawRows = () => list.replaceChildren(...layers.map((l, i) => fillRow(l, paintAndSave, i === layers.length - 1 ? null : remove, picker)));
+    drawRows();
     if (edits.page) paint();
     page.append(head, list);
 
     const menu = makeMenu(root);
     const imagePop = makeImagePop(root, menu, () => changed(false));
+
+    // Horizontal layout: one columns layout at a time (Figma's layout guide). With none saved for the page,
+    // it starts as the page's own grid when its code has one (pageGrid), ready to tweak. Its row's icon opens its
+    // color, the eye shows or hides it, and its fields and alignment sit under it. Save keeps it; Copy
+    // never includes it. The header saves it as a style, or applies a saved one.
+    const guides = edits.guides;
+    if (!guides.length) {
+      const own = pageGrid();
+      if (own) guides.push(own);
+    }
+    const overlay = el("div", "ft-guides");
+    const guideSec = el("div", "ft-section");
+    const guideHead = el("div", "ft-section-head");
+    const guideList = el("div", "ft-guide-list");
+
+    // Styles: the page's own grid first ("From the page", so a tweak can always go back to it), then hers,
+    // under "This page" and "All pages". Hovering one shows it on the page, a click applies it, leaving
+    // the menu puts hers back; a saved style's trash can deletes it.
+    function openStyles() {
+      guidePop.close();
+      const entries = [[STYLES_PAGE, "This page"], [STYLES_ALL, "All pages"]]
+        .map(([key, heading]) => ({ key, heading, list: loadStyles(key) }));
+      const flat = [];
+      const items = [];
+      const own = pageGrid();
+      if (own) {
+        items.push({ heading: true, label: "From the page" }, { label: "Page grid · " + styleName(own), value: 0 });
+        flat.push({ name: "Page grid", guide: own });
+      }
+      entries.forEach(({ key, heading, list }) => {
+        if (!list.length) return;
+        items.push({ heading: true, label: heading });
+        list.forEach((st, i) => {
+          items.push({ label: st.name, value: flat.length, remove: () => {
+            const now = loadStyles(key);
+            now.splice(i, 1);
+            storeStyles(key, now);
+            toast("Deleted style: " + st.name);
+            menu.close();
+            openStyles();
+          } });
+          flat.push(st);
+        });
+      });
+      if (!flat.length) items.push({ heading: true, label: "No saved styles yet" });
+      let before = null;
+      const use = (list) => {
+        guides.splice(0, guides.length, ...copyGuides(list));
+        drawGuides();
+      };
+      menu.toggle(styleBtn, items, null, (v) => use([flat[v].guide]), (v) => {
+        history.quiet++;
+        if (v == null) {
+          if (before) use(before);
+          before = null;
+        } else {
+          if (!before) before = copyGuides(guides);
+          use([flat[v].guide]);
+        }
+        history.quiet--;
+      });
+    }
+    const styleBtn = iconButton(ICON.guideStyles, "Styles", openStyles);
+
+    // Save as style: two buttons in place, for every page or just this one. Named from its numbers;
+    // the same numbers aren't saved twice.
+    const savePop = el("div", "ft-pop ft-save-pop");
+    savePop.hidden = true;
+    const closeSave = () => { savePop.hidden = true; };
+    function saveStyle(key) {
+      closeSave();
+      const g = guides[0];
+      if (!g) return;
+      const name = styleName(g);
+      const list = loadStyles(key);
+      if (list.some((st) => st.name === name)) return toast("Already saved: " + name);
+      list.push({ name, guide: copyGuides([g])[0] });
+      toast(storeStyles(key, list) ? "Saved style: " + name : "Couldn't save: storage is blocked or full");
+    }
+    const saveBody = el("div", "ft-save-body");
+    saveBody.append(
+      button("ft-choice", "Apply to all pages", () => saveStyle(STYLES_ALL)),
+      button("ft-choice", "Just this page", () => saveStyle(STYLES_PAGE))
+    );
+    savePop.appendChild(saveBody);
+    const saveBtn = iconButton(ICON.bookmark, "Save as style", () => {
+      if (!savePop.hidden) return closeSave();
+      menu.close();
+      savePop.hidden = false;
+      // Under the button, its right edge on the button's, kept on screen.
+      const r = saveBtn.getBoundingClientRect();
+      savePop.style.left = Math.max(8, r.right - savePop.offsetWidth) + "px";
+      savePop.style.top = Math.min(r.bottom + 6, window.innerHeight - savePop.offsetHeight - 8) + "px";
+    });
+    document.addEventListener("pointerdown", (e) => {
+      if (!savePop.hidden && !savePop.contains(e.target) && !saveBtn.contains(e.target)) closeSave();
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || savePop.hidden || e.defaultPrevented) return;
+      e.preventDefault();
+      closeSave();
+    });
+    root.appendChild(savePop);
+
+    const guideActions = el("div", "ft-head-actions");
+    guideActions.append(styleBtn, saveBtn);
+    guideHead.append(el("span", null, "Horizontal layout"), guideActions);
+    guideSec.append(guideHead, guideList);
+    const guidePop = makeGuidePop(root, menu, picker, () => drawGuides());
+    let guideRows = [];
+
+    // No layout yet: say so, and offer the usual one to start from (12 columns).
+    const guideEmpty = el("div", "ft-guide-empty");
+    const guideWarn = el("div", "ft-guide-warn");
+    guideWarn.innerHTML = ICON.warning;
+    guideWarn.appendChild(el("span", null, "Layout not defined."));
+    const addLayout = button("ft-choice ft-choice-icon", null, () => {
+      guides.push(newGuide());
+      drawGuides();
+    });
+    const plus = el("span");
+    plus.innerHTML = ICON.plus;
+    addLayout.append(plus, el("span", null, "Add layout"));
+    guideEmpty.append(guideWarn, addLayout);
+
+    // Under each guide, Figma's alignment buttons, as actions: pressed, they align every item, then
+    // spring back.
+    const ACROSS = [["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontally"], ["right", "alignRight", "Align right"]];
+    function alignSeg(g) {
+      const seg = el("div", "ft-seg ft-seg-act");
+      ACROSS.forEach(([how, icon, tip]) => {
+        const b = button("ft-seg-btn", null, () => alignAll(g, how));
+        b.innerHTML = ICON[icon];
+        b.setAttribute("data-ft-tip", tip);
+        b.setAttribute("aria-label", tip);
+        withTip(b);
+        seg.appendChild(b);
+      });
+      return seg;
+    }
+
+    // A columns guide's layout fields, as in Figma: Count, Type, Width (Auto when stretched), Margin
+    // (stretched) or Offset (packed to a side), Gutter. A new Type rebuilds them.
+    function guideFields(box, g, onChange) {
+      const align = dropdown((btn) => menu.toggle(btn, GUIDE_ALIGN.map(([value, label]) => ({ label, value })), g.align, (v) => {
+        setGuideAlign(g, v);
+        onChange();
+        guideFields(box, g, onChange);
+      }));
+      align.label.textContent = (GUIDE_ALIGN.find(([a]) => a === g.align) || [])[1];
+      let width = guideNum(g, "width", 1, false, onChange);
+      if (g.align === "stretch") {
+        const auto = numField(null);
+        auto.input.value = "Auto";
+        auto.input.disabled = true;
+        width = auto.wrap;
+      }
+      // Rows: Count across both columns; Type | Width; Margin (or Offset) | Gutter.
+      const items = [labeled("Count", guideNum(g, "count", 1, true, onChange), true), labeled("Type", align.btn), labeled("Width", width)];
+      if (g.align === "stretch") items.push(labeled("Margin", guideNum(g, "offset", 0, false, onChange)));
+      else if (g.align !== "center") items.push(labeled("Offset", guideNum(g, "offset", 0, false, onChange)));
+      items.push(labeled("Gutter", guideNum(g, "gutter", 0, false, onChange)));
+      box.replaceChildren(...items);
+    }
+
+    function guideRow(g) {
+      const rowEl = el("div", "ft-guide-row");
+      // Its color, as a swatch (as in Figma): it opens the color settings.
+      const icon = iconButton("", "Color settings", () => guidePop.toggle(g, rowEl, icon));
+      icon.classList.add("ft-guide-icon");
+      const swatch = el("span", "ft-swatch");
+      icon.appendChild(swatch);
+      // One kind of guide, so its name is a label, not a menu.
+      const name = el("div", "ft-dd ft-dd-static");
+      const label = el("span", "ft-dd-label");
+      name.appendChild(label);
+      const eye = iconButton(ICON.eye, "Hide grid", () => {
+        g.visible = !g.visible;
+        drawGuides();
+      });
+      rowEl.append(icon, name, eye);
+      const group = el("div", "ft-guide");
+      const alignBox = el("div", "ft-guide-align");
+      alignBox.append(el("div", "ft-field-label", "Align items to nearest column"), alignSeg(g));
+      const fields = el("div", "ft-type ft-guide-set");
+      guideFields(fields, g, () => drawGuides());
+      group.append(rowEl, fields, alignBox);
+      return { g, group, rowEl, label, eye, swatch };
+    }
+
+    // The row is kept while it's the same layout, so its open color stays anchored to it.
+    function drawGuides() {
+      if (!guides.length) {
+        guideRows = [];
+        if (guideList.firstChild !== guideEmpty) guideList.replaceChildren(guideEmpty);
+      } else if (guideRows.length !== guides.length || guideRows.some((r, i) => r.g !== guides[i])) {
+        guideRows = guides.map(guideRow);
+        guideList.replaceChildren(...guideRows.map((r) => r.group));
+      }
+      saveBtn.disabled = !guides.length;
+      guideRows.forEach((r) => {
+        const { g, rowEl, label, eye, swatch } = r;
+        label.textContent = guideName(g);
+        swatch.style.setProperty("--ft-c", "#" + g.color.hex);
+        swatch.style.setProperty("--ft-ca", rgba(g.color));
+        const tip = g.visible ? "Hide grid" : "Show grid";
+        eye.innerHTML = g.visible ? ICON.eye : ICON.eyeClosed;
+        eye.setAttribute("data-ft-tip", tip);
+        eye.setAttribute("aria-label", tip);
+        rowEl.classList.toggle("is-hidden", !g.visible);
+      });
+      overlay.replaceChildren(...guides.filter((g) => g.visible).map(guideLayer));
+      noteChange();
+    }
+    drawGuides();
     let fillLayers = [];
     const chosen = el("div");
     let textLayer = null;
@@ -1805,17 +2677,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           sy: sc.length > 1 ? sc[1] : sc[0],
         };
       };
-      const moveBy = (dx, dy) => {
-        const t = nums(target.style.translate);
-        const tx = Math.round(((t[0] || 0) + dx) * 10) / 10;
-        const ty = Math.round(((t[1] || 0) + dy) * 10) / 10;
-        setStyle(target, "translate", tx || ty ? tx + "px " + ty + "px" : "");
-      };
+      const moveBy = (dx, dy) => nudge(target, dx, dy);
       const setRot = (deg) => {
         const d = Math.round((((deg % 360) + 360) % 360) * 10) / 10;
+        boxed(target);
         setStyle(target, "rotate", d ? d + "deg" : "");
       };
-      const setScale = (sx, sy) => setStyle(target, "scale", sx === 1 && sy === 1 ? "" : sx + " " + sy);
+      const setScale = (sx, sy) => {
+        boxed(target);
+        setStyle(target, "scale", sx === 1 && sy === 1 ? "" : sx + " " + sy);
+      };
 
       const x = numField("X");
       const y = numField("Y");
@@ -1863,6 +2734,42 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         x.set(now.x, force);
         y.set(now.y, force);
         rot.set(Math.round(now.rot * 10) / 10 + "°", force);
+      });
+      return s;
+    }
+
+    // Two or more layers, as in Figma: "Group" or "N selected", and X and Y for where they sit together.
+    // A move moves every layer by the same amount, each recorded, so the bake keeps them together.
+    function setSection(list, isGroup) {
+      const s = section(isGroup ? "Group" : list.length + " selected");
+      const read = () => {
+        const u = unionRect(list);
+        return { x: Math.round(u.left + window.scrollX), y: Math.round(u.top + window.scrollY) };
+      };
+      const x = numField("X");
+      const y = numField("Y");
+      // Measured once, then every layer moves by that much.
+      editable(x.input, changed, (v) => {
+        const n = parseFloat(v);
+        if (!isNum(n)) return;
+        const d = n - read().x;
+        list.forEach((t) => nudge(t, d, 0));
+      });
+      editable(y.input, changed, (v) => {
+        const n = parseFloat(v);
+        if (!isNum(n)) return;
+        const d = n - read().y;
+        list.forEach((t) => nudge(t, 0, d));
+      });
+      const xy = el("div", "ft-type-pair");
+      xy.append(x.wrap, y.wrap);
+      const grid = el("div", "ft-type");
+      grid.append(labeled("Position", xy, true));
+      s.appendChild(grid);
+      draws.push((force) => {
+        const now = read();
+        x.set(now.x, force);
+        y.set(now.y, force);
       });
       return s;
     }
@@ -2030,6 +2937,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         ["auto", "textAlignJustify", "Auto height"],
         ["fixed", "article", "Fixed size"],
       ], (v) => {
+        boxed(target);
         const r = target.getBoundingClientRect();
         setStyle(target, "width", v === "hug" ? "max-content" : Math.round(r.width) + "px");
         setStyle(target, "height", v === "fixed" ? Math.round(r.height) + "px" : "");
@@ -2040,6 +2948,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
         const now = read();
+        boxed(target);
         setStyle(target, "width", n + "px");
         if (locked && now.w) setStyle(target, "height", Math.round((n * now.h) / now.w) + "px");
       });
@@ -2047,6 +2956,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
         const now = read();
+        boxed(target);
         setStyle(target, "height", n + "px");
         if (locked && now.h) setStyle(target, "width", Math.round((n * now.w) / now.h) + "px");
       });
@@ -2093,16 +3003,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         };
       };
 
+      // Keep the weight if the family has it; otherwise the nearest one it does.
+      const weightIn = (f, w) => familyWeights(f).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a));
+      // Figma's hover preview: the text wears each family the pointer passes over, saving nothing.
+      // The inline values it had are kept here to put back.
+      let before = null;
       const family = dropdown((btn) => {
         const now = read();
         menu.toggle(btn, pageFamilies(now.family).map((f) => ({ label: f, value: f })), now.family, (f) => {
           setStyle(target, "font-family", '"' + f + '"');
-          // Keep the weight if the new family has it; otherwise the nearest one it does.
-          const ws = familyWeights(f);
-          if (!ws.includes(now.weight)) {
-            setStyle(target, "font-weight", String(ws.reduce((a, b) => (Math.abs(b - now.weight) < Math.abs(a - now.weight) ? b : a))));
-          }
+          const w = weightIn(f, now.weight);
+          if (w !== now.weight) setStyle(target, "font-weight", String(w));
           changed(true);
+        }, (f) => {
+          if (f == null) {
+            if (!before) return;
+            target.style.fontFamily = before.family;
+            target.style.fontWeight = before.weight;
+            before = null;
+            return;
+          }
+          if (!before) before = { family: target.style.fontFamily, weight: target.style.fontWeight };
+          const w = weightIn(f, now.weight);
+          target.style.fontFamily = '"' + f + '"';
+          target.style.fontWeight = w === now.weight ? before.weight : String(w);
         });
       });
       family.btn.classList.add("ft-span2");
@@ -2132,17 +3056,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         ["left", "textAlignLeft", "Align left"],
         ["center", "textAlignCenter", "Align center"],
         ["right", "textAlignRight", "Align right"],
-      ], (v) => setStyle(target, "text-align", v));
+      ], (v) => {
+        boxed(target);
+        setStyle(target, "text-align", v);
+      });
       const valign = segmented([
         ["top", "arrowLineUp", "Align top"],
         ["middle", "arrowsInLineVertical", "Align middle"],
         ["bottom", "arrowLineDown", "Align bottom"],
-      ], (v) => setStyle(target, "align-content", { top: "start", middle: "center", bottom: "end" }[v]));
+      ], (v) => {
+        boxed(target);
+        setStyle(target, "align-content", { top: "start", middle: "center", bottom: "end" }[v]);
+      });
 
       function draw(force) {
         const now = read();
-        family.label.textContent = now.family;
-        weight.label.textContent = WEIGHT_NAMES[now.weight] || String(now.weight);
+        // A preview resizes the text, which redraws the panel; the labels stay on the real font.
+        if (!before) {
+          family.label.textContent = now.family;
+          weight.label.textContent = WEIGHT_NAMES[now.weight] || String(now.weight);
+        }
         size.set(Math.round(now.size * 10) / 10, force);
         leading.set(now.leading, force);
         tracking.set(now.tracking + "%", force);
@@ -2197,7 +3130,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // Figma's order: Position, Layout, Appearance, then Typography and the text's Fill for
     // text, the image's Fill for an img, the background Fill for anything else.
-    showInPanel = (target) => {
+    showInPanel = (target, kind) => {
       menu.close();
       imagePop.close();
       if (textLayer) picker.closeFor(textLayer);
@@ -2206,8 +3139,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       fillLayers = [];
       draws = [];
       chosen.textContent = "";
-      page.hidden = !!target;
+      guidePop.close();
+      page.hidden = guideSec.hidden = !!target;
       if (!target) return;
+      if (Array.isArray(target)) {
+        chosen.appendChild(setSection(target, kind === "group"));
+        changed(true);
+        return;
+      }
       chosen.append(position(target), layout(target), appearance(target));
       if (hasText(target)) chosen.append(typography(target), textFill(target));
       else if (target.tagName === "IMG") chosen.appendChild(imageFill(target));
@@ -2215,8 +3154,65 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       changed(true);
     };
 
-    root.append(tabs, page, chosen);
-    document.body.appendChild(root);
+    // Undo / redo: elements back to the step's styles, words and images (or the page's own), then the page
+    // fill, the guides, the groups, and the panel for whatever is selected.
+    applyEdits = (next) => {
+      const sels = new Set(Object.keys(edits.elements).concat(Object.keys(next.elements)));
+      sels.forEach((sel) => {
+        let t = null;
+        try {
+          t = document.querySelector(sel);
+        } catch (e) {
+          return;
+        }
+        if (!t) return;
+        const a = edits.elements[sel] || { styles: {} };
+        const b = next.elements[sel] || { styles: {} };
+        const o = originals[sel] || { styles: {} };
+        new Set(Object.keys(a.styles).concat(Object.keys(b.styles))).forEach((prop) => {
+          const v = prop in b.styles ? b.styles[prop] : o.styles[prop] || "";
+          if (v) t.style.setProperty(prop, v);
+          else t.style.removeProperty(prop);
+        });
+        if (a.html !== b.html) {
+          const h = b.html != null ? b.html : o.html;
+          if (h != null) t.innerHTML = h;
+        }
+        if (JSON.stringify(a.src) !== JSON.stringify(b.src)) {
+          if (b.src) {
+            t.removeAttribute("srcset");
+            t.src = b.src.data;
+          } else if ("src" in o) {
+            if (o.srcset != null) t.setAttribute("srcset", o.srcset);
+            if (o.src != null) t.setAttribute("src", o.src);
+          }
+        }
+        if (JSON.stringify(a.adjust) !== JSON.stringify(b.adjust)) setToneFilter(toneId(sel), b.adjust || NO_ADJUST);
+      });
+      edits.elements = next.elements;
+      edits.groups = next.groups;
+
+      layers.forEach((l) => picker.closeFor(l));
+      edits.page = next.page;
+      if (next.page) {
+        layers.splice(0, layers.length, ...next.page.map((l) => Object.assign({}, l)));
+        paint();
+      } else {
+        layers.splice(0, layers.length, Object.assign({}, pageOwn.layer));
+        pageEl.style.backgroundColor = pageOwn.color;
+        pageEl.style.backgroundImage = pageOwn.image;
+      }
+      drawRows();
+
+      guidePop.close();
+      edits.guides.splice(0, edits.guides.length, ...next.guides);
+      drawGuides();
+      if (selection) selection.reshow();
+    };
+
+    root.append(tabs, page, guideSec, chosen);
+    // After the panel, so the overlay hides with it (.ft-inspector[hidden] ~ .ft-guides).
+    document.body.append(root, overlay);
     return root;
   }
 
@@ -2461,7 +3457,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function onKey(e) {
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || typing(e.target)) return;
       if (String(e.key).toLowerCase() !== hotkey) return;
-      showPanel();
+      toggleUi();
+      // The controls panel (when this call has controls) shows with the toolbar; minimized, it hides with
+      // the inspector (CSS).
+      if (keys.length) panel.hidden = toolbar.hidden;
     }
     window.addEventListener("keydown", onKey);
 
@@ -2477,15 +3476,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const first = !inspector;
       if (first) {
         inspector = makeInspector();
-        toolbar = makeToolbar();
+        toolbar = makeToolbar(hotkey);
         selection = makeSelection();
         // open: false starts it hidden, for a page where something else (a button, the hotkey) opens it.
         if (opts.open === false) showPanel(false);
       }
-      // The controls panel stays off the page for now; the inspector is built up one piece at a time.
+      // The controls panel: on the page when the call has controls (the inspector alone otherwise), shown and
+      // hidden with the inspector (the hotkey, open: false).
+      if (keys.length) {
+        document.body.appendChild(panel);
+        panel.hidden = inspector.hidden;
+      }
       apply();
       // After apply, so the page's own onChange doesn't write over a saved edit.
-      if (first) restoreEdits();
+      if (first) {
+        restoreEdits();
+        startHistory();
+      }
     }
     // Called from <head>, the body isn't there yet; wait for it.
     if (document.body) mount();
@@ -2504,11 +3511,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (!inspector) return;
     inspector.hidden = show === undefined ? !inspector.hidden : !show;
     toolbar.hidden = inspector.hidden;
+    minimized = false;
     selection.sync();
     hideTip();
+    drawUiButton();
   }
 
   // finetune.toggle() for a page's own button; finetune.toggle(false) hides it, say when the page goes away.
   finetune.toggle = showPanel;
+  // finetune.reset() for a page's own Reset button: the same as the panel's.
+  finetune.reset = resetEdits;
   window.finetune = finetune;
 })();
