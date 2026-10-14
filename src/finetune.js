@@ -354,7 +354,7 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 
 .ft-toolbar {
   position: fixed; top: 12px; left: 12px; z-index: 2147483646;
-  display: flex; flex-direction: column; gap: 4px; padding: 8px;
+  display: flex; flex-direction: column; gap: 12px; padding: 12px;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
@@ -363,11 +363,11 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-toolbar[hidden] { display: none; }
 .ft-toolbar, .ft-toolbar * { box-sizing: border-box; }
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
-/* Figma's left rail: a 32 box with the icon, its name 4 under it (11px), 56 from one tool to the next; hover greys
-   the box, and nothing stays picked (they're actions). The icons show at the rail's size, the 24 frame drawn at 32, so
-   their 12px glyphs read at Figma's 16. */
-.ft-tool { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 32px; }
-.ft-tool-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
+/* Figma's left rail (measured off it): a 40 box with the icon, its name 4 under it (11px), 72 from one tool to the
+   next, 12 in from the rail's edges; hover greys the box, and nothing stays picked (they're actions). The icons show at
+   the rail's size, the 24 frame drawn at 32, so their 12px glyphs read at Figma's 16. */
+.ft-tool { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 40px; }
+.ft-tool-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; }
 .ft-tool:hover .ft-tool-icon { background: var(--ft-i-hover); }
 .ft-tool-icon svg { display: block; width: 32px; height: 32px; }
 .ft-tool-label { white-space: nowrap; }
