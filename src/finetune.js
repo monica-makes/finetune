@@ -18,7 +18,8 @@
      .ft-panel: the controls panel, still a plain placeholder.
      ========================================================================== */
   const PANEL_LOOK = `
-.ft-inspector, .ft-toolbar {
+/* The panel's colours, on everything of finetune's own that sits on the page, so none takes the page's colours. */
+.ft-inspector, .ft-toolbar, .ft-ui {
   --ft-i-bg: #F8F8F8;
   --ft-i-border: #E3E3E3;
   --ft-i-line: #E6E6E6;
@@ -44,7 +45,46 @@
   font: inherit; letter-spacing: inherit; color: inherit;
   margin: 0; padding: 0; border: 0; background: none; outline: none;
 }
-.ft-tabs { display: flex; gap: 4px; padding: 12px 8px 8px 12px; border-bottom: 1px solid var(--ft-i-line); }
+/* The panel's top row: Undo, Redo and Reset at the left, Hide UI over its right end. */
+.ft-top {
+  position: sticky; top: 0; z-index: 1; display: flex; padding: 12px 8px 8px;
+  background: var(--ft-i-bg); border-bottom: 1px solid var(--ft-i-line);
+}
+/* Hide UI sits over the right end of the panel's top row (the panel is 12 from the right with a 1px border; the
+   row is 12 from the top and 8 in), outside the panel so it stays when the panel goes. The -5px margin under
+   the 4px padding and 1px border keeps the icon where it is when the box shows. */
+.ft-ui {
+  position: fixed; top: 25px; right: 21px; z-index: 2147483646; display: flex; margin: -5px; padding: 4px;
+  border: 1px solid transparent; border-radius: 8px; color: var(--ft-i-text); cursor: default; user-select: none;
+}
+.ft-ui[hidden] { display: none; }
+.ft-ui :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; font: inherit; }
+.ft-ui[data-min] { background: var(--ft-i-bg); border-color: var(--ft-i-border); }
+.ft-actions { display: flex; }
+/* Every floating box (the panel, the toolbar, this bar, popovers, menus, the toast) has the panel's 8px corners;
+   a cell inside one sits 4px in, so its corners are 4px.
+   Design and Motion, at the bottom of the window like Figma's toolbar: one bar of cells, each with its icon
+   and its name; the chosen one sits in a cell of its own with the blue icon. It takes the page's theme:
+   light on a light page, Figma's dark on a dark one (data-theme, set from the page's background). */
+.ft-modes {
+  --ft-m-bg: #FFFFFF; --ft-m-text: rgba(0, 0, 0, 0.7); --ft-m-on: rgba(0, 0, 0, 0.9); --ft-m-cell: rgba(0, 0, 0, 0.06);
+  --ft-m-hover: rgba(0, 0, 0, 0.04); --ft-m-icon: #0D99FF;
+  position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px;
+  border-radius: 8px; background: var(--ft-m-bg);
+  box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.ft-modes[data-theme="dark"] {
+  --ft-m-bg: #2C2C2C; --ft-m-text: rgba(255, 255, 255, 0.8); --ft-m-on: #FFFFFF; --ft-m-cell: #1E1E1E;
+  --ft-m-hover: rgba(255, 255, 255, 0.06); --ft-m-icon: #7CC4F8;
+}
+.ft-modes-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 6px; border-radius: 4px;
+  color: var(--ft-m-text);
+}
+.ft-modes-btn svg { display: block; width: 20px; height: 20px; }
+.ft-modes-btn:hover { background: var(--ft-m-hover); }
+.ft-modes-btn[aria-selected="true"] { background: var(--ft-m-cell); color: var(--ft-m-on); }
+.ft-modes-btn[aria-selected="true"] svg { color: var(--ft-m-icon); }
 .ft-icon-btn:disabled { opacity: 0.4; pointer-events: none; }
 .ft-toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 2147483647; transform: translateX(-50%);
@@ -53,9 +93,11 @@
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .ft-toast[hidden] { display: none; }
-.ft-tabs-end { display: flex; margin-left: auto; }
-.ft-tab { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 5px; font-weight: 550; }
-.ft-tab[aria-selected="true"] { background: var(--ft-i-field); }
+.ft-pane[hidden] { display: none; }
+/* The last divider would sit on the panel's own border and read as a double line. Motion is empty, so
+   there the top row's divider is the last one. */
+.ft-pane > .ft-section:last-child, .ft-chosen > .ft-section:last-child { border-bottom: 0; }
+.ft-inspector[data-tab="motion"] .ft-top { border-bottom: 0; }
 .ft-section { padding: 0 8px 12px 16px; border-bottom: 1px solid var(--ft-i-line); }
 .ft-section-head { display: flex; align-items: center; justify-content: space-between; height: 40px; font-weight: 550; }
 .ft-fills { display: flex; flex-direction: column; gap: 8px; }
@@ -90,14 +132,28 @@
 .ft-fill:has(input:focus) .ft-fill-alpha { border-left-color: var(--ft-i-focus); }
 .ft-pct { color: var(--ft-i-text-2); }
 .ft-fill-row.is-hidden .ft-fill-color, .ft-fill-row.is-hidden .ft-fill-alpha > * { opacity: 0.4; }
+/* An effect's row: its settings, its type, then remove and the eye, as in Figma. */
+.ft-fx-type { flex: 1; }
+.ft-fx-row.is-hidden > .ft-icon-btn, .ft-fx-row.is-hidden .ft-fx-type { opacity: 0.4; }
+.ft-stroke { display: flex; flex-direction: column; gap: 8px; }
+/* The layer's kind, read from the code (Group, Text, Image, Vector, SVG, Box), and its element, as Figma's
+   header names the layer; Figma's tools on that line are left out. */
+.ft-kind { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 12px 8px 12px 16px; border-bottom: 1px solid var(--ft-i-line); }
+.ft-kind-name { flex: none; font-weight: 550; }
+.ft-kind-el { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
+/* A section with nothing under its head (Fill, Stroke or Effects before the +) is just the head, as in Figma. */
+.ft-section:has(> .ft-section-head + :is(.ft-fills, .ft-stroke):empty:last-child) { padding-bottom: 0; }
+.ft-section > :is(.ft-fills, .ft-stroke):empty { display: none; }
 
 /* Inside the panel, overlays stack in a set order over its rows (a faded row, at 40% opacity, is a layer
    of its own and would otherwise paint over them): popovers, then the color picker opened from one, then menus. */
 .ft-pop {
-  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 13px;
+  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 8px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-pop[hidden] { display: none; }
+/* A part a popover leaves out (a box's Adjustments have no fit or preview); its own display would show it. */
+.ft-pop-body > [hidden] { display: none !important; }
 .ft-pop.ft-picker-pop { z-index: 3; }
 .ft-pop-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -143,7 +199,7 @@
 .ft-mode { flex: none; min-width: 54px; }
 .ft-menu {
   position: fixed; z-index: 4; min-width: 104px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 8px;
-  background: #1E1E1E; color: #FFFFFF; border-radius: 13px;
+  background: #1E1E1E; color: #FFFFFF; border-radius: 8px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-menu[hidden] { display: none; }
@@ -182,13 +238,11 @@
 
 .ft-toolbar {
   position: fixed; top: 12px; left: 12px; z-index: 2147483646;
-  display: flex; flex-direction: column; gap: 8px; padding: 8px;
+  display: flex; flex-direction: column; padding: 8px;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
 }
 .ft-toolbar[hidden] { display: none; }
-/* Hide UI folds the toolbar down to its own button, the one that brings everything back. */
-.ft-toolbar[data-min] .ft-tool:not(:last-child) { display: none; }
 .ft-toolbar, .ft-toolbar * { box-sizing: border-box; }
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
 .ft-tool { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
@@ -208,12 +262,14 @@
 .ft-num-field:has(input:focus) { box-shadow: inset 0 0 0 1px var(--ft-i-focus); }
 .ft-field-icon { display: grid; place-items: center; flex: none; width: 24px; height: 24px; color: var(--ft-i-text-2); }
 .ft-field-icon svg { display: block; width: 12px; height: 12px; }
+.ft-field-letter { color: var(--ft-i-text); }
 .ft-num-input { flex: 1; min-width: 0; height: 24px; padding-left: 8px; }
 .ft-field-icon + .ft-num-input { padding-left: 0; }
 .ft-field-caret { display: grid; place-items: center; flex: none; width: 20px; height: 24px; color: var(--ft-i-text-2); }
 .ft-field-caret svg { display: block; width: 10px; height: 10px; }
 .ft-labeled { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.ft-field-label { color: var(--ft-i-text-2); }
+/* Figma's property labels are smaller than its values: Inter at 9.5px, measured off a Figma screenshot. */
+.ft-field-label { color: var(--ft-i-text-2); font-size: 9.5px; }
 .ft-type-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* Figma's segmented boxes: each button its own grey cell, 1px apart so the panel shows between them, the
    group's outer corners rounded. Hover darkens a cell; the chosen one is white. */
@@ -273,16 +329,24 @@
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 .ft-img-preview img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.ft-img-preview::after {
-  content: "Choose image"; position: absolute; inset: 0; display: grid; place-items: center;
-  background: rgba(0, 0, 0, 0.4); color: #FFFFFF; opacity: 0; transition: opacity 120ms;
+/* Replace image, a dark button over the middle of the preview (after Figma's "Make an image"); the whole
+   preview is the button, so a click anywhere on it picks a file. */
+.ft-img-replace {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center;
+  height: 32px; padding: 0 12px; border-radius: 8px; white-space: nowrap; pointer-events: none;
+  background: rgba(44, 44, 44, 0.9); color: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
-.ft-img-preview:hover::after { opacity: 1; }
+.ft-img-preview:hover .ft-img-replace { background: rgba(30, 30, 30, 0.95); }
 .ft-adjust { display: grid; grid-template-columns: 76px 1fr; align-items: center; row-gap: 12px; }
 .ft-adjust-label { color: var(--ft-i-text-2); }
 .ft-adj-track {
   position: relative; height: 16px; border-radius: 8px; touch-action: none;
   background: var(--ft-i-field); box-shadow: inset 0 0 0 1px var(--ft-i-line);
+}
+/* Off zero, the track fills in from the middle to the knob, as in Figma. */
+.ft-adj-fill {
+  position: absolute; top: 0; bottom: 0; pointer-events: none; background: var(--ft-i-focus);
+  left: calc(8px + var(--ft-lo, 0.5) * (100% - 16px)); width: calc(var(--ft-span, 0) * (100% - 16px));
 }
 .ft-adj-knob {
   position: absolute; top: 50%; left: calc(8px + var(--ft-x, 0.5) * (100% - 16px));
@@ -308,6 +372,12 @@
 .ft-sw { left: -4px; bottom: -4px; }
 .ft-se { right: -4px; bottom: -4px; }
 .ft-sel-box.is-editing .ft-handle { display: none; }
+/* A corner drags to resize: a 15px target around the 7px square. Only one layer that isn't turned resizes. */
+.ft-handle { pointer-events: auto; }
+.ft-handle::before { content: ""; position: absolute; inset: -4px; }
+html.ft-moving .ft-sel-box .ft-nw, html.ft-moving .ft-sel-box .ft-se { cursor: nwse-resize; }
+html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: nesw-resize; }
+.ft-sel-box.no-resize .ft-handle { display: none; }
 .ft-size-label {
   position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%);
   padding: 0 4px; border-radius: 3px; background: #0D99FF; color: #FFFFFF; white-space: nowrap;
@@ -457,12 +527,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
   }
 
-  // Phosphor icons (MIT), regular weight, inlined so the file stays dependency-free. The toolbar's three
-  // (copy, floppyDisk, sidebarSimple) are Light, so at 20px their line (0.94px) weighs what Regular's
-  // does at the panel's 16px (1px). The flips and the
+  // Phosphor icons (MIT), regular weight, inlined so the file stays dependency-free. The toolbar's two
+  // (copy, floppyDisk) are Light, so at 20px their line (0.94px) weighs what Regular's does at the
+  // panel's 16px (1px). Undo and redo sit 8 units low (half a pixel at 16px): their ink spans 32 to 208,
+  // so drawn as is they ride above the middle of the button. The flips and the
   // guide alignments are Lucide (ISC, lucide.dev, v1.56.0) at stroke 1.5, a weight under Lucide's default;
   // the alignments' bars are filled with no stroke around them (her call), their alignment line stays a stroke.
-  // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round.
+  // The selection's top / middle / bottom (alignTop, alignVCenter, alignBottom) are drawn the same way.
+  // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round. Rotate 90°
+  // is Lucide's rotate-cw-square too, the nearest to Figma's turned square.
   const ICON = {
     angle: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M96,72a8,8,0,0,1,8-8A104.11,104.11,0,0,1,208,168a8,8,0,0,1-16,0,88.1,88.1,0,0,0-88-88A8,8,0,0,1,96,72ZM240,192H80V32a8,8,0,0,0-16,0V64H32a8,8,0,0,0,0,16H64V200a8,8,0,0,0,8,8H240a8,8,0,0,0,0-16Z"/></svg>',
     arrowClockwise: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>',
@@ -472,12 +545,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     frameCorners: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,80v32a8,8,0,0,1-16,0V88H160a8,8,0,0,1,0-16h32A8,8,0,0,1,200,80ZM96,168H72V144a8,8,0,0,0-16,0v32a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16ZM232,56V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></svg>',
     linkSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,90.34a8,8,0,0,1,0,11.32l-64,64a8,8,0,0,1-11.32-11.32l64-64A8,8,0,0,1,165.66,90.34ZM215.6,40.4a56,56,0,0,0-79.2,0L106.34,70.45a8,8,0,0,0,11.32,11.32l30.06-30a40,40,0,0,1,56.57,56.56l-30.07,30.06a8,8,0,0,0,11.31,11.32L215.6,119.6a56,56,0,0,0,0-79.2ZM138.34,174.22l-30.06,30.06a40,40,0,1,1-56.56-56.57l30.05-30.05a8,8,0,0,0-11.32-11.32L40.4,136.4a56,56,0,0,0,79.2,79.2l30.06-30.07a8,8,0,0,0-11.32-11.31Z"/></svg>',
     floppyDisk: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M217.9,73.42,182.58,38.1a13.9,13.9,0,0,0-9.89-4.1H48A14,14,0,0,0,34,48V208a14,14,0,0,0,14,14H208a14,14,0,0,0,14-14V83.31A13.9,13.9,0,0,0,217.9,73.42ZM170,210H86V152a2,2,0,0,1,2-2h80a2,2,0,0,1,2,2Zm40-2a2,2,0,0,1-2,2H182V152a14,14,0,0,0-14-14H88a14,14,0,0,0-14,14v58H48a2,2,0,0,1-2-2V48a2,2,0,0,1,2-2H172.69a2,2,0,0,1,1.41.58L209.42,81.9a2,2,0,0,1,.58,1.41ZM158,72a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h56A6,6,0,0,1,158,72Z"/></svg>',
-    undo: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,85.66,45.66L51.31,80H168A64.07,64.07,0,0,1,232,144Z"/></svg>',
-    redo: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M170.34,130.34,204.69,96H88a48,48,0,0,0,0,96h88a8,8,0,0,1,0,16H88A64,64,0,0,1,88,80H204.69L170.34,45.66a8,8,0,0,1,11.32-11.32l48,48a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32-11.32Z"/></svg>',
+    undo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,85.66,45.66L51.31,80H168A64.07,64.07,0,0,1,232,144Z"/></svg>',
+    redo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M170.34,130.34,204.69,96H88a48,48,0,0,0,0,96h88a8,8,0,0,1,0,16H88A64,64,0,0,1,88,80H204.69L170.34,45.66a8,8,0,0,1,11.32-11.32l48,48a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32-11.32Z"/></svg>',
     warning: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></svg>',
     trash: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>',
     bookmark: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z"/></svg>',
-    sidebarSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,42H40A14,14,0,0,0,26,56V200a14,14,0,0,0,14,14H216a14,14,0,0,0,14-14V56A14,14,0,0,0,216,42ZM38,200V56a2,2,0,0,1,2-2H82V202H40A2,2,0,0,1,38,200Zm180,0a2,2,0,0,1-2,2H94V54H216a2,2,0,0,1,2,2Z"/></svg>',
+    sun: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>',
+    slidersHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z"/></svg>',
+    pencilRuler: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H160V176h24a8,8,0,0,0,0-16H160V136h24a8,8,0,0,0,0-16H160V96h24a8,8,0,0,0,0-16H160V48h48V208ZM77.66,26.34a8,8,0,0,0-11.32,0l-32,32A8,8,0,0,0,32,64V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V64a8,8,0,0,0-2.34-5.66ZM48,176V80H64v96ZM80,80H96v96H80ZM72,43.31,92.69,64H51.31ZM48,208V192H96v16Z"/></svg>',
+    play: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>',
+    shapes: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M71.59,61.47a8,8,0,0,0-15.18,0l-40,120A8,8,0,0,0,24,192h80a8,8,0,0,0,7.59-10.53ZM35.1,176,64,89.3,92.9,176ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm-88,0a36,36,0,1,1,36,36A36,36,0,0,1,120,76Zm104,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Zm-8,56H144V160h72Z"/></svg>',
+    rows: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,136H48a16,16,0,0,0-16,16v40a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V152A16,16,0,0,0,208,136Zm0,56H48V152H208v40Zm0-144H48A16,16,0,0,0,32,64v40a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V64A16,16,0,0,0,208,48Zm0,56H48V64H208v40Z"/></svg>',
+    columns: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M104,32H64A16,16,0,0,0,48,48V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32Zm0,176H64V48h40ZM192,32H152a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,192,32Zm0,176H152V48h40Z"/></svg>',
+    gridFour: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,40H56A16,16,0,0,0,40,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,80H136V56h64ZM120,56v64H56V56ZM56,136h64v64H56Zm144,64H136V136h64v64Z"/></svg>',
+    sidebarSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H80V200H40ZM216,200H96V56H216V200Z"/></svg>',
     copy: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,34H88a6,6,0,0,0-6,6V82H40a6,6,0,0,0-6,6V216a6,6,0,0,0,6,6H168a6,6,0,0,0,6-6V174h42a6,6,0,0,0,6-6V40A6,6,0,0,0,216,34ZM162,210H46V94H162Zm48-48H174V88a6,6,0,0,0-6-6H94V46H210Z"/></svg>',
     textAlignLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64Zm8,48H168a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm176,24H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-48,40H40a8,8,0,0,0,0,16H168a8,8,0,0,0,0-16Z"/></svg>',
     textAlignCenter: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM64,96a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Zm152,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-24,40H64a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Z"/></svg>',
@@ -501,9 +582,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     guideStyles: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M80,40a40,40,0,1,0,40,40A40,40,0,0,0,80,40Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,104Zm96,16a40,40,0,1,0-40-40A40,40,0,0,0,176,120Zm0-64a24,24,0,1,1-24,24A24,24,0,0,1,176,56ZM80,136a40,40,0,1,0,40,40A40,40,0,0,0,80,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,200Zm96-64a40,40,0,1,0,40,40A40,40,0,0,0,176,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,176,200Z"/></svg>',
     flipHorizontal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14v2"/><path d="M12 20v2"/><path d="M12 2v2"/><path d="M12 8v2"/><path d="M20.288 16.703A1 1 0 0022 16V8a1 1 0 00-1.712-.703l-3.99 3.991a1 1 0 00-.001 1.424z"/><path d="M3.712 16.703A1 1 0 012 16V8a1 1 0 011.712-.703l3.99 3.991a1 1 0 01.001 1.424z"/></svg>',
     flipVertical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="M4 12H2"/><path d="M7.298 20.288A1 1 0 008 22h8a1 1 0 00.703-1.712l-3.991-3.99a1 1 0 00-1.424-.001z"/><path d="M7.298 3.712A1 1 0 018 2h8a1 1 0 01.703 1.712l-3.991 3.99a1 1 0 01-1.424.001z"/></svg>',
+    rotateSquare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5H6a2 2 0 0 0-2 2v3"/><path d="m9 8 3-3-3-3"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>',
     alignLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="9" height="6" x="6" y="14" rx="2"/><rect fill="currentColor" stroke="none" width="16" height="6" x="6" y="4" rx="2"/><path d="M2 2v20"/></svg>',
     alignHCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path fill="currentColor" stroke="none" d="M8 10H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h4"/><path fill="currentColor" stroke="none" d="M16 10h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4"/><path fill="currentColor" stroke="none" d="M8 20H7a2 2 0 0 1-2-2v-2c0-1.1.9-2 2-2h1"/><path fill="currentColor" stroke="none" d="M16 14h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/></svg>',
     alignRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="16" height="6" x="2" y="4" rx="2"/><rect fill="currentColor" stroke="none" width="9" height="6" x="9" y="14" rx="2"/><path d="M22 22V2"/></svg>',
+    alignTop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="6" height="16" x="4" y="6" rx="2"/><rect fill="currentColor" stroke="none" width="6" height="9" x="14" y="6" rx="2"/><path d="M22 2H2"/></svg>',
+    alignVCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20"/><path fill="currentColor" stroke="none" d="M10 16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/><path fill="currentColor" stroke="none" d="M10 8V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"/><path fill="currentColor" stroke="none" d="M20 16v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1"/><path fill="currentColor" stroke="none" d="M14 8V7c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v1"/></svg>',
+    alignBottom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="6" height="16" x="4" y="2" rx="2"/><rect fill="currentColor" stroke="none" width="6" height="9" x="14" y="9" rx="2"/><path d="M22 22H2"/></svg>',
   };
 
 
@@ -594,7 +679,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Escape puts the old value back, and a click selects the whole field, as in Figma.
   // No onRemove (the base layer): an empty slot keeps the rows lined up.
   // The swatch opens the inspector's color picker for this layer.
-  function fillRow(layer, onChange, onRemove, picker) {
+  // opts: noun names the row in its tips ("fill", "stroke"); noEye leaves out the eye, for a color that
+  // belongs to something with its own (an effect's).
+  function fillRow(layer, onChange, onRemove, picker, opts) {
+    const noun = (opts && opts.noun) || "fill";
     const row = el("div", "ft-fill-row");
     const field = el("div", "ft-fill");
     const color = el("div", "ft-fill-color");
@@ -613,7 +701,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const alpha = el("input", "ft-alpha");
     alpha.type = "text";
     alpha.inputMode = "numeric";
-    const eye = iconButton(ICON.eye, "Hide fill", () => {
+    const eye = iconButton(ICON.eye, "Hide " + noun, () => {
       layer.visible = !layer.visible;
       draw();
       onChange();
@@ -626,7 +714,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (force || document.activeElement !== alpha) alpha.value = String(layer.opacity);
       row.classList.toggle("is-hidden", !layer.visible);
       eye.innerHTML = layer.visible ? ICON.eye : ICON.eyeClosed;
-      const tip = layer.visible ? "Hide fill" : "Show fill";
+      const tip = (layer.visible ? "Hide " : "Show ") + noun;
       eye.setAttribute("data-ft-tip", tip);
       eye.setAttribute("aria-label", tip);
     }
@@ -671,11 +759,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const actions = el("div", "ft-fill-actions");
     // Eye stays pinned to the right edge (under the + ); remove sits left of it.
     if (onRemove) {
-      const minus = iconButton(ICON.minus, "Remove fill", () => onRemove(layer, row));
+      const minus = iconButton(ICON.minus, "Remove " + noun, () => onRemove(layer, row));
       minus.classList.add("ft-fill-remove");
       actions.append(minus);
     }
-    actions.append(eye);
+    if (!(opts && opts.noEye)) actions.append(eye);
     row.append(field, actions);
     draw(true);
     return row;
@@ -1072,13 +1160,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let refreshPanel = () => {};
 
   // Left toolbar, after pen.dev's: Copy the changes for the bake skill, Save them so a reload keeps
-  // them, Hide UI. They're actions, not tools, so none stays pressed. (Reset sits in the panel's header.)
+  // them. They're actions, not tools, so neither stays pressed. (Reset sits in the panel's top row, Hide UI
+  // at its right.)
   function makeToolbar(hotkey) {
     const bar = el("div", "ft-toolbar");
     const actions = [
       ["copy", "Copy changes", copyChanges],
       ["floppyDisk", "Save changes in this browser", saveNow],
-      ["sidebarSimple", "Hide UI", toggleUi],
     ].map(([icon, name, onClick]) => {
       const b = button("ft-tool", null, onClick);
       b.innerHTML = ICON[icon];
@@ -1089,29 +1177,35 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return b;
     });
     bar.append(...actions);
-    uiButton = actions[2];
-    uiButton.setAttribute("data-ft-tip-key", hotkey.toUpperCase());
     document.body.appendChild(bar);
+    uiBox = el("div", "ft-ui");
+    uiButton = iconButton(ICON.sidebarSimple, "Hide UI", toggleUi);
+    uiButton.setAttribute("data-ft-tip-key", hotkey.toUpperCase());
+    uiBox.appendChild(uiButton);
+    document.body.appendChild(uiBox);
     return bar;
   }
 
-  // Hide UI, as Figma's Minimize UI: the panel, the grid, the selection and the toolbar's other buttons go
-  // at once, leaving only this button to bring them back. The hotkey (T), ⌘\ and ⇧⌘\ (Figma's Show/Hide UI and Minimize UI; Ctrl on Windows) do
-  // the same. From fully hidden (open: false, finetune.toggle(false)) it shows everything.
+  // Hide UI, as Figma's Minimize UI: the panel, the toolbar, the grid and the selection go at once, leaving
+  // only this button, in a small box where it sat, to bring them back. The hotkey (T), ⌘\ and ⇧⌘\ (Figma's
+  // Show/Hide UI and Minimize UI; Ctrl on Windows) do the same. From fully hidden (open: false,
+  // finetune.toggle(false)) it shows everything.
   let minimized = false;
   let uiButton = null;
+  let uiBox = null;
   function drawUiButton() {
     if (!uiButton) return;
     const name = minimized ? "Show UI" : "Hide UI";
     uiButton.setAttribute("data-ft-tip", name);
     uiButton.setAttribute("aria-label", name);
-    toolbar.toggleAttribute("data-min", minimized);
+    uiBox.toggleAttribute("data-min", minimized);
+    uiBox.hidden = inspector.hidden && !minimized;
   }
   function toggleUi() {
     if (!inspector) return;
-    if (inspector.hidden && toolbar.hidden) return showPanel(true);
+    if (inspector.hidden && !minimized) return showPanel(true);
     minimized = !minimized;
-    inspector.hidden = minimized;
+    inspector.hidden = toolbar.hidden = minimized;
     selection.sync();
     hideTip();
     drawUiButton();
@@ -1126,7 +1220,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const hasText = (e) => Array.from(e.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim());
   // [data-finetune-ui] marks a page's own controls (its nav, its buttons): never selected, and they keep
   // working while the inspector is open.
-  const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-tip, .ft-toast, [data-finetune-ui]");
+  const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-tip, .ft-toast, .ft-sel-box, .ft-hover-box, .ft-marquee, [data-finetune-ui]");
 
   // Figma's layout guide, columns: bands stretched between margins, or packed to a side (or the middle)
   // at a set width, an offset from that side.
@@ -1174,6 +1268,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Never written to disk.
   // Figma's image adjustments, -100 to 100 each; zero is untouched.
   const NO_ADJUST = { exposure: 0, contrast: 0, saturation: 0, temperature: 0, tint: 0, highlights: 0, shadows: 0 };
+  // Figma's Stroke and Effects. They're kept on the entry as the panel shows them (as adjust is) and written
+  // to the element as CSS: a stroke is an outline, which never moves the layout as a border would; the
+  // shadows are box-shadow, Layer blur is filter, Background blur is backdrop-filter. Blurs are Figma's
+  // numbers, twice the CSS blur radius.
+  const STROKE_AT = [["inside", "Inside"], ["center", "Center"], ["outside", "Outside"]];
+  const EFFECT_TYPES = [["inner", "Inner shadow"], ["drop", "Drop shadow"], ["layer", "Layer blur"], ["background", "Background blur"]];
+  const isShadow = (fx) => fx.type === "drop" || fx.type === "inner";
+  // Figma's new effect: a drop shadow, 0 4, blur 4, black at 25%.
+  const newEffect = () => ({ type: "drop", visible: true, x: 0, y: 4, blur: 4, spread: 0, hex: "000000", opacity: 25 });
   const EDITS_KEY = "finetune:edits:" + location.pathname;
   let edits = loadEdits();
 
@@ -1208,6 +1311,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           const adjust = Object.assign({}, NO_ADJUST);
           Object.keys(NO_ADJUST).forEach((k) => { if (isNum(e.adjust[k])) adjust[k] = e.adjust[k]; });
           entry.adjust = adjust;
+        }
+        const paint = (c) => !!c && /^[0-9A-F]{6}$/.test(c.hex) && isNum(c.opacity) && typeof c.visible === "boolean";
+        // null is a stroke she removed from the page's own.
+        if (e.stroke === null) entry.stroke = null;
+        else if (paint(e.stroke) && STROKE_AT.some(([at]) => at === e.stroke.position) && isNum(e.stroke.weight)) {
+          entry.stroke = { hex: e.stroke.hex, opacity: e.stroke.opacity, visible: e.stroke.visible, position: e.stroke.position, weight: e.stroke.weight };
+        }
+        if (Array.isArray(e.effects)) {
+          entry.effects = e.effects.filter((fx) => paint(fx) && EFFECT_TYPES.some(([t]) => t === fx.type)
+            && ["x", "y", "blur", "spread"].every((k) => isNum(fx[k])))
+            .map((fx) => ({ type: fx.type, visible: fx.visible, x: fx.x, y: fx.y, blur: fx.blur, spread: fx.spread, hex: fx.hex, opacity: fx.opacity }));
         }
         if (e.src && typeof e.src.name === "string" && /^data:image\//.test(e.src.data)) {
           entry.src = { name: e.src.name, data: e.src.data };
@@ -1326,7 +1440,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const sel = selectorFor(target);
     const entry = edits.elements[sel] || { styles: {} };
     change(entry);
-    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src) edits.elements[sel] = entry;
+    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects) edits.elements[sel] = entry;
     else delete edits.elements[sel];
     noteChange();
   }
@@ -1393,20 +1507,315 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   function setAdjust(target, a) {
-    const id = toneId(selectorFor(target));
-    setToneFilter(id, a);
-    setStyle(target, "filter", adjustFilter(id, a));
+    setToneFilter(toneId(selectorFor(target)), a);
     record(target, (entry) => {
       if (Object.keys(a).some((k) => a[k])) entry.adjust = Object.assign({}, a);
       else delete entry.adjust;
     });
+    writeFilter(target);
+  }
+
+  // What the page itself gives a property: the value under any edit (its own inline value, if it had one).
+  // read is the property to read back, when the one written is a shorthand.
+  function ownValue(t, prop, read) {
+    const o = originalOf(t);
+    const now = t.style.getPropertyValue(prop);
+    const orig = prop in o.styles ? o.styles[prop] : now;
+    const get = () => getComputedStyle(t).getPropertyValue(read || prop).trim();
+    if (orig === now) return get();
+    if (orig) t.style.setProperty(prop, orig);
+    else t.style.removeProperty(prop);
+    const v = get();
+    if (now) t.style.setProperty(prop, now);
+    else t.style.removeProperty(prop);
+    return v;
+  }
+
+  // Nothing to write hands the property back to the page, unless the page has one of its own: then it's
+  // switched off, so what she removed stays removed.
+  function setOrNone(t, prop, css) {
+    if (css) return setStyle(t, prop, css);
+    const own = ownValue(t, prop);
+    setStyle(t, prop, own && own !== "none" ? "none" : "");
+  }
+
+  const entryOf = (t) => edits.elements[selectorFor(t)];
+  const figmaBlur = (cssBlur) => Math.round(parseFloat(cssBlur) * 2 * 10) / 10;
+
+  // One filter carries the adjustments and Layer blur. Without either it goes back to the page's own,
+  // unless that one blurs and she's been editing the effects (she took its blur out).
+  function writeFilter(t) {
+    const sel = selectorFor(t);
+    const entry = edits.elements[sel];
+    const a = Object.assign({}, NO_ADJUST, entry && entry.adjust);
+    const on = ((entry && entry.effects) || []).filter((fx) => fx.visible);
+    // On anything SVG (the outer <svg> too) drop shadows are filter functions, so they follow the drawing's
+    // shape, not its box; they go before the blur, so the blur takes them with it.
+    const drops = t instanceof SVGElement ? on.filter((fx) => fx.type === "drop").map((fx) => "drop-shadow(" + fx.x + "px " + fx.y + "px " + fx.blur / 2 + "px " + rgba(fx) + ")") : [];
+    const blurs = on.filter((fx) => fx.type === "layer").map((fx) => "blur(" + fx.blur / 2 + "px)");
+    const css = [adjustFilter(toneId(sel), a)].concat(drops, blurs).filter(Boolean).join(" ");
+    if (css || !(entry && entry.effects) || !/blur\(|drop-shadow\(/.test(ownValue(t, "filter"))) setStyle(t, "filter", css);
+    else setStyle(t, "filter", "none");
+  }
+
+  // The stroke the panel shows: hers, or the page's own outline.
+  function strokeOf(t) {
+    const entry = entryOf(t);
+    if (entry && "stroke" in entry) return entry.stroke && Object.assign({}, entry.stroke);
+    if (inSvg(t)) {
+      const p = svgPaint(t, "stroke");
+      const w = parseFloat(getComputedStyle(t).strokeWidth) || 0;
+      return p.kind === "color" && w ? Object.assign(p.layer, { position: "center", weight: w }) : null;
+    }
+    const cs = getComputedStyle(t);
+    const w = parseFloat(cs.outlineWidth) || 0;
+    const c = cs.outlineStyle === "none" || !w ? null : toFill(cs.outlineColor);
+    if (!c) return null;
+    const off = parseFloat(cs.outlineOffset) || 0;
+    return Object.assign(c, { position: off <= -w + 0.01 ? "inside" : off < -0.01 ? "center" : "outside", weight: w });
+  }
+
+  function setStroke(t, st) {
+    if (inSvg(t)) {
+      const own = ownValue(t, "stroke");
+      record(t, (entry) => {
+        if (st) entry.stroke = Object.assign({}, st);
+        else if (own !== "none") entry.stroke = null;
+        else delete entry.stroke;
+      });
+      if (st) {
+        writeSvgPaint(t, "stroke", st);
+        setStyle(t, "stroke-width", st.weight + "px");
+      } else {
+        clearSvgPaint(t, "stroke");
+        setStyle(t, "stroke-width", "");
+      }
+      return;
+    }
+    const pageHas = ownValue(t, "outline", "outline-style") !== "none";
+    record(t, (entry) => {
+      if (st) entry.stroke = Object.assign({}, st);
+      else if (pageHas) entry.stroke = null;
+      else delete entry.stroke;
+    });
+    if (st && st.visible && st.weight > 0) {
+      const off = st.position === "inside" ? -st.weight : st.position === "center" ? -st.weight / 2 : 0;
+      setStyle(t, "outline", st.weight + "px solid " + rgba(st));
+      setStyle(t, "outline-offset", off ? off + "px" : "");
+    } else {
+      setStyle(t, "outline", pageHas ? "none" : "");
+      setStyle(t, "outline-offset", "");
+    }
+  }
+
+  // Top-level commas only: a color's own commas stay inside its parentheses.
+  function splitTop(v) {
+    const out = [];
+    let depth = 0;
+    let cur = "";
+    for (const ch of String(v || "")) {
+      if (ch === "(") depth++;
+      else if (ch === ")") depth--;
+      if (ch === "," && !depth) {
+        out.push(cur.trim());
+        cur = "";
+      } else cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+
+  // The effects the panel shows: hers, or the page's own shadows and blurs.
+  function effectsOf(t) {
+    const entry = entryOf(t);
+    if (entry && entry.effects) return entry.effects.map((fx) => Object.assign({}, fx));
+    const cs = getComputedStyle(t);
+    const out = [];
+    if (t instanceof SVGElement) {
+      // drop-shadow()'s blur reaches twice as far as box-shadow's, so Figma's number is double it.
+      (cs.filter.match(/drop-shadow\((?:[^()]|\([^()]*\))*\)/g) || []).forEach((one) => {
+        const c = toFill(one);
+        const n = (one.replace(/rgba?\([^)]*\)/g, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
+        if (c && n.length >= 2) out.push(Object.assign(newEffect(), { x: n[0], y: n[1], blur: figmaBlur(n[2] || 0), hex: c.hex, opacity: c.opacity }));
+      });
+      const blur = /(?:^|\s)blur\(([\d.]+)px\)/.exec(cs.filter);
+      if (blur) out.push(Object.assign(newEffect(), { type: "layer", blur: figmaBlur(blur[1]) }));
+      return out;
+    }
+    if (cs.boxShadow !== "none") {
+      splitTop(cs.boxShadow).forEach((one) => {
+        const c = toFill(one);
+        const n = (one.replace(/rgba?\([^)]*\)/g, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
+        if (!c || n.length < 2) return;
+        out.push(Object.assign(newEffect(), { type: /\binset\b/.test(one) ? "inner" : "drop", x: n[0], y: n[1], blur: n[2] || 0, spread: n[3] || 0, hex: c.hex, opacity: c.opacity }));
+      });
+    }
+    const layer = /blur\(([\d.]+)px\)/.exec(cs.filter);
+    if (layer) out.push(Object.assign(newEffect(), { type: "layer", blur: figmaBlur(layer[1]) }));
+    const back = /blur\(([\d.]+)px\)/.exec(cs.backdropFilter || cs.webkitBackdropFilter || "");
+    if (back) out.push(Object.assign(newEffect(), { type: "background", blur: figmaBlur(back[1]) }));
+    return out;
+  }
+
+  // The top row paints on top, as in Figma: the first shadow in box-shadow.
+  function setEffects(t, list) {
+    const svg = t instanceof SVGElement;
+    const pageHas = svg ? /blur\(|drop-shadow\(/.test(ownValue(t, "filter"))
+      : ownValue(t, "box-shadow") !== "none" || /blur\(/.test(ownValue(t, "filter")) || ownValue(t, "backdrop-filter") !== "none";
+    record(t, (entry) => {
+      if (list.length || pageHas) entry.effects = list.map((fx) => Object.assign({}, fx));
+      else delete entry.effects;
+    });
+    if (svg) return writeFilter(t);
+    const on = list.filter((fx) => fx.visible);
+    const shadows = on.filter(isShadow).map((fx) => (fx.type === "inner" ? "inset " : "") + fx.x + "px " + fx.y + "px " + fx.blur + "px " + fx.spread + "px " + rgba(fx));
+    setOrNone(t, "box-shadow", shadows.join(", "));
+    writeFilter(t);
+    const back = on.filter((fx) => fx.type === "background").map((fx) => "blur(" + fx.blur / 2 + "px)").join(" ");
+    // The prefixed one first, the standard one last: a build that merges the pair keeps the last.
+    setOrNone(t, "-webkit-backdrop-filter", back);
+    setOrNone(t, "backdrop-filter", back);
   }
 
   // Every style the panel changes goes through here, so it shows live and is remembered.
   // Inline text (a span) ignores translate, rotate, scale, width and height. Figma's text is a box, so
   // the first box edit makes it inline-block; that's recorded too, so it bakes with the edit.
   function boxed(target) {
+    // An image, a video or anything SVG already takes a move and a size as it is.
+    if (target instanceof SVGElement || /^(IMG|VIDEO|CANVAS|IFRAME|EMBED|OBJECT)$/.test(target.tagName)) return;
     if (getComputedStyle(target).display === "inline") setStyle(target, "display", "inline-block");
+  }
+
+  // What a layer is, read from the code, 1:1. Inside an <svg>, a shape (or a g of them) is a vector, and words
+  // are text; the <svg> itself sits on the page like a box. Everything else is a box (a group when it holds
+  // other elements), text, or an image.
+  const SHAPES = /^(path|rect|circle|ellipse|line|polyline|polygon|g|use)$/;
+  function outerSvg(t) {
+    let r = t && t.closest && t.closest("svg");
+    while (r && r.parentElement && r.parentElement.closest("svg")) r = r.parentElement.closest("svg");
+    return r || null;
+  }
+  const inSvg = (t) => t instanceof SVGElement && outerSvg(t) !== t;
+  const isSvgRoot = (t) => t instanceof SVGSVGElement && !inSvg(t);
+  // An icon set (Phosphor, Lucide) paints with currentColor, so its color is the <svg>'s CSS color.
+  const paintsWithColor = (svg) => [svg, ...svg.querySelectorAll("*")].some((e) => ["fill", "stroke"].some((p) =>
+    /currentcolor/i.test(e.getAttribute(p) || "") || /currentcolor/i.test(e.style.getPropertyValue(p))));
+  // A line icon (Lucide's kind) is drawn with strokes, whose weight it sets once on the <svg>.
+  const strokedIcon = (svg) => [...svg.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect")]
+    .some((e) => getComputedStyle(e).stroke !== "none" && parseFloat(getComputedStyle(e).strokeWidth) > 0);
+  const isVector = (t) => inSvg(t) && !hasText(t) && SHAPES.test(t.tagName);
+
+  // A move on screen, in the units a translate on t is counted in: px for the page, but inside an SVG the user
+  // units of its parent, which a viewBox can scale (a 256 viewBox drawn at 24px makes a unit about a tenth of a px).
+  function localDelta(t, dx, dy) {
+    const p = inSvg(t) && t.parentNode && t.parentNode.getScreenCTM ? t.parentNode.getScreenCTM() : null;
+    const det = p ? p.a * p.d - p.b * p.c : 0;
+    if (!det) return [dx, dy];
+    return [(p.d * dx - p.c * dy) / det, (-p.b * dx + p.a * dy) / det];
+  }
+
+  // A shape inside an SVG turns and flips around its own middle, as in Figma, not the SVG's corner.
+  function turnInPlace(t) {
+    if (!inSvg(t) || t.style.transformBox === "fill-box") return;
+    setStyle(t, "transform-box", "fill-box");
+    setStyle(t, "transform-origin", "center");
+  }
+
+  // The CSS width and height that give t this outer size: offsetWidth counts padding and border, and width
+  // doesn't, unless box-sizing is border-box.
+  function boxCss(t, w, h) {
+    const cs = getComputedStyle(t);
+    if (cs.boxSizing === "border-box") return [w, h];
+    const n = (k) => parseFloat(cs[k]) || 0;
+    return [
+      Math.max(0, w - n("paddingLeft") - n("paddingRight") - n("borderLeftWidth") - n("borderRightWidth")),
+      Math.max(0, h - n("paddingTop") - n("paddingBottom") - n("borderTopWidth") - n("borderBottomWidth")),
+    ];
+  }
+
+  // A layer's size before its own rotation, as Figma shows it: a vector's geometry, an element's box.
+  function sizeOf(t) {
+    if (isVector(t)) return vectorSize(t);
+    const r = t.getBoundingClientRect();
+    return { w: t.offsetWidth != null ? t.offsetWidth : r.width, h: t.offsetHeight != null ? t.offsetHeight : r.height };
+  }
+
+  // Sets that size as the code would: a vector's geometry, an element's width and height. null leaves one as is.
+  function setSize(t, w, h) {
+    if (isVector(t)) {
+      const now = vectorSize(t);
+      return setVectorSize(t, w != null ? w : now.w, h != null ? h : now.h);
+    }
+    boxed(t);
+    const [cw, ch] = boxCss(t, w || 0, h || 0);
+    if (w != null) setStyle(t, "width", Math.round(cw * 10) / 10 + "px");
+    if (h != null) setStyle(t, "height", Math.round(ch * 10) / 10 + "px");
+  }
+
+  // A vector's size on screen before its own rotation: its geometry through everything that draws it.
+  function vectorSize(t) {
+    const bb = t.getBBox();
+    const m = t.getScreenCTM();
+    const sx = (m && Math.hypot(m.a, m.b)) || 1;
+    const sy = (m && Math.hypot(m.c, m.d)) || 1;
+    return { w: bb.width * sx, h: bb.height * sy, sx, sy };
+  }
+
+  const round1 = (n) => Math.round(n * 10) / 10;
+  // A vector's new size on screen, written as the code would: a rect's width and height, a circle's r, an
+  // ellipse's rx and ry; any other shape scales, its stroke kept at its weight. Its top-left stays put.
+  function setVectorSize(t, w, h) {
+    const now = vectorSize(t);
+    if (!now.w || !now.h) return;
+    const before = t.getBoundingClientRect();
+    const tag = t.tagName.toLowerCase();
+    const uw = w / now.sx;
+    const uh = h / now.sy;
+    if (tag === "rect") {
+      setStyle(t, "width", round1(uw) + "px");
+      setStyle(t, "height", round1(uh) + "px");
+    } else if (tag === "circle") setStyle(t, "r", round1(Math.max(uw, uh) / 2) + "px");
+    else if (tag === "ellipse") {
+      setStyle(t, "rx", round1(uw / 2) + "px");
+      setStyle(t, "ry", round1(uh / 2) + "px");
+    } else {
+      const cs = getComputedStyle(t);
+      const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
+      const cx = sc[0];
+      const cy = sc.length > 1 ? sc[1] : sc[0];
+      turnInPlace(t);
+      if (tag !== "g" && tag !== "use") setStyle(t, "vector-effect", "non-scaling-stroke");
+      setStyle(t, "scale", Math.round(cx * (w / now.w) * 1000) / 1000 + " " + Math.round(cy * (h / now.h) * 1000) / 1000);
+    }
+    const after = t.getBoundingClientRect();
+    if (Math.abs(before.left - after.left) > 0.05 || Math.abs(before.top - after.top) > 0.05) nudge(t, before.left - after.left, before.top - after.top);
+  }
+
+  // An SVG paint (fill or stroke): a color, as the panel's layer (its -opacity folded in), "none", or a
+  // gradient or pattern from the code, which the panel shows but doesn't edit.
+  function svgPaint(t, prop) {
+    const cs = getComputedStyle(t);
+    const v = cs.getPropertyValue(prop).trim();
+    if (/^url\(/.test(v)) return { kind: "server" };
+    const c = v && v !== "none" ? toFill(v) : null;
+    if (!c) return { kind: "none" };
+    const o = parseFloat(cs.getPropertyValue(prop + "-opacity"));
+    if (isNum(o) && o < 1) c.opacity = Math.round(c.opacity * o);
+    return { kind: "color", layer: c };
+  }
+
+  // A paint shown is its color (its -opacity back to 1 if the page set one, or the two would multiply); a
+  // hidden one is transparent, so the shape can still be clicked.
+  function writeSvgPaint(t, prop, layer) {
+    setStyle(t, prop, layer.visible ? rgba(layer) : "transparent");
+    const own = parseFloat(ownValue(t, prop + "-opacity"));
+    setStyle(t, prop + "-opacity", isNum(own) && own !== 1 ? "1" : "");
+  }
+
+  // Removing a paint: none, unless the page's own is already none.
+  function clearSvgPaint(t, prop) {
+    setStyle(t, prop, ownValue(t, prop) === "none" ? "" : "none");
+    setStyle(t, prop + "-opacity", "");
   }
 
   function setStyle(target, prop, value) {
@@ -1477,7 +1886,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const parts = Object.keys(e.styles).map((p) => p + ": " + e.styles[p]);
       if (e.html != null) parts.push("text: " + e.html);
       if (e.src) parts.push('src: new image "' + e.src.name + '", chosen from her computer');
-      lines.push([sel, parts.join("; ")]);
+      if (parts.length) lines.push([sel, parts.join("; ")]);
       // The SVG filter its url() points at, for the bake to put in the page.
       if (e.adjust && hasTone(e.adjust)) lines.push([sel + " svg", toneMarkup(toneId(sel), e.adjust)]);
     });
@@ -1542,11 +1951,45 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     let inside = null;
     let editing = null;
     let before = "";
+    // While layers are being dragged, hover outlines stay off.
+    let moving = false;
 
     const active = () => !!inspector && !inspector.hidden;
     // The page itself (the body, or the wrapper that paints the page) is the canvas, as in Figma: clicking
     // it selects nothing and shows the Page panel.
     const pickable = (t) => (t && t !== document.body && t !== document.documentElement && t !== pageEl && !isUi(t) ? t : null);
+
+    // Groups are the code's own containers, 1:1, so a page keeps the structure its code has. A click picks the
+    // outermost layer under the pointer below the level she's in: the page, until she double-clicks into a
+    // group (scope). Wrappers that only hold the page (as big as the window, or display: contents) are passed
+    // through, as Figma passes through a top-level frame. Double-click goes one level in, ⌘-click (Ctrl) picks
+    // the deepest layer, Escape steps back out.
+    let scope = null;
+    const passThrough = (e) => {
+      if (e === pageEl) return true;
+      if (getComputedStyle(e).display === "contents") return true;
+      const r = e.getBoundingClientRect();
+      return r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1;
+    };
+    // The layers from the page down to t, outermost first, wrappers that only hold the page left out.
+    function levelOf(t) {
+      const chain = [];
+      for (let e = t; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+        if (e === t || !passThrough(e)) chain.unshift(e);
+      }
+      return chain;
+    }
+    // What a click on target picks, and the level that leaves her in.
+    function levelPick(target, deep) {
+      const t = pickable(target);
+      if (!t) return { pick: null, scope: null };
+      const chain = levelOf(t);
+      const i = scope ? chain.indexOf(scope) : -1;
+      if (deep) return { pick: t, scope: chain[chain.length - 2] || null };
+      if (i < 0) return { pick: chain[0], scope: null };
+      if (chain[i + 1]) return { pick: chain[i + 1], scope };
+      return { pick: t, scope: chain[i - 1] || null };
+    }
     // A click picks a layer's whole group, unless she's inside that group.
     function unitOf(t) {
       const g = t && groupOf(t);
@@ -1561,7 +2004,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       b.style.height = r.height + "px";
     }
 
+    // One layer, not turned, not words inside an SVG: anything else hides the corners (her call: leave out
+    // what would be finicky).
+    function resizable(t) {
+      if (!t || editing || (inSvg(t) && !isVector(t))) return false;
+      const cs = getComputedStyle(t);
+      if (cs.rotate !== "none" && parseFloat(cs.rotate)) return false;
+      const m = /matrix\(([^)]+)\)/.exec(cs.transform);
+      if (m) {
+        const [, b, c] = m[1].split(",").map(parseFloat);
+        if (Math.abs(b) > 1e-6 || Math.abs(c) > 1e-6) return false;
+      }
+      return true;
+    }
+
     function place() {
+      selBox.classList.toggle("no-resize", !(selected && resizable(selected)));
       if (selected) {
         frameRect(selBox, selected.getBoundingClientRect());
         // offsetWidth is the size before any rotation, as Figma shows it; SVG elements have none.
@@ -1656,6 +2114,95 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.addEventListener("mouseup", up, true);
     }
 
+    // Figma's move: a press on a layer that turns into a drag moves the whole selection with the pointer,
+    // as a translate on each layer (a layer inside another selected one rides along with it). The drag is
+    // one undo step. onClick runs instead when the press ends without a drag.
+    function startMove(e, onClick) {
+      const x0 = e.clientX;
+      const y0 = e.clientY;
+      let list = null;
+      let starts = null;
+      const move = (ev) => {
+        if (!list) {
+          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 3) return;
+          const now = current();
+          list = now.filter((t) => !now.some((o) => o !== t && o.contains(t)));
+          moving = true;
+          hoverBox.hidden = true;
+          history.quiet++;
+          list.forEach(boxed);
+          starts = list.map((t) => String(t.style.translate || "").trim().split(/\s+/).map(parseFloat));
+        }
+        const dx = ev.clientX - x0;
+        const dy = ev.clientY - y0;
+        list.forEach((t, i) => {
+          const [lx, ly] = localDelta(t, dx, dy);
+          const tx = Math.round(((starts[i][0] || 0) + lx) * 10) / 10;
+          const ty = Math.round(((starts[i][1] || 0) + ly) * 10) / 10;
+          setStyle(t, "translate", tx || ty ? tx + "px " + ty + "px" : "");
+        });
+        moved();
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", up, true);
+        if (!list) return onClick && onClick();
+        moving = false;
+        history.quiet--;
+        noteChange();
+      };
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", up, true);
+    }
+
+    // Figma's resize: drag a corner of the selected layer. The opposite corner stays put, Shift keeps the
+    // proportions (an image always keeps them), and the new size is written as the code would (its width and
+    // height, or a vector's geometry). The drag is one undo step.
+    function startResize(e, handle) {
+      const t = selected;
+      if (!t || !resizable(t)) return;
+      const corner = ["nw", "ne", "sw", "se"].find((c) => handle.classList.contains("ft-" + c));
+      const west = corner[1] === "w";
+      const north = corner[0] === "n";
+      const x0 = e.clientX;
+      const y0 = e.clientY;
+      const start = sizeOf(t);
+      const r0 = t.getBoundingClientRect();
+      const anchor = { x: west ? r0.right : r0.left, y: north ? r0.bottom : r0.top };
+      let started = false;
+      const move = (ev) => {
+        if (!started) {
+          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 2) return;
+          started = moving = true;
+          hoverBox.hidden = true;
+          history.quiet++;
+        }
+        let w = Math.max(1, start.w + (west ? -1 : 1) * (ev.clientX - x0));
+        let h = Math.max(1, start.h + (north ? -1 : 1) * (ev.clientY - y0));
+        if (ev.shiftKey || t.tagName === "IMG") {
+          const k = Math.max(w / start.w, h / start.h);
+          w = start.w * k;
+          h = start.h * k;
+        }
+        setSize(t, Math.round(w), Math.round(h));
+        const r = t.getBoundingClientRect();
+        const dx = anchor.x - (west ? r.right : r.left);
+        const dy = anchor.y - (north ? r.bottom : r.top);
+        if (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05) nudge(t, dx, dy);
+        moved();
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", up, true);
+        if (!started) return;
+        moving = false;
+        history.quiet--;
+        noteChange();
+      };
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", up, true);
+    }
+
     // ⌘G: the selected layers become one group (a layer in one group at a time, so grouping takes
     // it out of any other). ⌘⇧G: the group goes, its layers stay selected.
     function groupSelection() {
@@ -1713,7 +2260,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // Hover outlines what a click would pick: a group as one box.
     document.addEventListener("pointermove", (e) => {
-      const t = active() && !editing && marquee.hidden ? pickable(e.target) : null;
+      const t = active() && !editing && !moving && marquee.hidden ? levelPick(e.target, e.metaKey || e.ctrlKey).pick : null;
       const unit = unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
       const now = current();
@@ -1723,10 +2270,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // mousedown, not pointerdown: preventing it is what stops the page starting a text selection.
     document.addEventListener("mousedown", (e) => {
+      const handle = e.target && e.target.closest && e.target.closest(".ft-handle");
+      if (handle && active() && e.button === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        return startResize(e, handle);
+      }
       if (!active() || e.button !== 0 || isUi(e.target)) return;
       if (editing && editing.contains(e.target)) return;
       e.preventDefault();
-      const t = pickable(e.target);
+      const lp = levelPick(e.target, e.metaKey || e.ctrlKey);
+      const t = lp.pick;
+      scope = lp.scope;
       if (inside && !(t && groupOf(t) === inside)) inside = null;
       if (!t) return startMarquee(e);
       const unit = unitOf(t);
@@ -1737,8 +2292,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const has = picked.every((p) => now.includes(p));
         return pick(has ? now.filter((n) => !picked.includes(n)) : now.concat(picked.filter((p) => !now.includes(p))));
       }
-      if (unit) return show(null, unit.list, unit.g);
-      select(t);
+      const pickIt = () => (unit ? show(null, unit.list, unit.g) : select(t));
+      // A press inside a bigger selection keeps it, so it drags as one; as in Figma, a click without a drag
+      // then narrows it to what was clicked.
+      const now = current();
+      if (now.length > picked.length && picked.every((p) => now.includes(p))) return startMove(e, pickIt);
+      pickIt();
+      startMove(e);
     }, true);
 
     // While the inspector is open, the page's own links and buttons don't fire.
@@ -1750,13 +2310,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     document.addEventListener("dblclick", (e) => {
       if (!active() || editing || isUi(e.target)) return;
-      const t = pickable(e.target);
-      if (!t) return;
+      const deepest = pickable(e.target);
+      if (!deepest) return;
+      const t = levelPick(e.target).pick;
       // Into a group, as in Figma: the first double-click selects the layer under the pointer.
       const g = groupOf(t);
       if (g && g !== inside) {
         inside = g;
         return select(t);
+      }
+      // Into a container: one level down, toward what's under the pointer.
+      if (t !== deepest) {
+        const chain = levelOf(deepest);
+        scope = t;
+        return select(chain[chain.indexOf(t) + 1] || deepest);
       }
       if (!hasText(t)) return;
       select(t);
@@ -1796,6 +2363,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           return show(null, groupMembers(g), g);
         }
         inside = null;
+        if (scope) {
+          const up = scope;
+          const chain = levelOf(up);
+          scope = chain[chain.length - 2] || null;
+          return select(up);
+        }
         select(null);
       } else if (e.key === "Enter" && selected && hasText(selected)) {
         e.preventDefault();
@@ -1814,7 +2387,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.documentElement.classList.toggle("ft-moving", active());
       if (!active()) {
         hoverBox.hidden = true;
-        inside = null;
+        inside = scope = null;
         select(null);
       }
     }
@@ -1937,7 +2510,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const i = el("span", "ft-field-icon");
       // An svg, or a letter like Figma's W and H.
       if (icon.charAt(0) === "<") i.innerHTML = icon;
-      else i.textContent = icon;
+      else {
+        i.textContent = icon;
+        i.classList.add("ft-field-letter");
+      }
       if (tip) {
         i.setAttribute("data-ft-tip", tip);
         withTip(i);
@@ -1975,7 +2551,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const pop = el("div", "ft-pop");
     pop.hidden = true;
     const head = el("div", "ft-pop-head");
-    head.append(el("span", null, "Image"), iconButton(ICON.x, "Close", close));
+    const title = el("span", null, "Image");
+    head.append(title, iconButton(ICON.x, "Close", close));
 
     const fitLabel = (v) => (FITS.find((f) => f[0] === v) || [v, v])[1];
     const mode = dropdown((btn) => {
@@ -1988,9 +2565,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     mode.btn.classList.add("ft-fit");
 
     const preview = button("ft-img-preview", null, () => file.click());
+    preview.setAttribute("aria-label", "Replace image");
     const previewImg = el("img");
     previewImg.alt = "";
-    preview.appendChild(previewImg);
+    preview.append(previewImg, el("span", "ft-img-replace", "Replace image"));
     const file = el("input");
     file.type = "file";
     file.accept = "image/*";
@@ -2015,11 +2593,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
 
     const sliders = el("div", "ft-adjust");
-    const knobs = {};
+    const tracks = {};
     ADJUSTMENTS.forEach(([key, label]) => {
       const track = el("div", "ft-adj-track");
-      const knob = el("div", "ft-adj-knob");
-      track.appendChild(knob);
+      track.append(el("div", "ft-adj-fill"), el("div", "ft-adj-knob"));
       const set = (v) => {
         adjust[key] = v;
         setAdjust(target, adjust);
@@ -2032,7 +2609,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         set(Math.abs(v) <= 2 ? 0 : v);
       });
       track.addEventListener("dblclick", () => set(0));
-      knobs[key] = knob;
+      tracks[key] = track;
       sliders.append(el("span", "ft-adjust-label", label), track);
     });
 
@@ -2043,15 +2620,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     function draw() {
       if (!target) return;
-      previewImg.src = target.currentSrc || target.src;
-      mode.label.textContent = fitLabel(getComputedStyle(target).objectFit);
-      ADJUSTMENTS.forEach(([key]) => knobs[key].style.setProperty("--ft-x", (adjust[key] + 100) / 200));
+      if (target.tagName === "IMG") {
+        previewImg.src = target.currentSrc || target.src;
+        mode.label.textContent = fitLabel(getComputedStyle(target).objectFit);
+      }
+      ADJUSTMENTS.forEach(([key]) => {
+        const x = (adjust[key] + 100) / 200;
+        tracks[key].style.setProperty("--ft-x", x);
+        tracks[key].style.setProperty("--ft-lo", Math.min(x, 0.5));
+        tracks[key].style.setProperty("--ft-span", Math.abs(x - 0.5));
+      });
     }
 
     function open(t, row, thumb) {
       target = t;
       anchor = thumb;
       adjust = adjustOf(t);
+      // For a box it's just the sliders, applied to the whole element.
+      const img = t.tagName === "IMG";
+      title.textContent = img ? "Image" : "Adjustments";
+      mode.btn.hidden = preview.hidden = !img;
       pop.hidden = false;
       draw();
       // Just left of the panel, level with the row, kept on screen.
@@ -2124,6 +2712,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // A move by dx, dy as a translate, recorded like one typed into the Position fields.
   function nudge(t, dx, dy) {
+    [dx, dy] = localDelta(t, dx, dy);
     const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
     const tx = Math.round(((cur[0] || 0) + dx) * 10) / 10;
     const ty = Math.round(((cur[1] || 0) + dy) * 10) / 10;
@@ -2135,10 +2724,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // outermost only, so a card moves with the words inside it.
   function pageItems() {
     const all = Array.from(document.body.querySelectorAll("*")).filter((e) => {
-      if (e === pageEl || isUi(e) || e.closest(".ft-guides, .ft-hover-box, .ft-sel-box, .ft-marquee, .ft-panel")) return false;
+      if (e === pageEl || isUi(e) || inSvg(e) || e.closest(".ft-guides, .ft-hover-box, .ft-sel-box, .ft-marquee, .ft-panel")) return false;
       const r = e.getBoundingClientRect();
       if (!r.width || !r.height || getComputedStyle(e).visibility === "hidden") return false;
-      return hasText(e) || e.tagName === "IMG" || !!toFill(getComputedStyle(e).backgroundColor);
+      return hasText(e) || e.tagName === "IMG" || e instanceof SVGSVGElement || !!toFill(getComputedStyle(e).backgroundColor);
     });
     return all.filter((e) => !all.some((o) => o !== e && o.contains(e)));
   }
@@ -2212,6 +2801,84 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (Math.abs(dx) >= 0.05) unit.forEach((t) => nudge(t, dx, 0));
     });
     toast("Align all items " + ALIGN_WORD[how]);
+  }
+
+  // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box.
+  // A selected group moves as one; a selection that is just one group lines up its own layers. A layer inside
+  // another selected one rides along with it. Every move is recorded.
+  function alignSelection(list, how) {
+    const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+    const groups = edits.groups.map(groupMembers).filter((m) => m.length > 1 && m.every((t) => top.includes(t)));
+    const grouped = groups.flat();
+    const units = groups.length === 1 && grouped.length === top.length ? top.map((t) => [t])
+      : groups.concat(top.filter((t) => !grouped.includes(t)).map((t) => [t]));
+    alignTo(units, unionRect(top), how);
+  }
+
+  // One layer lines up inside its parent, as in Figma's frame: the parent's box inside its border and
+  // padding (a display: contents parent has no box, so its own parent counts).
+  function alignToParent(t, how) {
+    let p = t.parentElement;
+    while (p && p !== document.body && getComputedStyle(p).display === "contents") p = p.parentElement;
+    if (!p) return;
+    const r = p.getBoundingClientRect();
+    const cs = getComputedStyle(p);
+    const px = (k) => parseFloat(cs[k]) || 0;
+    const left = r.left + px("borderLeftWidth") + px("paddingLeft");
+    const right = r.right - px("borderRightWidth") - px("paddingRight");
+    const top = r.top + px("borderTopWidth") + px("paddingTop");
+    const bottom = r.bottom - px("borderBottomWidth") - px("paddingBottom");
+    alignTo([[t]], { left, right, top, bottom, width: right - left, height: bottom - top }, how);
+  }
+
+  function alignTo(units, box, how) {
+    units.forEach((unit) => {
+      const r = unionRect(unit);
+      const dx = how === "left" ? box.left - r.left
+        : how === "hcenter" ? box.left + box.width / 2 - (r.left + r.width / 2)
+          : how === "right" ? box.right - r.right : 0;
+      const dy = how === "top" ? box.top - r.top
+        : how === "vcenter" ? box.top + box.height / 2 - (r.top + r.height / 2)
+          : how === "bottom" ? box.bottom - r.bottom : 0;
+      if (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05) unit.forEach((t) => nudge(t, dx, dy));
+    });
+  }
+
+  // A group's items in one column or one row, in order, with the gaps between them; null when they overlap both
+  // ways (then there's no single spacing to set).
+  function stackOf(items) {
+    const rs = items.map((t) => ({ t, r: t.getBoundingClientRect() })).filter((x) => x.r.width || x.r.height);
+    if (rs.length < 2) return null;
+    const run = (axis) => {
+      const lo = axis === "y" ? "top" : "left";
+      const hi = axis === "y" ? "bottom" : "right";
+      const sorted = rs.slice().sort((a, b) => a.r[lo] - b.r[lo]);
+      if (!sorted.every((x, i) => !i || x.r[lo] >= sorted[i - 1].r[hi] - 0.5)) return null;
+      return { axis, items: sorted.map((x) => x.t), gaps: sorted.slice(1).map((x, i) => x.r[lo] - sorted[i].r[hi]) };
+    };
+    return run("y") || run("x");
+  }
+
+  // Sets every gap in the stack to n by moving each item after the first (so the ones below move down too).
+  // Each move is an ordinary edit.
+  function setStackGap(stack, n) {
+    const y = stack.axis === "y";
+    let edge = null;
+    stack.items.forEach((t, i) => {
+      if (i) {
+        const r = t.getBoundingClientRect();
+        const d = edge + n - (y ? r.top : r.left);
+        if (Math.abs(d) >= 0.05) nudge(t, y ? 0 : d, y ? d : 0);
+      }
+      const r2 = t.getBoundingClientRect();
+      edge = y ? r2.bottom : r2.right;
+    });
+  }
+
+  // What the page itself says for a property, written back only where it differs (so a value that matches the
+  // code leaves no edit behind).
+  function setUnlessOwn(t, prop, value) {
+    setStyle(t, prop, ownValue(t, prop) === value ? "" : value);
   }
 
   function guideLayer(g) {
@@ -2324,19 +2991,136 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     };
   }
 
+  // Figma's effect settings, one per inspector: X and Y, Blur, Spread and Color for a shadow, Blur for a blur.
+  function makeEffectPop(root, menu, picker) {
+    let fx = null;
+    let anchor = null;
+    let onChange = null;
+    const pop = el("div", "ft-pop ft-guide-pop");
+    pop.hidden = true;
+    const head = el("div", "ft-pop-head");
+    const title = el("span");
+    head.append(title, iconButton(ICON.x, "Close", close));
+    const body = el("div", "ft-pop-body ft-guide-fields");
+    pop.append(head, body);
+    root.appendChild(pop);
+
+    function num(key, letter, min) {
+      const f = numField(letter);
+      const show = (force) => f.set(fx[key], force);
+      editable(f.input, show, (v) => {
+        const n = parseFloat(v);
+        if (!isNum(n) || (min != null && n < min)) return;
+        fx[key] = Math.round(n * 10) / 10;
+        onChange();
+      });
+      show(true);
+      return f.wrap;
+    }
+
+    function build() {
+      title.textContent = EFFECT_TYPES.find(([t]) => t === fx.type)[1];
+      const label = (text) => el("span", "ft-field-label", text);
+      if (!isShadow(fx)) return body.replaceChildren(label("Blur"), num("blur", null, 0));
+      const xy = el("div", "ft-type-pair");
+      xy.append(num("x", "X"), num("y", "Y"));
+      body.replaceChildren(
+        label("Position"), xy,
+        label("Blur"), num("blur", null, 0),
+        ...(noSpread ? [] : [label("Spread"), num("spread")]),
+        label("Color"), fillRow(fx, () => onChange(), null, picker, { noEye: true })
+      );
+    }
+
+    // noSpread: a vector's drop shadow is a drop-shadow(), which has no spread.
+    let noSpread = false;
+    function open(effect, rowEl, icon, change, vector) {
+      fx = effect;
+      anchor = icon;
+      onChange = change;
+      noSpread = !!vector;
+      pop.hidden = false;
+      build();
+      // Just left of the panel, level with the row, kept on screen.
+      const r = rowEl.getBoundingClientRect();
+      const panel = root.getBoundingClientRect();
+      pop.style.left = Math.max(8, panel.left - 8 - pop.offsetWidth) + "px";
+      pop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - pop.offsetHeight - 8)) + "px";
+    }
+
+    function close() {
+      if (!fx) return;
+      if (pop.contains(document.activeElement)) document.activeElement.blur();
+      picker.closeFor(fx);
+      menu.close();
+      pop.hidden = true;
+      fx = anchor = onChange = null;
+    }
+
+    // Closes on a click anywhere else, or Escape. Its own menus and the color picker count as inside;
+    // the icon that opened it toggles it instead.
+    document.addEventListener("pointerdown", (e) => {
+      if (!fx || pop.contains(e.target) || anchor.contains(e.target) || e.target.closest(".ft-menu, .ft-pop")) return;
+      close();
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !fx || e.defaultPrevented || typing(e.target)) return;
+      e.preventDefault();
+      close();
+    });
+
+    return {
+      close,
+      toggle(effect, rowEl, icon, change, vector) {
+        if (fx === effect) close();
+        else open(effect, rowEl, icon, change, vector);
+      },
+    };
+  }
+
   function makeInspector() {
     // Shown on load, like Figma's panel.
     const root = el("div", "ft-inspector");
 
-    const tabs = el("div", "ft-tabs");
-    const design = el("div", "ft-tab", "Design");
-    design.setAttribute("aria-selected", "true");
-    // Undo and redo the latest change, as in Figma (also ⌘Z and ⌘⇧Z); Reset goes back to the code.
+    // Undo and redo the latest change, as in Figma (also ⌘Z and ⌘⇧Z); Reset goes back to the code. They sit
+    // at the left of the panel's top row; Hide UI is at its right.
     const undoBtn = iconButton(ICON.undo, "Undo", undo);
     const redoBtn = iconButton(ICON.redo, "Redo", redo);
-    const tabActions = el("div", "ft-tabs-end");
-    tabActions.append(undoBtn, redoBtn, iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits));
-    tabs.append(design, tabActions);
+    const actions = el("div", "ft-actions");
+    actions.append(undoBtn, redoBtn, iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits));
+    const top = el("div", "ft-top");
+    top.appendChild(actions);
+    // Design and Motion, as Figma's Design and Prototype, in a bar at the bottom of the window. It lives in the
+    // panel, so it hides with it. Motion is empty for now.
+    const designPane = el("div", "ft-pane");
+    const modes = el("div", "ft-modes");
+    const modeBtns = [["design", "Design", "pencilRuler"], ["motion", "Motion", "play"]].map(([name, label, icon]) => {
+      const b = button("ft-modes-btn", null, () => {
+        modeBtns.forEach((m) => m.setAttribute("aria-selected", String(m === b)));
+        root.setAttribute("data-tab", name);
+        designPane.hidden = name !== "design";
+      });
+      b.innerHTML = ICON[icon];
+      b.appendChild(el("span", null, label));
+      b.setAttribute("aria-selected", String(name === "design"));
+      return b;
+    });
+    modes.append(...modeBtns);
+    root.setAttribute("data-tab", "design");
+    // The bar's theme follows the page: dark when what paints behind everything is dark. Checked again when
+    // the page switches theme (an attribute or class on html or body, or the system's setting) and when its
+    // fill is edited.
+    function themeModes() {
+      // An edited page fill paints as gradients over a transparent color, so read its top layer instead.
+      const bg = edits.page ? layers.find((l) => l.visible)
+        : [pageEl, document.body, document.documentElement].map((e) => e && toFill(getComputedStyle(e).backgroundColor)).find(Boolean);
+      const n = bg ? parseInt(bg.hex, 16) : 0xffffff;
+      const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+      modes.setAttribute("data-theme", lum < 0.5 ? "dark" : "light");
+    }
+    const themeWatch = new MutationObserver(() => themeModes());
+    [document.documentElement, document.body].forEach((e) => themeWatch.observe(e, { attributes: true, attributeFilter: ["class", "data-theme", "style"] }));
+    if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeModes);
     historyChanged = () => {
       undoBtn.disabled = !history.past.length && !history.timer;
       redoBtn.disabled = !history.future.length;
@@ -2366,6 +3150,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       pageEl.style.backgroundColor = "transparent";
       pageEl.style.backgroundImage = shown.length ? shown.join(", ") : "none";
       picker.sync();
+      themeModes();
     }
 
     function paintAndSave() {
@@ -2507,6 +3292,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     guideHead.append(el("span", null, "Horizontal layout"), guideActions);
     guideSec.append(guideHead, guideList);
     const guidePop = makeGuidePop(root, menu, picker, () => drawGuides());
+    const effectPop = makeEffectPop(root, menu, picker);
     let guideRows = [];
 
     // No layout yet: say so, and offer the usual one to start from (12 columns).
@@ -2526,10 +3312,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Under each guide, Figma's alignment buttons, as actions: pressed, they align every item, then
     // spring back.
     const ACROSS = [["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontally"], ["right", "alignRight", "Align right"]];
-    function alignSeg(g) {
+    const alignSeg = (g) => actionSeg(ACROSS, (how) => alignAll(g, how));
+    // Figma's Alignment row: across, then up and down.
+    const alignRow = (act) => {
+      const row = el("div", "ft-type-pair");
+      row.append(
+        actionSeg([["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontal centers"], ["right", "alignRight", "Align right"]], act),
+        actionSeg([["top", "alignTop", "Align top"], ["vcenter", "alignVCenter", "Align vertical centers"], ["bottom", "alignBottom", "Align bottom"]], act),
+      );
+      return row;
+    };
+    // A row of one-shot buttons that spring back, each with a Figma-style tooltip.
+    function actionSeg(items, act) {
       const seg = el("div", "ft-seg ft-seg-act");
-      ACROSS.forEach(([how, icon, tip]) => {
-        const b = button("ft-seg-btn", null, () => alignAll(g, how));
+      items.forEach(([how, icon, tip]) => {
+        const b = button("ft-seg-btn", null, () => act(how));
         b.innerHTML = ICON[icon];
         b.setAttribute("data-ft-tip", tip);
         b.setAttribute("aria-label", tip);
@@ -2614,7 +3411,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     drawGuides();
     let fillLayers = [];
-    const chosen = el("div");
+    const chosen = el("div", "ft-chosen");
     let textLayer = null;
     // Each section's redraw. Any edit redraws them all, since one change (a bigger
     // font size) can move another section's numbers (the height).
@@ -2681,10 +3478,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const setRot = (deg) => {
         const d = Math.round((((deg % 360) + 360) % 360) * 10) / 10;
         boxed(target);
+        turnInPlace(target);
         setStyle(target, "rotate", d ? d + "deg" : "");
       };
       const setScale = (sx, sy) => {
         boxed(target);
+        turnInPlace(target);
         setStyle(target, "scale", sx === 1 && sy === 1 ? "" : sx + " " + sy);
       };
 
@@ -2704,30 +3503,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const n = parseFloat(v);
         if (isNum(n)) setRot(n);
       });
-      const turns = el("div", "ft-btn-group");
-      turns.append(
-        iconButton(ICON.arrowClockwise, "Rotate 90° right", () => {
-          setRot(read().rot + 90);
-          changed(true);
-        }),
-        iconButton(ICON.flipHorizontal, "Flip horizontal", () => {
-          const now = read();
-          setScale(-now.sx, now.sy);
-          changed(true);
-        }),
-        iconButton(ICON.flipVertical, "Flip vertical", () => {
-          const now = read();
-          setScale(now.sx, -now.sy);
-          changed(true);
-        })
-      );
+      const turns = actionSeg([["rotate", "rotateSquare", "Rotate 90° right"], ["flipH", "flipHorizontal", "Flip horizontal"], ["flipV", "flipVertical", "Flip vertical"]], (how) => {
+        const now = read();
+        if (how === "rotate") setRot(now.rot + 90);
+        else if (how === "flipH") setScale(-now.sx, now.sy);
+        else setScale(now.sx, -now.sy);
+        changed(true);
+      });
+      const toParent = (how) => {
+        alignToParent(target, how);
+        changed(true);
+      };
 
       const xy = el("div", "ft-type-pair");
       xy.append(x.wrap, y.wrap);
       const rotRow = el("div", "ft-type-pair");
       rotRow.append(rot.wrap, turns);
       const grid = el("div", "ft-type");
-      grid.append(labeled("Position", xy, true), labeled("Rotation", rotRow, true));
+      grid.append(labeled("Alignment", alignRow(toParent), true), labeled("Position", xy, true), labeled("Rotation", rotRow, true));
       s.appendChild(grid);
       draws.push((force) => {
         const now = read();
@@ -2741,7 +3534,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Two or more layers, as in Figma: "Group" or "N selected", and X and Y for where they sit together.
     // A move moves every layer by the same amount, each recorded, so the bake keeps them together.
     function setSection(list, isGroup) {
-      const s = section(isGroup ? "Group" : list.length + " selected");
+      const s = section("Position");
       const read = () => {
         const u = unionRect(list);
         return { x: Math.round(u.left + window.scrollX), y: Math.round(u.top + window.scrollY) };
@@ -2763,8 +3556,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       const xy = el("div", "ft-type-pair");
       xy.append(x.wrap, y.wrap);
+      const act = (how) => {
+        alignSelection(list, how);
+        changed();
+      };
       const grid = el("div", "ft-type");
-      grid.append(labeled("Position", xy, true));
+      grid.append(labeled("Alignment", alignRow(act), true), labeled("Position", xy, true));
+      // A group's Spacing, when its layers sit in one column or row: the ones after the first move.
+      const st = isGroup ? stackOf(list) : null;
+      if (st) {
+        const spacing = numField(st.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
+        editable(spacing.input, changed, (v) => {
+          const n = parseFloat(v);
+          const now = stackOf(list);
+          if (isNum(n) && now) setStackGap(now, n);
+        });
+        grid.appendChild(labeled("Spacing", spacing.wrap));
+        draws.push((force) => {
+          const now = stackOf(list);
+          spacing.set(!now ? "" : now.gaps.every((g) => Math.abs(g - now.gaps[0]) < 0.5) ? Math.round(now.gaps[0]) : "Mixed", force);
+        });
+      }
       s.appendChild(grid);
       draws.push((force) => {
         const now = read();
@@ -2799,13 +3611,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Appearance, as in Figma: show or hide, blend mode, opacity, corner radius.
     function appearance(target) {
       const s = section("Appearance");
+      // Inside an SVG only a rect has corners (its rx and ry), in its own units.
+      const rect = inSvg(target) && target.tagName.toLowerCase() === "rect";
+      const corners = (!inSvg(target) && !isSvgRoot(target)) || rect;
       const read = () => {
         const cs = getComputedStyle(target);
         return {
           hidden: cs.visibility === "hidden",
           blend: cs.mixBlendMode,
           opacity: Math.round(parseFloat(cs.opacity) * 100),
-          radius: Math.round(parseFloat(cs.borderTopLeftRadius) || 0),
+          radius: rect ? Math.round((parseFloat(cs.rx) || parseFloat(cs.ry) || 0) * vectorSize(target).sx) : Math.round(parseFloat(cs.borderTopLeftRadius) || 0),
         };
       };
       const eye = iconButton(ICON.eye, "Hide", () => {
@@ -2820,6 +3635,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       const actions = el("div", "ft-head-actions");
       actions.append(eye, blend);
+      // Adjustments, the image's seven sliders, on any layer but text: a box's apply to the whole element, an
+      // image's open its image popover (where Figma keeps them). Like Blend mode, it opens something and never
+      // stays pressed (her call).
+      let adjustBtn = null;
+      if (!hasText(target)) {
+        adjustBtn = iconButton(ICON.slidersHorizontal, "Adjustments", () => imagePop.toggle(target, s, adjustBtn));
+        actions.appendChild(adjustBtn);
+      }
       s.firstChild.appendChild(actions);
 
       const opacity = numField(ICON.checkerboard, "Opacity");
@@ -2830,17 +3653,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       editable(radius.input, changed, (v) => {
         const n = parseFloat(v);
-        if (isNum(n) && n >= 0) setStyle(target, "border-radius", n + "px");
+        if (!isNum(n) || n < 0) return;
+        if (!rect) return setStyle(target, "border-radius", n + "px");
+        const u = round1(n / vectorSize(target).sx) + "px";
+        setStyle(target, "rx", u);
+        setStyle(target, "ry", u);
       });
       const grid = el("div", "ft-type");
-      grid.append(labeled("Opacity", opacity.wrap), labeled("Corner radius", radius.wrap));
+      grid.appendChild(labeled("Opacity", opacity.wrap));
+      if (corners) grid.appendChild(labeled("Corner radius", radius.wrap));
       s.appendChild(grid);
       draws.push((force) => {
         const now = read();
         eye.innerHTML = now.hidden ? ICON.eyeClosed : ICON.eye;
         eye.setAttribute("data-ft-tip", now.hidden ? "Show" : "Hide");
         eye.setAttribute("aria-label", now.hidden ? "Show" : "Hide");
-        blend.setAttribute("aria-pressed", String(now.blend !== "normal"));
         opacity.set(now.opacity + "%", force);
         radius.set(now.radius, force);
       });
@@ -2917,21 +3744,195 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return s;
     }
 
+    // A vector's fill is its SVG fill: a color on the same row and picker as a box's, the + when it has none
+    // (Figma's light grey), or the code's gradient or pattern, shown but not edited here.
+    function vectorFill(target) {
+      const s = section("Fill");
+      const list = el("div", "ft-fills");
+      s.appendChild(list);
+      const paint = svgPaint(target, "fill");
+      const add = iconButton(ICON.plus, "Add fill", () => {
+        add.remove();
+        const layer = { hex: "D9D9D9", opacity: 100, visible: true };
+        writeSvgPaint(target, "fill", layer);
+        show(layer);
+      });
+      function show(layer) {
+        fillLayers.push(layer);
+        list.appendChild(fillRow(layer, () => {
+          writeSvgPaint(target, "fill", layer);
+          picker.sync();
+        }, (l, row) => {
+          picker.closeFor(l);
+          row.remove();
+          clearSvgPaint(target, "fill");
+          s.firstChild.appendChild(add);
+        }, picker));
+      }
+      if (paint.kind === "color") show(paint.layer);
+      else if (paint.kind === "server") list.appendChild(el("div", "ft-field-label", "A gradient or pattern from the code"));
+      else s.firstChild.appendChild(add);
+      return s;
+    }
+
+    // An icon's fill is its color: the <svg>'s CSS color, which its shapes paint with (currentColor).
+    function iconFill(target) {
+      const s = section("Fill");
+      const layer = toFill(getComputedStyle(target).color) || { hex: "000000", opacity: 100, visible: true };
+      fillLayers.push(layer);
+      const list = el("div", "ft-fills");
+      list.appendChild(fillRow(layer, () => {
+        setStyle(target, "color", layer.visible ? rgba(layer) : "transparent");
+        picker.sync();
+      }, null, picker));
+      s.appendChild(list);
+      return s;
+    }
+
+    // A line icon's stroke is its weight: stroke-width on the <svg>, which its shapes take (its color is the
+    // icon's Fill). In the icon's own units, as its code writes it (Lucide's 2 in a 24 viewBox).
+    function iconStroke(target) {
+      const s = section("Stroke");
+      const shape = [...target.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect")].find((e) => getComputedStyle(e).stroke !== "none");
+      const weight = numField(ICON.textAlignJustify, "Weight");
+      const show = (force) => weight.set(Math.round(parseFloat(getComputedStyle(shape || target).strokeWidth) * 100) / 100, force);
+      editable(weight.input, show, (v) => {
+        const n = parseFloat(v);
+        if (!isNum(n) || n < 0) return;
+        setStyle(target, "stroke-width", ownValue(target, "stroke-width") === String(n) ? "" : String(n));
+      });
+      show(true);
+      draws.push(show);
+      const grid = el("div", "ft-type");
+      grid.appendChild(labeled("Weight", weight.wrap));
+      s.appendChild(grid);
+      return s;
+    }
+
+    // Stroke, as in Figma: one paint, where it sits (inside, centered on or outside the edge) and its weight.
+    // A layer with none gets the + to add one.
+    function strokeSection(target) {
+      const s = section("Stroke");
+      const body = el("div", "ft-stroke");
+      s.appendChild(body);
+      let st = strokeOf(target);
+      const add = iconButton(ICON.plus, "Add stroke", () => {
+        st = { hex: "000000", opacity: 100, visible: true, position: inSvg(target) ? "center" : "inside", weight: 1 };
+        setStroke(target, st);
+        build();
+      });
+      const put = () => {
+        setStroke(target, st);
+        picker.sync();
+      };
+      function build() {
+        body.replaceChildren();
+        if (!st) return s.firstChild.appendChild(add);
+        add.remove();
+        fillLayers.push(st);
+        const list = el("div", "ft-fills");
+        list.appendChild(fillRow(st, put, () => {
+          picker.closeFor(st);
+          st = null;
+          setStroke(target, null);
+          build();
+        }, picker, { noun: "stroke" }));
+        // SVG draws a stroke centered on the path, so a vector's has only Center.
+        const ats = inSvg(target) ? STROKE_AT.filter(([v]) => v === "center") : STROKE_AT;
+        const at = dropdown((btn) => menu.toggle(btn, ats.map(([value, label]) => ({ label, value })), st.position, (v) => {
+          st.position = v;
+          put();
+          build();
+        }));
+        at.label.textContent = STROKE_AT.find(([v]) => v === st.position)[1];
+        const weight = numField(ICON.textAlignJustify, "Weight");
+        const show = (force) => weight.set(st.weight, force);
+        editable(weight.input, show, (v) => {
+          const n = parseFloat(v);
+          if (!isNum(n) || n < 0) return;
+          st.weight = Math.round(n * 10) / 10;
+          put();
+        });
+        show(true);
+        const grid = el("div", "ft-type");
+        grid.append(labeled("Position", at.btn), labeled("Weight", weight.wrap));
+        body.append(list, grid);
+      }
+      build();
+      return s;
+    }
+
+    // Effects, as in Figma: shadows and blurs, the top row painting on top. The + adds a drop shadow
+    // at the top; the sun opens an effect's settings.
+    function effectsSection(target) {
+      const s = section("Effects");
+      const list = el("div", "ft-fills");
+      s.appendChild(list);
+      const fxs = effectsOf(target);
+      const put = () => setEffects(target, fxs);
+      s.firstChild.appendChild(iconButton(ICON.plus, "Add effect", () => {
+        fxs.unshift(newEffect());
+        put();
+        build();
+      }));
+      function row(fx) {
+        const r = el("div", "ft-fill-row ft-fx-row");
+        r.classList.toggle("is-hidden", !fx.visible);
+        // Anything SVG gets what a filter can draw: Drop shadow and Layer blur, with no spread.
+        const svgFx = target instanceof SVGElement;
+        const gear = iconButton(ICON.sun, "Effect settings", () => effectPop.toggle(fx, r, gear, put, svgFx));
+        const types = svgFx ? EFFECT_TYPES.filter(([t]) => t === "drop" || t === "layer") : EFFECT_TYPES;
+        const type = dropdown((btn) => menu.toggle(btn, types.map(([value, label]) => ({ label, value })), fx.type, (v) => {
+          fx.type = v;
+          put();
+          build();
+        }));
+        type.label.textContent = EFFECT_TYPES.find(([t]) => t === fx.type)[1];
+        type.btn.classList.add("ft-fx-type");
+        const eye = iconButton(fx.visible ? ICON.eye : ICON.eyeClosed, fx.visible ? "Hide effect" : "Show effect", () => {
+          fx.visible = !fx.visible;
+          put();
+          build();
+        });
+        const minus = iconButton(ICON.minus, "Remove effect", () => {
+          fxs.splice(fxs.indexOf(fx), 1);
+          put();
+          build();
+        });
+        const actions = el("div", "ft-fill-actions");
+        actions.append(minus, eye);
+        r.append(gear, type.btn, actions);
+        return r;
+      }
+      function build() {
+        effectPop.close();
+        list.replaceChildren(...fxs.map(row));
+      }
+      build();
+      return s;
+    }
+
     // Layout, as in Figma: Resizing (text only) and Dimensions, labelled W and H, with the
     // lock that keeps proportions (on for images, as in Figma).
     // Edits go on the element as inline styles, so they show live.
     function layout(target) {
       const s = section("Layout");
       let locked = target.tagName === "IMG";
+      const vector = isVector(target);
+      // Words inside an SVG sit on a baseline, with no box to size.
+      const fixed = inSvg(target) && !vector;
       const read = () => {
-        // The size before any rotation, as Figma shows it; SVG elements have no offset size.
+        // The size before any rotation, as Figma shows it: a vector's from its geometry, an <svg>'s from its box.
         const r = target.getBoundingClientRect();
+        const v = vector ? vectorSize(target) : null;
         return {
-          w: Math.round(target.offsetWidth != null ? target.offsetWidth : r.width),
-          h: Math.round(target.offsetHeight != null ? target.offsetHeight : r.height),
+          w: Math.round(v ? v.w : target.offsetWidth != null ? target.offsetWidth : r.width),
+          h: Math.round(v ? v.h : target.offsetHeight != null ? target.offsetHeight : r.height),
           resizing: target.style.width === "max-content" ? "hug" : target.style.height ? "fixed" : "auto",
         };
       };
+      // A new size, as the code writes it: a vector's geometry, anything else its width and height.
+      const resize = (nw, nh) => setSize(target, nw, nh);
       const resizing = segmented([
         ["hug", "arrowLineRight", "Auto width"],
         ["auto", "textAlignJustify", "Auto height"],
@@ -2948,18 +3949,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
         const now = read();
-        boxed(target);
-        setStyle(target, "width", n + "px");
-        if (locked && now.w) setStyle(target, "height", Math.round((n * now.h) / now.w) + "px");
+        const nh = locked && now.w ? Math.round((n * now.h) / now.w) : null;
+        resize(n, vector ? (nh != null ? nh : now.h) : nh);
       });
       editable(h.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
         const now = read();
-        boxed(target);
-        setStyle(target, "height", n + "px");
-        if (locked && now.h) setStyle(target, "width", Math.round((n * now.w) / now.h) + "px");
+        const nw = locked && now.h ? Math.round((n * now.w) / now.h) : null;
+        resize(vector ? (nw != null ? nw : now.w) : nw, n);
       });
+      w.input.disabled = h.input.disabled = fixed;
       const lock = iconButton(ICON.linkSimple, "Constrain proportions", () => {
         locked = !locked;
         changed(true);
@@ -2970,8 +3970,68 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const dimsRow = el("div", "ft-with-action");
       dimsRow.append(dims, lock);
       const grid = el("div", "ft-type");
-      if (hasText(target)) grid.appendChild(labeled("Resizing", resizing.seg, true));
+      if (hasText(target) && !inSvg(target)) grid.appendChild(labeled("Resizing", resizing.seg, true));
+
+      // A group (a container in the code) shows its Flow and its Spacing, read from its CSS and written back
+      // as CSS: Vertical and Horizontal are flex in a column or a row, Freeform is no flex. Grid shows only on a
+      // grid, which isn't made here. Spacing is the gap on a flex or grid; on anything else, when the children
+      // sit in one column or row, it moves the ones after the first, so the ones below move too.
+      const container = !(target instanceof SVGElement) && !hasText(target) && target.children.length > 0;
+      const flowOf = () => {
+        const cs = getComputedStyle(target);
+        if (/grid/.test(cs.display)) return "grid";
+        if (/flex/.test(cs.display)) return /column/.test(cs.flexDirection) ? "vertical" : "horizontal";
+        return "free";
+      };
+      const items = () => Array.from(target.children).filter((c) => {
+        const cs = getComputedStyle(c);
+        return !isUi(c) && cs.display !== "none" && cs.position !== "fixed";
+      });
+      const px = (v) => (v === "normal" ? 0 : parseFloat(v) || 0);
+      const gapOf = () => {
+        const cs = getComputedStyle(target);
+        const flow = flowOf();
+        if (flow === "vertical") return { css: "row-gap", axis: "y", n: px(cs.rowGap) };
+        if (flow === "horizontal") return { css: "column-gap", axis: "x", n: px(cs.columnGap) };
+        if (flow === "grid") return { css: "gap", axis: "y", n: px(cs.rowGap) === px(cs.columnGap) ? px(cs.rowGap) : null };
+        const st = stackOf(items());
+        if (!st) return null;
+        return { stack: st, axis: st.axis, n: st.gaps.every((g) => Math.abs(g - st.gaps[0]) < 0.5) ? Math.round(st.gaps[0]) : null };
+      };
+      let flow = null;
+      let spacing = null;
+      if (container) {
+        const now = flowOf();
+        const opts = [["free", "shapes", "Freeform"], ["vertical", "rows", "Vertical layout"], ["horizontal", "columns", "Horizontal layout"]];
+        if (now === "grid") opts.push(["grid", "gridFour", "Grid"]);
+        flow = segmented(opts, (v) => {
+          if (v === "grid" || v === flowOf()) return;
+          const own = ownValue(target, "display");
+          if (v === "free") {
+            setStyle(target, "display", /flex|grid/.test(own) ? "block" : "");
+            setStyle(target, "flex-direction", "");
+          } else {
+            setStyle(target, "display", /flex/.test(own) ? "" : "flex");
+            setUnlessOwn(target, "flex-direction", v === "vertical" ? "column" : "row");
+          }
+          // The spacing's axis can change with the flow.
+          if (selection) selection.reshow();
+        });
+        grid.appendChild(labeled("Flow", flow.seg, true));
+        const g = gapOf();
+        if (g) {
+          spacing = numField(g.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
+          editable(spacing.input, changed, (v) => {
+            const n = parseFloat(v);
+            const now2 = gapOf();
+            if (!isNum(n) || !now2) return;
+            if (now2.css) setStyle(target, now2.css, Math.max(0, n) + "px");
+            else setStackGap(now2.stack, n);
+          });
+        }
+      }
       grid.appendChild(labeled("Dimensions", dimsRow, true));
+      if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
       s.appendChild(grid);
       draws.push((force) => {
         const now = read();
@@ -2979,6 +4039,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         w.set(now.w, force);
         h.set(now.h, force);
         lock.setAttribute("aria-pressed", String(locked));
+        if (flow) flow.set(flowOf());
+        if (spacing) {
+          const g = gapOf();
+          spacing.set(!g ? "" : g.n == null ? "Mixed" : Math.round(g.n), force);
+        }
       });
       return s;
     }
@@ -2997,7 +4062,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           leading: cs.lineHeight === "normal" ? "Auto" : String(Math.round(parseFloat(cs.lineHeight) * 10) / 10),
           // Shown as a percent of the size, as Figma does.
           tracking: cs.letterSpacing === "normal" ? 0 : Math.round((parseFloat(cs.letterSpacing) / size) * 1000) / 10,
-          align: { start: "left", left: "left", center: "center", end: "right", right: "right" }[cs.textAlign] || "",
+          // Inside an SVG, alignment is text-anchor.
+          align: inSvg(target) ? { start: "left", middle: "center", end: "right" }[cs.textAnchor] || ""
+            : { start: "left", left: "left", center: "center", end: "right", right: "right" }[cs.textAlign] || "",
           // Figma's vertical alignment maps to align-content, which block elements honor in current browsers.
           valign: { start: "top", "flex-start": "top", normal: "top", center: "middle", end: "bottom", "flex-end": "bottom" }[cs.alignContent] || "",
         };
@@ -3057,6 +4124,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         ["center", "textAlignCenter", "Align center"],
         ["right", "textAlignRight", "Align right"],
       ], (v) => {
+        if (inSvg(target)) return setStyle(target, "text-anchor", { left: "start", center: "middle", right: "end" }[v]);
         boxed(target);
         setStyle(target, "text-align", v);
       });
@@ -3102,7 +4170,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
 
       const alignRow = el("div", "ft-type-pair");
-      alignRow.append(align.seg, valign.seg);
+      alignRow.appendChild(align.seg);
+      if (!inSvg(target)) alignRow.appendChild(valign.seg);
 
       const grid = el("div", "ft-type");
       grid.append(
@@ -3117,19 +4186,41 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // The text's color, on the same fill row and picker as the page. One fill: CSS text has one color.
     function textFill(target) {
       const s = section("Fill");
-      textLayer = toFill(getComputedStyle(target).color) || { hex: "000000", opacity: 100, visible: true };
+      // Words inside an SVG are painted by fill, not color.
+      const svg = inSvg(target);
+      const paint = svg ? svgPaint(target, "fill") : null;
+      textLayer = (svg ? paint.layer : toFill(getComputedStyle(target).color)) || { hex: "000000", opacity: 100, visible: true };
       const layer = textLayer;
       const list = el("div", "ft-fills");
       list.appendChild(fillRow(layer, () => {
-        setStyle(target, "color", layer.visible ? rgba(layer) : "transparent");
+        if (svg) writeSvgPaint(target, "fill", layer);
+        else setStyle(target, "color", layer.visible ? rgba(layer) : "transparent");
         picker.sync();
       }, null, picker));
       s.appendChild(list);
       return s;
     }
 
+    // The layer's kind, read from the code, and the element it is (its tag and first class or id).
+    function kindLine(t) {
+      const tag = t.tagName.toLowerCase();
+      const kind = hasText(t) ? "Text" : tag === "img" ? "Image" : t instanceof SVGSVGElement ? "SVG"
+        : isVector(t) ? (tag === "g" ? "Group" : "Vector") : t.children.length ? "Group" : "Box";
+      const row = el("div", "ft-kind");
+      row.append(el("span", "ft-kind-name", kind), el("span", "ft-kind-el", tag + (t.id ? "#" + t.id : t.classList.length ? "." + t.classList[0] : "")));
+      return row;
+    }
+
+    // The same line for several layers: "Group" for a ⌘G group, "N selected" otherwise. Neither is an element
+    // in the code (the bake wraps a group's layers in a new one), so there's no element name (her call).
+    function kindLineMany(list, isGroup) {
+      const row = el("div", "ft-kind");
+      row.appendChild(el("span", "ft-kind-name", isGroup ? "Group" : list.length + " selected"));
+      return row;
+    }
+
     // Figma's order: Position, Layout, Appearance, then Typography and the text's Fill for
-    // text, the image's Fill for an img, the background Fill for anything else.
+    // text, the image's Fill for an img, the background Fill for anything else, then Stroke and Effects.
     showInPanel = (target, kind) => {
       menu.close();
       imagePop.close();
@@ -3140,17 +4231,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       draws = [];
       chosen.textContent = "";
       guidePop.close();
+      effectPop.close();
       page.hidden = guideSec.hidden = !!target;
       if (!target) return;
       if (Array.isArray(target)) {
-        chosen.appendChild(setSection(target, kind === "group"));
+        chosen.append(kindLineMany(target, kind === "group"), setSection(target, kind === "group"));
         changed(true);
         return;
       }
-      chosen.append(position(target), layout(target), appearance(target));
+      chosen.append(kindLine(target), position(target), layout(target), appearance(target));
+      // Text gets no Stroke or Effects (her call); everything else gets both, after its Fill, as in Figma.
       if (hasText(target)) chosen.append(typography(target), textFill(target));
-      else if (target.tagName === "IMG") chosen.appendChild(imageFill(target));
-      else chosen.appendChild(boxFill(target));
+      else if (isSvgRoot(target) && paintsWithColor(target)) {
+        // An icon: its color, a line icon's weight, and effects that follow its shape. No box stroke.
+        chosen.appendChild(iconFill(target));
+        if (strokedIcon(target)) chosen.appendChild(iconStroke(target));
+        chosen.appendChild(effectsSection(target));
+      } else chosen.append(target.tagName === "IMG" ? imageFill(target) : isVector(target) ? vectorFill(target) : boxFill(target), strokeSection(target), effectsSection(target));
       changed(true);
     };
 
@@ -3210,7 +4307,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (selection) selection.reshow();
     };
 
-    root.append(tabs, page, guideSec, chosen);
+    // Chosen first: it's empty while the page's sections show, and they hide while it's full, so either way
+    // the last shown section is a last child (see the double-line rule in PANEL LOOK).
+    designPane.append(chosen, page, guideSec);
+    root.append(top, designPane, modes);
+    themeModes();
     // After the panel, so the overlay hides with it (.ft-inspector[hidden] ~ .ft-guides).
     document.body.append(root, overlay);
     return root;
