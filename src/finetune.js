@@ -357,14 +357,20 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
   display: flex; flex-direction: column; gap: 4px; padding: 8px;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
+  font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .ft-toolbar[hidden] { display: none; }
 .ft-toolbar, .ft-toolbar * { box-sizing: border-box; }
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
-.ft-tool { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
-.ft-tool:hover { background: var(--ft-i-hover); }
-.ft-tool[aria-pressed="true"] { background: var(--ft-i-press); }
-.ft-tool svg { display: block; width: 24px; height: 24px; }
+/* Figma's left rail: a 32 box with the icon, its name 4 under it (11px), 56 from one tool to the next; hover greys
+   the box, and nothing stays picked (they're actions). The icons show at the rail's size, the 24 frame drawn at 32, so
+   their 12px glyphs read at Figma's 16. */
+.ft-tool { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 32px; }
+.ft-tool-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
+.ft-tool:hover .ft-tool-icon { background: var(--ft-i-hover); }
+.ft-tool-icon svg { display: block; width: 32px; height: 32px; }
+.ft-tool-label { white-space: nowrap; }
 
 .ft-type { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-right: 32px; }
 .ft-span2 { grid-column: 1 / -1; }
@@ -581,6 +587,9 @@ html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
 .ft-help-icon { flex: none; width: 24px; height: 24px; color: var(--ft-i-text); }
 .ft-help-icon svg { display: block; width: 24px; height: 24px; }
 .ft-help-text { margin: 4px 0 0; color: var(--ft-i-text); }
+/* Under a section's controls (Align to column, Match item width), the how-to sits 8 below them. */
+.ft-section > .ft-choice + .ft-help-body { margin-top: 8px; }
+.ft-section > .ft-type + .ft-choice, .ft-section > .ft-type + .ft-help-body { margin-top: 8px; }
 /* Figma's marquee: drag on the page to select what the box touches. */
 .ft-marquee { position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none; border: 1px solid var(--ft-blue); background: color-mix(in srgb, var(--ft-blue) 8%, transparent); }
 .ft-marquee[hidden] { display: none; }
@@ -935,6 +944,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     alignVCenter: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 6.75C10 6.33579 9.66421 6 9.25 6H8.75C8.33579 6 8 6.33579 8 6.75V16.25C8 16.6642 8.33579 17 8.75 17H9.25C9.66421 17 10 16.6642 10 16.25V6.75ZM15 8.75C15 8.33579 14.6642 8 14.25 8H13.75C13.3358 8 13 8.33579 13 8.75V14.25C13 14.6642 13.3358 15 13.75 15H14.25C14.6642 15 15 14.6642 15 14.25V8.75Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5 11C17.7761 11 18 11.2239 18 11.5C18 11.7761 17.7761 12 17.5 12H15V11H17.5ZM13 11H10V12H13V11ZM5.5 11H8V12H5.5C5.22386 12 5 11.7761 5 11.5C5 11.2239 5.22386 11 5.5 11Z" fill="currentColor" fill-opacity="0.333"/></svg>',
     // grid-column (Figma's columns layout grid): the column help card
     gridColumn: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 6C7.77614 6 8 6.22386 8 6.5V7H11.5V6.5C11.5 6.22386 11.7239 6 12 6C12.2761 6 12.5 6.22386 12.5 6.5V7H16V6.5C16 6.22386 16.2239 6 16.5 6C16.7761 6 17 6.22386 17 6.5V7H17.5C17.7761 7 18 7.22386 18 7.5C18 7.77614 17.7761 8 17.5 8H17V16H17.5C17.7761 16 18 16.2239 18 16.5C18 16.7761 17.7761 17 17.5 17H17V17.5C17 17.7761 16.7761 18 16.5 18C16.2239 18 16 17.7761 16 17.5V17H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V17H8V17.5C8 17.7761 7.77614 18 7.5 18C7.22386 18 7 17.7761 7 17.5V17H6.5C6.22386 17 6 16.7761 6 16.5C6 16.2239 6.22386 16 6.5 16H7V8H6.5C6.22386 8 6 7.77614 6 7.5C6 7.22386 6.22386 7 6.5 7H7V6.5C7 6.22386 7.22386 6 7.5 6ZM8 16H11.5V8H8V16ZM12.5 16H16V8H12.5V16Z" fill="currentColor"/></svg>',
+    // layout-grid-columns: the help for several columns
+    gridColumns: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V19H5V5ZM11 5H14V19H11V5ZM20 5H17V19H20V5Z" fill="currentColor"/></svg>',
+    // al.constrain-horiz: Match item width to columns
+    spanWidth: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 8.49976C16.7761 8.49976 17 8.72361 17 8.99976V11.4998V13.9998C17 14.2759 16.7761 14.4998 16.5 14.4998C16.2239 14.4998 16 14.2759 16 13.9998V11.9998L7 11.9998L7 13.9998C7 14.2759 6.77614 14.4998 6.5 14.4998C6.22386 14.4998 6 14.2759 6 13.9998L6 11.4998L6 8.99976C6 8.72361 6.22386 8.49976 6.5 8.49976C6.77614 8.49976 7 8.72361 7 8.99976L7 10.9998L16 10.9998V8.99976C16 8.72361 16.2239 8.49976 16.5 8.49976Z" fill="currentColor"/></svg>',
+    // fit.to.width.small: the help for matching width
+    fitWidth: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 7H17.5C17.7761 7 18 7.22386 18 7.5V16.5C18 16.7761 17.7761 17 17.5 17H6.5C6.22386 17 6 16.7761 6 16.5V7.5C6 7.22386 6.22386 7 6.5 7ZM5 7.5C5 6.67157 5.67157 6 6.5 6H17.5C18.3284 6 19 6.67157 19 7.5V16.5C19 17.3284 18.3284 18 17.5 18H6.5C5.67157 18 5 17.3284 5 16.5V7.5ZM9.35355 10.8535C9.54881 10.6583 9.54881 10.3417 9.35355 10.1465C9.15829 9.95119 8.84171 9.95119 8.64645 10.1465L7.14645 11.6465C6.95119 11.8417 6.95119 12.1583 7.14645 12.3535L8.64645 13.8535C8.84171 14.0488 9.15829 14.0488 9.35355 13.8535C9.54881 13.6583 9.54881 13.3417 9.35355 13.1465L8.70711 12.5H15.2929L14.6465 13.1465C14.4512 13.3417 14.4512 13.6583 14.6465 13.8535C14.8417 14.0488 15.1583 14.0488 15.3535 13.8535L16.8535 12.3535C17.0488 12.1583 17.0488 11.8417 16.8535 11.6465L15.3535 10.1465C15.1583 9.95119 14.8417 9.95119 14.6465 10.1465C14.4512 10.3417 14.4512 10.6583 14.6465 10.8535L15.2929 11.5H8.70711L9.35355 10.8535Z" fill="currentColor"/></svg>',
     // close (the large one, as Figma's help card has)
     dismiss: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.3536 6.64645C17.5488 6.84171 17.5488 7.15829 17.3536 7.35355L12.7071 12L17.3536 16.6464C17.5488 16.8417 17.5488 17.1583 17.3536 17.3536C17.1583 17.5488 16.8417 17.5488 16.6464 17.3536L12 12.7071L7.35355 17.3536C7.15829 17.5488 6.84171 17.5488 6.64645 17.3536C6.45118 17.1583 6.45118 16.8417 6.64645 16.6464L11.2929 12L6.64645 7.35365C6.45119 7.15839 6.45118 6.84181 6.64644 6.64654C6.84171 6.45128 7.15829 6.45128 7.35355 6.64654L12 11.2929L16.6464 6.64645C16.8417 6.45118 17.1583 6.45118 17.3536 6.64645Z" fill="currentColor"/></svg>',
     // layout-align-bottom
@@ -1523,12 +1538,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // at its right.)
   function makeToolbar(hotkey) {
     const bar = el("div", "ft-toolbar");
+    // As Figma's left rail: each tool's icon in its box, its name under it.
     const actions = [
-      ["copy", "Copy changes and prompt", copyChanges, KEYS.shift + KEYS.mod + "E"],
-      ["floppyDisk", "Save changes in this browser", saveNow, KEYS.alt + KEYS.mod + "S"],
-    ].map(([icon, name, onClick, keys]) => {
+      ["copy", "Copy", "Copy changes and prompt", copyChanges, KEYS.shift + KEYS.mod + "E"],
+      ["floppyDisk", "Save", "Save changes in this browser", saveNow, KEYS.alt + KEYS.mod + "S"],
+    ].map(([icon, label, name, onClick, keys]) => {
       const b = button("ft-tool", null, onClick);
-      b.innerHTML = ICON[icon];
+      const box = el("span", "ft-tool-icon");
+      box.innerHTML = ICON[icon];
+      b.append(box, el("span", "ft-tool-label", label));
       b.setAttribute("aria-label", name);
       b.setAttribute("data-ft-tip", name);
       if (keys) b.setAttribute("data-ft-tip-key", keys);
@@ -2705,18 +2723,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     compLabel.hidden = true;
     selBox.appendChild(compLabel);
     const marquee = el("div", "ft-marquee");
-    // A column of the layout guide, picked with a click on the page inside it (see columnAt).
-    const colBox = el("div", "ft-sel-box ft-col-box");
+    // The columns of the layout guide picked with a click on the page inside one (see columnAt), one box each.
+    const colBoxes = [];
     hoverBox.hidden = true;
     selBox.hidden = true;
     marquee.hidden = true;
-    colBox.hidden = true;
-    document.body.append(hoverBox, selBox, marquee, colBox);
+    document.body.append(hoverBox, selBox, marquee);
     // One layer, or two or more: a group, or what shift-clicks gathered.
     let selected = null;
     let many = [];
     let group = null;
-    // A column of the layout guide, { i }, on its own or with the layers (Design, while a columns layout shows).
+    // Columns of the layout guide, { cols: [i, ...] } in order, on their own or with the layers (Design, while a
+    // columns layout shows).
     let column = null;
     // The group she double-clicked into: inside it, its layers select one at a time.
     let inside = null;
@@ -2812,9 +2830,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       placeColumn();
     }
     function placeColumn() {
-      const r = column && columnRect(column.i);
-      colBox.hidden = !r;
-      if (r) frameRect(colBox, r);
+      const cols = column ? column.cols : [];
+      while (colBoxes.length < cols.length) {
+        const b = el("div", "ft-sel-box ft-col-box");
+        document.body.appendChild(b);
+        colBoxes.push(b);
+      }
+      colBoxes.forEach((b, k) => {
+        const r = k < cols.length && columnRect(cols[k]);
+        b.hidden = !r;
+        if (r) frameRect(b, r);
+      });
     }
     // The column of the layout that shows under x, as { i }: Design only, and only on a column, not a gutter.
     function columnAt(x) {
@@ -2824,7 +2850,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const i = starts.findIndex((st, k) => x >= st && x <= ends[k]);
       return i < 0 ? null : { i };
     }
-    const sameColumn = (a, b) => (a ? a.i : -1) === (b ? b.i : -1);
+    const sameColumn = (a, b) => (a ? a.cols.join() : "") === (b ? b.cols.join() : "");
+    // Column i added to the columns picked, or taken back out (none left: no columns).
+    function toggleColumn(i) {
+      const cols = column ? column.cols.slice() : [];
+      const k = cols.indexOf(i);
+      if (k < 0) cols.push(i);
+      else cols.splice(k, 1);
+      return cols.length ? { cols: cols.sort((a, b) => a - b) } : null;
+    }
+    // The columns picked that the layout still has.
+    const liveColumns = () => {
+      const cols = column ? column.cols.filter((i) => columnRect(i)) : [];
+      return cols.length ? { cols } : null;
+    };
     function moved() {
       place();
       refreshPanel();
@@ -2878,15 +2917,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // The layout changed (hidden, removed, fewer columns): a picked column that's gone is let go.
     function guidesChanged() {
       if (!column) return;
-      if (columnRect(column.i)) placeColumn();
-      else choose(current(), null);
+      const live = liveColumns();
+      if (sameColumn(live, column)) placeColumn();
+      else choose(current(), live);
     }
     // After an undo or redo: the same layers, redrawn, as a group if they still are one.
     function reshow() {
       inside = null;
       const one = selected;
       const list = many.slice();
-      const col = column && columnRect(column.i) ? column : null;
+      const col = liveColumns();
       if (one) show(one, [], null, col);
       else if (list.length) {
         const sels = list.map(selectorFor);
@@ -2943,12 +2983,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         document.removeEventListener("mouseup", up, true);
         marquee.hidden = true;
         if (dragging) return;
-        // A click on the page: inside a column of the layout that shows, that column (Shift adds it to the layers
-        // picked, or takes it back off); anywhere else, nothing.
+        // A click on the page: inside a column of the layout that shows, that column (Shift adds it to the columns
+        // and layers picked, or takes it back off); anywhere else, nothing.
         const at = columnAt(x0);
         if (e.shiftKey) {
-          if (at) choose(current(), sameColumn(at, column) ? null : at);
-        } else if (at) choose([], at);
+          if (at) choose(current(), toggleColumn(at.i));
+        } else if (at) choose([], { cols: [at.i] });
         else select(null);
       };
       document.addEventListener("mousemove", move, true);
@@ -3180,7 +3220,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // On the page itself, a column of the layout that shows outlines as a click would pick it.
       const col = live && !t && !isUi(e.target) ? columnAt(e.clientX) : null;
       if (col && !over.length) {
-        hoverBox.hidden = sameColumn(col, column);
+        hoverBox.hidden = !!column && column.cols.includes(col.i);
         if (!hoverBox.hidden) frameRect(hoverBox, columnRect(col.i));
         hoverBox.classList.remove("is-comp");
         return;
@@ -3756,11 +3796,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const { starts, ends } = guideEdges(g);
     return { left: starts[i], right: ends[i], width: ends[i] - starts[i], top: 0, bottom: window.innerHeight, height: window.innerHeight };
   }
-  // A column picked with layers (Design, the layout showing): they line up with its left edge, its middle or its
-  // right edge, moved as alignSelection moves them (a group as one).
-  function alignToColumn(i, list, how) {
-    const box = columnRect(i);
+  // The columns picked, as one box: from the leftmost one's left edge to the rightmost one's right edge.
+  function columnsRect(cols) {
+    const a = columnRect(Math.min(...cols));
+    const b = columnRect(Math.max(...cols));
+    return a && b ? { left: a.left, right: b.right, width: b.right - a.left, top: 0, bottom: a.bottom, height: a.height } : null;
+  }
+  // How many columns that box spans, the ones between included.
+  const columnSpan = (cols) => Math.max(...cols) - Math.min(...cols) + 1;
+  // Columns picked with layers (Design, the layout showing): the layers line up with the leftmost column's left
+  // edge, the middle of the columns or the rightmost one's right edge (one column: its own edges and middle),
+  // moved as alignSelection moves them (a group as one).
+  function alignToColumns(cols, list, how) {
+    const box = columnsRect(cols);
     if (box) alignSelection(list, how, box);
+  }
+  // Match item widths to the columns: each layer (the outermost picked) takes their width and lines up with the
+  // leftmost one; an image or a vector keeps its proportions.
+  function matchColumns(cols, list) {
+    const box = columnsRect(cols);
+    if (!box) return;
+    const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+    top.forEach((t) => {
+      const keep = t.tagName === "IMG" || isVector(t) ? sizeOf(t) : null;
+      setSize(t, Math.round(box.width), keep && keep.w ? Math.round((box.width * keep.h) / keep.w) : null);
+    });
+    alignTo(top.map((t) => [t]), box, "left");
   }
 
   // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box (or
@@ -4969,8 +5030,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // spring back.
     const ACROSS = [["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontally"], ["right", "alignRight", "Align right"]];
     const alignSeg = (g) => actionSeg(ACROSS, (how) => alignAll(g, how));
-    // With a column picked, Alignment's across buttons line the layers up with the column (same keys).
+    // With columns picked, Alignment's across buttons line the layers up with them (same keys): one column's edges and
+    // middle, or several columns' leftmost edge, middle and rightmost edge.
     const COLUMN_ACROSS = [["left", "alignLeft", "Align left to column", KEYS.alt + "A"], ["hcenter", "alignHCenter", "Align to column center", KEYS.alt + "H"], ["right", "alignRight", "Align right to column", KEYS.alt + "D"]];
+    const COLUMNS_ACROSS = [["left", "alignLeft", "Align to leftmost column", KEYS.alt + "A"], ["hcenter", "alignHCenter", "Align to center of columns", KEYS.alt + "H"], ["right", "alignRight", "Align to rightmost column", KEYS.alt + "D"]];
     const COLUMN_KEYS = { KeyA: "left", KeyH: "hcenter", KeyD: "right" };
     // Figma's Alignment row: across, then up and down.
     const alignRow = (act) => {
@@ -6178,25 +6241,38 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // panel while a columns layout shows and nothing is selected, with a close that puts it away for good in this
     // browser; shorter, without the close, as the panel when just a column is picked.
     const COLUMN_TIP_KEY = "finetune:tip:column";
-    function helpCard(text, onClose) {
+    function helpRow(icon, text) {
+      const body = el("div", "ft-help-body");
+      const mark = el("span", "ft-help-icon");
+      mark.innerHTML = ICON[icon];
+      body.append(mark, el("p", "ft-help-text", text));
+      return body;
+    }
+    function helpCard(title, icon, text, onClose) {
       const s = el("div", "ft-section ft-help");
       const head = el("div", "ft-section-head");
-      head.appendChild(el("span", null, "Aligning items to a column"));
+      head.appendChild(el("span", null, title));
       if (onClose) head.appendChild(iconButton(ICON.dismiss, "Close", onClose));
-      const body = el("div", "ft-help-body");
-      const icon = el("span", "ft-help-icon");
-      icon.innerHTML = ICON.gridColumn;
-      body.append(icon, el("p", "ft-help-text", text));
-      s.append(head, body);
+      s.append(head, helpRow(icon, text));
       return s;
     }
     let tipClosed = false;
     try { tipClosed = localStorage.getItem(COLUMN_TIP_KEY) === "closed"; } catch (e) {}
-    const colTip = helpCard("Click empty space in a column to select it, then shift-click layers and use Alignment to line them up with the column.", () => {
+    const colTip = helpCard("Aligning layers to a column", "gridColumn", "Click empty space in a column to select it, and shift-click to add more. Then shift-click layers to align them to the columns or match their width.", () => {
       tipClosed = true;
       try { localStorage.setItem(COLUMN_TIP_KEY, "closed"); } catch (e) {}
       drawColumnTip();
     });
+    // Motion's: how to give a layer new motion, under Animations while nothing is selected, with the same close.
+    const MOTION_TIP_KEY = "finetune:tip:motion";
+    let motionTipClosed = false;
+    try { motionTipClosed = localStorage.getItem(MOTION_TIP_KEY) === "closed"; } catch (e) {}
+    const motionTip = helpCard("Adding motion to layers", "motion", "Select a layer on the page, then use Add CSS animation to give it new motion.", () => {
+      motionTipClosed = true;
+      try { localStorage.setItem(MOTION_TIP_KEY, "closed"); } catch (e) {}
+      motionTip.hidden = true;
+    });
+    motionTip.hidden = motionTipClosed;
     const drawColumnTip = () => { colTip.hidden = tipClosed || !!(shown || shownColumn) || !guides.some((g) => g.visible); };
     afterGuides = () => {
       drawColumnTip();
@@ -6204,26 +6280,70 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     };
     drawColumnTip();
 
-    // A picked column, named as Figma names a layer: "Column 3", of how many, and how many layers are picked with it.
-    function columnLine(i, n) {
+    // The columns picked, named as Figma names a layer: "Column 3", "Columns 3–5" (in a row) or "Columns 2, 5", of
+    // how many, and how many layers are picked with them.
+    function columnLine(cols, n) {
       const g = guides.find((gd) => gd.visible);
+      const nums = cols.map((i) => i + 1);
+      const name = nums.length === 1 ? "Column " + nums[0]
+        : "Columns " + (columnSpan(cols) === nums.length ? nums[0] + "–" + nums[nums.length - 1] : nums.join(", "));
       const row = el("div", "ft-kind");
-      row.append(el("span", "ft-kind-name", "Column " + (i + 1)), el("span", "ft-kind-el", g ? "of " + g.count : ""));
+      row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", g ? "of " + g.count : ""));
       if (n) row.appendChild(el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " layer" : " layers")));
       return row;
     }
-    // A column and layers: Alignment lines the layers up with the column's left edge, its center or its right edge.
-    function columnSection(i, list) {
+    // Columns and layers: Alignment lines the layers up with them, and its how-to sits under it.
+    function columnSection(cols, list) {
+      const many = cols.length > 1;
       const s = section("Position");
       const row = el("div", "ft-type-pair");
-      row.append(actionSeg(COLUMN_ACROSS, (how) => alignColumn(i, list, how)), el("div"));
+      row.append(actionSeg(many ? COLUMNS_ACROSS : COLUMN_ACROSS, (how) => alignColumns(cols, list, how)), el("div"));
       const grid = el("div", "ft-type");
-      grid.appendChild(labeled("Align to column", row, true));
-      s.appendChild(grid);
+      const help = many ? helpRow("gridColumns", "Line layers up with the leftmost column, the center, or the rightmost column.")
+        : helpRow("gridColumn", "Line layers up with this column's left edge, center, or right edge.");
+      grid.appendChild(labeled(many ? "Align to columns" : "Align to column", row, true));
+      s.append(grid, help);
       return s;
     }
-    function alignColumn(i, list, how) {
-      alignToColumn(i, list, how);
+    // Two or more columns and layers: Layout, with the layers' Dimensions and Match item width to the columns.
+    function columnLayout(cols, list) {
+      const s = section("Layout");
+      const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+      const sizes = () => top.map(sizeOf);
+      const same = (k) => {
+        const v = sizes().map((z) => Math.round(z[k]));
+        return v.every((x) => x === v[0]) ? v[0] : "Mixed";
+      };
+      const w = numField("W");
+      const h = numField("H");
+      [[w, "w"], [h, "h"]].forEach(([f, k]) => editable(f.input, changed, (v) => {
+        const n = parseFloat(v);
+        if (!isNum(n) || n < 0) return;
+        top.forEach((t) => setSize(t, k === "w" ? n : null, k === "h" ? n : null));
+      }));
+      const dims = el("div", "ft-type-pair");
+      dims.append(w.wrap, h.wrap);
+      const n = columnSpan(cols);
+      const match = button("ft-choice ft-choice-icon ft-add-anim", null, () => {
+        matchColumns(cols, list);
+        changed(true);
+        offerStyle();
+      });
+      const icon = el("span");
+      icon.innerHTML = ICON.spanWidth;
+      match.append(icon, el("span", null, "Match layer width" + (top.length > 1 ? "s" : "") + " to " + n + " columns"));
+      const help = helpRow("fitWidth", "Stretch layers across the columns, from the leftmost edge to the rightmost.");
+      const grid = el("div", "ft-type");
+      grid.append(labeled("Dimensions", dims, true));
+      s.append(grid, match, help);
+      draws.push((force) => {
+        w.set(same("w"), force);
+        h.set(same("h"), force);
+      });
+      return s;
+    }
+    function alignColumns(cols, list, how) {
+      alignToColumns(cols, list, how);
       changed(true);
       offerStyle();
     }
@@ -6242,6 +6362,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function drawMotion() {
       motionChosen.textContent = "";
       animsSec.hidden = !!shown;
+      motionTip.hidden = motionTipClosed || !!shown;
       waitSec.hidden = true;
       speedSec.hidden = true;
       applySpeed();
@@ -6769,8 +6890,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       drawColumnTip();
       if (shownColumn) {
         const list = !target ? [] : Array.isArray(target) ? target : [target];
-        chosen.append(columnLine(shownColumn.i, list.length), list.length ? columnSection(shownColumn.i, list)
-          : helpCard("Shift-click layers to add them, then use Alignment to line them up with this column."));
+        const cols = shownColumn.cols;
+        chosen.appendChild(columnLine(cols, list.length));
+        if (list.length) {
+          chosen.appendChild(columnSection(cols, list));
+          if (cols.length > 1) chosen.appendChild(columnLayout(cols, list));
+        } else if (cols.length > 1) {
+          chosen.appendChild(helpCard("Aligning layers to columns", "gridColumns", "Shift-click layers to align them to these columns or match their width."));
+        } else {
+          chosen.appendChild(helpCard("Aligning layers to a column", "gridColumn", "Shift-click layers to align them to this column. Add more columns to align across them or match their width."));
+        }
         changed(true);
         return;
       }
@@ -6909,7 +7038,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
       if (root.getAttribute("data-tab") === "design" && shownColumn && shown && only(false, true, false) && COLUMN_KEYS[e.code]) {
         e.preventDefault();
-        return alignColumn(shownColumn.i, Array.isArray(shown) ? shown : [shown], COLUMN_KEYS[e.code]);
+        return alignColumns(shownColumn.cols, Array.isArray(shown) ? shown : [shown], COLUMN_KEYS[e.code]);
       }
       if (root.getAttribute("data-tab") !== "design" || !shown) return;
       const list = Array.isArray(shown) ? shown : [shown];
@@ -6978,7 +7107,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     speedSec.appendChild(speedRow);
     drawSpeed();
     speedSec.hidden = true;
-    motionPane.append(motionChosen, animsSec, waitSec);
+    motionPane.append(motionChosen, animsSec, waitSec, motionTip);
     root.append(top, designPane, motionPane, modes);
     // The floating scrollbar: drawn from the panel's scroll, kept in step with its size and its content's.
     const rail = el("div", "ft-scroll-rail");
