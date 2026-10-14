@@ -17,6 +17,8 @@ Those tune JavaScript objects for developers. finetune is for design tokens:
 - It has a path back into committed code: Copy JSON, Copy CSS, and a bake step.
 - It is meant to be driven by Claude Code, through the skill in `skills/finetune`.
 
+The closest tools each cover part of this. [Knobs](https://github.com/yairEO/knobs) binds a floating panel to CSS variables, but has no token snapping and no way back into code. [Tweakcn](https://tweakcn.com) edits CSS variables and copies the CSS out, but only for shadcn's theme, on its own site rather than on your page.
+
 ## Quick start
 
 ```html
@@ -81,6 +83,22 @@ Then two phrases:
 
 - **"Add a tuner for X."** Claude writes one `finetune()` call with one control per value you named, keys named after the CSS variables they write. No custom panel code, nothing you didn't name.
 - **"Bake the hero tuner."** Paste the Copy JSON first. Claude writes each value where it lives, removes the call and the script tag, lists every file and line it touched, and asks before committing.
+
+## Motion: what it can tune
+
+The inspector's Motion tab tunes animations the code already has, so you can describe one to Claude Code and then get its timing right by eye. It reads them from the page:
+
+- **CSS animations** (`@keyframes` and the `animation` properties). Layers that run the same keyframes are one group, tuned together, with a stagger.
+- **JavaScript animations made with `element.animate()`**, the browser's own animation call, and libraries built on it. finetune watches every call, so an edit also applies to the next time the page runs it. The bake changes the call's options in your code.
+- **CSS animations that haven't started yet**, waiting on a class the page adds later (on scroll, on a click). Play adds that class, so you don't have to scroll to see them.
+
+It can also add a CSS animation to anything on the page (an element, a text, a group): pick one of the page's own `@keyframes`, or one of Figma's generic ones (Dissolve, Move in, Move out, Push, Slide in, Slide out), then tune it. A generic one is added to the page as a new `@keyframes`, and the bake adds it to your code.
+
+What it can't tune:
+
+- **Libraries that animate frame by frame themselves**, like GSAP or most of Motion for React (Framer Motion). They change a style on every frame and leave no animation for the browser to read: no duration, no easing.
+- **An animation that starts some other way** (a hover, an attribute, a class on a page it can't see) until it has started.
+- **CSS transitions.** Motion is for animations; transitions stay in the code.
 
 ## Panel design
 
