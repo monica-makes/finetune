@@ -2,8 +2,6 @@
 
 Sliders for the last 10% of a design: tune in the browser, copy the values, bake them into code.
 
-**[Live demo](https://monica-makes.github.io/finetune/demos/)** · press <kbd>T</kbd> to open the panel.
-
 ## What it does
 
 finetune puts a small floating panel on any HTML page. You declare the values you want to tune, and each control writes a CSS custom property live as you drag. When it looks right, you copy the values out as JSON or CSS. Then you bake them into the committed code and delete the panel.
