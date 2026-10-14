@@ -104,6 +104,8 @@ What it can't tune:
 
 The panel is a plain placeholder for now. Its whole look lives in one block at the top of `src/finetune.js`, marked PANEL LOOK, so the real design can replace it without touching the controls.
 
+It's built from Figma's own component library, [UI3: Figma's UI Kit](https://www.figma.com/design/sAdoR4tEPh4cSbicxGYzUA/UI3--Figma-s-UI-Kit--Community-): its colours (light and dark), icons and type, so the panel stays consistent with the tool most designers already know. It follows your system's theme; ⌥⌘T (Ctrl+Alt+T on Windows) flips it.
+
 ## Roadmap
 
 - **v0**, this: one script, five controls, copy, presets, the skill.

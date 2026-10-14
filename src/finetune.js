@@ -18,18 +18,85 @@
      .ft-panel: the controls panel, still a plain placeholder.
      ========================================================================== */
   const PANEL_LOOK = `
-/* The panel's colours, on everything of finetune's own that sits on the page, so none takes the page's colours. */
-.ft-inspector, .ft-toolbar, .ft-ui {
-  --ft-i-bg: #F8F8F8;
-  --ft-i-border: #E3E3E3;
-  --ft-i-line: #E6E6E6;
-  --ft-i-field: rgba(0, 0, 0, 0.05);
-  --ft-i-hover: rgba(0, 0, 0, 0.06);
-  --ft-i-stroke: rgba(0, 0, 0, 0.14);
-  --ft-i-focus: #0D99FF;
-  --ft-i-text: rgba(0, 0, 0, 0.9);
-  --ft-i-text-2: rgba(0, 0, 0, 0.5);
+/* The panel's colours: Figma UI3's colour tokens (the UI3 kit's Colors, Light and Dark), named for what they do here.
+   html[data-ft-theme] picks the theme: the system's, unless she flips it (⌥⌘T, see setTheme). Two are finetune's
+   own (her calls): the panel's container is pen.dev's (#F8F8F8 with a #E3E3E3 border in light), and Motion's accent
+   is UI3's pink where Design has its blue. The overlays on the page (selection, marquee, size label) take UI3's
+   canvas tokens, which follow the theme as Figma's do. */
+:root {
+  --ft-i-bg: #F8F8F8;                      /* the container (pen.dev) */
+  --ft-i-border: #E3E3E3;                  /* the container's border (pen.dev) */
+  --ft-i-surface: #FFFFFF;                 /* bg-default */
+  --ft-i-line: #E6E6E6;                    /* border-default */
+  --ft-i-field: rgba(0, 0, 0, 0.05);       /* special/bghovertransparent */
+  --ft-i-hover: rgba(0, 0, 0, 0.05);       /* special/bghovertransparent */
+  --ft-i-press: rgba(0, 0, 0, 0.1);        /* special/bgtransparentsecondary/hover */
+  --ft-i-stroke: rgba(0, 0, 0, 0.1);       /* special/bordertranslucent */
+  --ft-i-text: rgba(0, 0, 0, 0.9);         /* text-default, icon-default */
+  --ft-i-text-2: rgba(0, 0, 0, 0.5);       /* text-secondary */
+  --ft-i-text-3: rgba(0, 0, 0, 0.3);       /* text-tertiary */
+  --ft-i-inverse: #2C2C2C;                 /* bg/inverse */
+  --ft-i-on-inverse: rgba(255, 255, 255, 0.9); /* text/inverse/oninverse */
+  --ft-i-scrollbar: rgba(179, 179, 179, 0.5); /* special/scrollbar */
+  --ft-blue: #0D99FF;                      /* bg-brand, border-selected, fullscreen/selection/border */
+  --ft-blue-soft: #E5F4FF;                 /* bg-selected */
+  --ft-blue-text: #007BE5;                 /* icon/selected */
+  --ft-pink: #FF24BD;                      /* bg-assistive (pink-500), fullscreen/assistive/bg */
+  --ft-pink-soft: #FFE0FC;                 /* bg/assistive/tertiary */
+  --ft-pink-text: #EA10AC;                 /* icon/assistive */
+  --ft-purple: #9747FF;                    /* bg/component, fullscreen/component/bg */
+  --ft-purple-soft: #F1E5FF;               /* bg/component/tertiary */
+  --ft-purple-text: #8638E5;               /* text/component */
+  --ft-dark: #1E1E1E;                      /* bg-menu, bg-tooltip: dark in both themes */
+  --ft-dark-line: #383838;                 /* border-menu */
+  --ft-dark-hover: rgba(255, 255, 255, 0.1); /* white/200 */
+  --ft-dark-press: rgba(255, 255, 255, 0.2); /* white/300 */
+  --ft-on-dark: #FFFFFF;                   /* text/menu */
+  --ft-on-dark-2: rgba(255, 255, 255, 0.7); /* text/menu/secondary */
+  --ft-on-dark-3: rgba(255, 255, 255, 0.4); /* text/menu/tertiary */
+  --ft-toolbar: #2C2C2C;                   /* bg/toolbar: dark in both themes */
+  --ft-toolbar-hover: #111111;             /* bg/toolbar/hover */
+  --ft-toolbar-line: #444444;              /* border/toolbar */
+  /* UI3's elevation effect styles. */
+  --ft-elev-200: 0 1px 3px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 0, 0, 0.1), 0 0 0.5px rgba(0, 0, 0, 0.18);
+  --ft-elev-300: 0 1px 3px rgba(0, 0, 0, 0.1), 0 5px 12px rgba(0, 0, 0, 0.13), 0 0 0.5px rgba(0, 0, 0, 0.15);
+  --ft-elev-400: 0 2px 5px rgba(0, 0, 0, 0.15), 0 10px 16px rgba(0, 0, 0, 0.12), 0 0 0.5px rgba(0, 0, 0, 0.12);
+  /* The accent: blue in Design, pink in Motion (html.ft-motion, below). */
+  --ft-accent: var(--ft-blue);
+  --ft-accent-soft: var(--ft-blue-soft);
+  --ft-accent-text: var(--ft-blue-text);
 }
+html[data-ft-theme="dark"] {
+  --ft-i-bg: #2C2C2C;                      /* bg-default */
+  --ft-i-border: #444444;                  /* border-default */
+  --ft-i-surface: #2C2C2C;
+  --ft-i-line: #444444;
+  --ft-i-field: rgba(255, 255, 255, 0.05);
+  --ft-i-hover: rgba(255, 255, 255, 0.05);
+  --ft-i-press: rgba(255, 255, 255, 0.1);
+  --ft-i-stroke: rgba(255, 255, 255, 0.1);
+  --ft-i-text: #FFFFFF;
+  --ft-i-text-2: rgba(255, 255, 255, 0.7);
+  --ft-i-text-3: rgba(255, 255, 255, 0.4);
+  --ft-i-inverse: #FFFFFF;
+  --ft-i-on-inverse: rgba(0, 0, 0, 0.9);
+  --ft-blue: #0C8CE9;
+  --ft-blue-soft: #4A5878;
+  --ft-blue-text: #7CC4F8;
+  --ft-pink: #F316B0;
+  --ft-pink-soft: #68275E;
+  --ft-pink-text: #FC9CE0;
+  --ft-purple: #8A38F5;
+  --ft-purple-soft: #473956;
+  --ft-purple-text: #D1A8FF;
+  --ft-elev-200: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0.5px rgba(255, 255, 255, 0.3), 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
+  --ft-elev-300: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0.5px rgba(255, 255, 255, 0.3), 0 5px 12px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
+  --ft-elev-400: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 0 0.5px rgba(255, 255, 255, 0.35), 0 10px 16px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
+}
+html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-soft); --ft-accent-text: var(--ft-pink-text); }
+/* Figma UI3's icons are 24 frames drawn at 1:1: each shows at 24, never scaled, and a smaller slot centres one
+   with negative margins. */
+.ft-ico { display: block; flex: none; }
 .ft-inspector {
   position: fixed; top: 12px; right: 12px; z-index: 2147483646;
   width: 242px; max-height: calc(100vh - 24px); overflow: hidden auto; overscroll-behavior: none;
@@ -49,7 +116,7 @@
 .ft-scroll-rail { position: sticky; top: 0; z-index: 2; height: 0; pointer-events: none; }
 .ft-scroll-thumb {
   position: absolute; top: 0; right: 0; width: 8px; border: 2px solid transparent; border-radius: 4px;
-  background: rgba(0, 0, 0, 0.2); background-clip: padding-box; pointer-events: auto; touch-action: none;
+  background: var(--ft-i-scrollbar); background-clip: padding-box; pointer-events: auto; touch-action: none;
 }
 .ft-scroll-thumb[hidden] { display: none; }
 .ft-inspector *, .ft-inspector *::before, .ft-inspector *::after { box-sizing: border-box; }
@@ -77,26 +144,19 @@
    a cell inside one sits 4px in, so its corners are 4px (the Design / Motion bar's sit 6px in, her call).
    Design and Motion, at the bottom of the window like Figma's toolbar: one bar of cells, each with its icon
    and its name; the chosen one is filled with the accent, its icon and name white, as Figma's selected tool
-   (blue, pink in Motion). It takes the page's theme: light on a light page, Figma's dark on a dark
-   one (data-theme, set from the page's background). */
+   (blue, pink in Motion). It takes finetune's theme, as the rest does; its shadow is UI3's elevation-200, its
+   24px icon sits 4 in, as in Figma's toolbar. */
 .ft-modes {
-  --ft-m-bg: #FFFFFF; --ft-m-text: rgba(0, 0, 0, 0.7);
-  --ft-m-hover: rgba(0, 0, 0, 0.04); --ft-m-sel: #0D99FF;
   position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px;
-  border-radius: 8px; background: var(--ft-m-bg);
-  box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-.ft-modes[data-theme="dark"] {
-  --ft-m-bg: #2C2C2C; --ft-m-text: rgba(255, 255, 255, 0.8);
-  --ft-m-hover: rgba(255, 255, 255, 0.06); --ft-m-sel: #0C8CE9;
+  border-radius: 8px; background: var(--ft-i-surface); box-shadow: var(--ft-elev-200);
 }
 .ft-modes-btn {
-  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 6px; border-radius: 4px;
-  color: var(--ft-m-text);
+  display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px 0 4px; border-radius: 4px;
+  color: var(--ft-i-text);
 }
-.ft-modes-btn svg { display: block; width: 20px; height: 20px; }
-.ft-modes-btn:hover { background: var(--ft-m-hover); }
-.ft-modes-btn[aria-selected="true"] { background: var(--ft-m-sel); color: #FFFFFF; }
+.ft-modes-btn svg { display: block; width: 24px; height: 24px; }
+.ft-modes-btn:hover { background: var(--ft-i-hover); }
+.ft-modes-btn[aria-selected="true"] { background: var(--ft-accent); color: var(--ft-on-dark); }
 .ft-icon-btn:disabled { opacity: 0.4; pointer-events: none; }
 /* The toast sits above the Design / Motion bar, spaced as Figma's (40 tall, 16 in, 12 between the words and its
    buttons) in finetune's colors. One with an action (Reset's Undo) takes clicks, has Figma's close button after it,
@@ -104,7 +164,7 @@
 .ft-toast {
   position: fixed; left: 50%; bottom: 64px; z-index: 2147483647; transform: translateX(-50%);
   display: flex; align-items: center; gap: 12px; min-height: 40px; box-sizing: border-box;
-  padding: 0 16px; border-radius: 8px; background: #1E1E1E; color: #FFFFFF; pointer-events: none;
+  padding: 0 16px; border-radius: 8px; background: var(--ft-dark); color: var(--ft-on-dark); pointer-events: none;
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   transition: opacity 0.4s;
@@ -114,16 +174,16 @@
 .ft-toast-actions { display: flex; align-items: center; gap: 8px; }
 .ft-toast.is-fading { opacity: 0; }
 .ft-toast-btn {
-  height: 24px; margin: 0; padding: 0 8px; border: 0; border-radius: 5px; background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF; font: inherit; letter-spacing: inherit; cursor: default;
+  height: 24px; margin: 0; padding: 0 8px; border: 0; border-radius: 5px; background: var(--ft-dark-hover);
+  color: var(--ft-on-dark); font: inherit; letter-spacing: inherit; cursor: default;
 }
-.ft-toast-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.ft-toast-btn:hover { background: var(--ft-dark-press); }
 .ft-toast-close {
   display: grid; place-items: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 0; border-radius: 5px;
-  background: none; color: rgba(255, 255, 255, 0.7); cursor: default;
+  background: none; color: var(--ft-on-dark-2); cursor: default;
 }
-.ft-toast-close:hover { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; }
-.ft-toast-close svg { display: block; width: 16px; height: 16px; }
+.ft-toast-close:hover { background: var(--ft-dark-hover); color: var(--ft-on-dark); }
+.ft-toast-close svg { display: block; width: 24px; height: 24px; }
 .ft-pane[hidden] { display: none; }
 /* The last divider would sit on the panel's own border and read as a double line. */
 .ft-pane > .ft-section:last-child, .ft-chosen > .ft-section:last-child, .ft-chosen > .ft-kind:last-child { border-bottom: 0; }
@@ -136,7 +196,7 @@
 .ft-fills { display: flex; flex-direction: column; gap: 8px; }
 .ft-icon-btn { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 5px; }
 .ft-icon-btn:hover { background: var(--ft-i-hover); }
-.ft-icon-btn svg { display: block; width: 16px; height: 16px; }
+.ft-icon-btn svg { display: block; width: 24px; height: 24px; }
 .ft-fill-row { display: flex; align-items: center; gap: 8px; }
 .ft-fill-actions { display: flex; flex: none; gap: 4px; }
 /* Once any row has a remove button, rows without one keep its gap so every field is the same width. */
@@ -146,7 +206,7 @@
   background: var(--ft-i-field); box-shadow: inset 0 0 0 1px transparent;
 }
 .ft-fill:hover { box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
-.ft-fill:has(input:focus) { box-shadow: inset 0 0 0 1px var(--ft-i-focus); }
+.ft-fill:has(input:focus) { box-shadow: inset 0 0 0 1px var(--ft-accent); }
 .ft-fill-color { position: relative; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding-left: 5px; }
 .ft-swatch {
   flex: none; width: 14px; height: 14px; border-radius: 2px;
@@ -154,7 +214,7 @@
     linear-gradient(90deg, var(--ft-c) 50%, transparent 50%),
     linear-gradient(var(--ft-ca), var(--ft-ca)),
     repeating-conic-gradient(#D9D9D9 0 25%, #FFFFFF 0 50%) 0 0 / 6px 6px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 1px var(--ft-i-stroke);
 }
 .ft-hex, .ft-alpha { width: 100%; min-width: 0; height: 24px; }
 .ft-fill-alpha {
@@ -162,7 +222,7 @@
   border-left: 1px solid var(--ft-i-bg);
 }
 .ft-fill:hover .ft-fill-alpha { border-left-color: var(--ft-i-stroke); }
-.ft-fill:has(input:focus) .ft-fill-alpha { border-left-color: var(--ft-i-focus); }
+.ft-fill:has(input:focus) .ft-fill-alpha { border-left-color: var(--ft-accent); }
 .ft-pct { color: var(--ft-i-text-2); }
 .ft-fill-row.is-hidden .ft-fill-color, .ft-fill-row.is-hidden .ft-fill-alpha > * { opacity: 0.4; }
 /* An effect's row: its settings, its type, then remove and the eye, as in Figma. */
@@ -173,14 +233,14 @@
    header names the layer; Figma's tools on that line are left out. */
 /* Figma's header: 48 tall, its name 13px on a 22px line. */
 .ft-kind { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 13px 8px 13px 16px; border-bottom: 1px solid var(--ft-i-line); }
-.ft-kind-name { flex: none; font-weight: 550; font-size: 13px; line-height: 22px; }
+.ft-kind-name { flex: none; font-weight: 550; font-size: 13px; line-height: 22px; letter-spacing: -0.0025em; }
 .ft-kind-el { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
 .ft-kind-count { margin-left: auto; color: var(--ft-i-text-2); }
 /* A component's line: its name, what an edit reaches, then Override across the width (pressed while it's on). */
 .ft-kind-comp { flex-direction: column; align-items: stretch; gap: 4px; }
 .ft-kind-comp .ft-kind-el { white-space: normal; }
 .ft-choice.ft-override { margin-top: 8px; }
-.ft-choice.ft-override[aria-pressed="true"], .ft-choice.ft-override[aria-pressed="true"]:hover { background: rgba(151, 71, 255, 0.12); color: #9747FF; box-shadow: none; }
+.ft-choice.ft-override[aria-pressed="true"], .ft-choice.ft-override[aria-pressed="true"]:hover { background: var(--ft-purple-soft); color: var(--ft-purple-text); box-shadow: none; }
 /* A section with nothing under its head (Fill, Stroke or Effects before the +) is just the head, as in Figma. */
 .ft-section:has(> .ft-section-head + :is(.ft-fills, .ft-stroke):empty:last-child) { padding-bottom: 0; }
 .ft-section > :is(.ft-fills, .ft-stroke):empty { display: none; }
@@ -188,8 +248,8 @@
 /* Inside the panel, overlays stack in a set order over its rows (a faded row, at 40% opacity, is a layer
    of its own and would otherwise paint over them): popovers, then the color picker opened from one, then menus. */
 .ft-pop {
-  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 12px;
-  box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: fixed; z-index: 2; width: 240px; background: var(--ft-i-surface); border-radius: 13px;
+  box-shadow: var(--ft-elev-400);
 }
 .ft-pop[hidden] { display: none; }
 /* A part a popover leaves out (a box's Adjustments have no fit or preview); its own display would show it. */
@@ -203,13 +263,13 @@
 .ft-sv {
   position: relative; height: 208px; border-radius: 4px; touch-action: none;
   background: linear-gradient(to top, #000000, transparent), linear-gradient(to right, #FFFFFF, var(--ft-hue));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px var(--ft-i-stroke);
 }
 .ft-pop-tools { display: flex; align-items: center; gap: 12px; }
 /* Figma's picker (measured): 16px tracks 12 apart, 12 between the square, the sliders and the hex row. */
 .ft-sliders { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
 .ft-pop.ft-picker-pop .ft-pop-body { gap: 12px; }
-.ft-track { position: relative; height: 16px; border-radius: 8px; touch-action: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.ft-track { position: relative; height: 16px; border-radius: 8px; touch-action: none; box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
 .ft-hue { background: linear-gradient(90deg, #F00 0%, #FF0 16.67%, #0F0 33.33%, #0FF 50%, #00F 66.67%, #F0F 83.33%, #F00 100%); }
 .ft-alpha-track {
   background:
@@ -232,7 +292,7 @@
 .ft-channel { flex: 1; min-width: 0; height: 24px; padding-left: 8px; }
 .ft-channel + .ft-channel { border-left: 1px solid var(--ft-i-bg); }
 .ft-fill:hover .ft-channel + .ft-channel { border-left-color: var(--ft-i-stroke); }
-.ft-fill:has(input:focus) .ft-channel + .ft-channel { border-left-color: var(--ft-i-focus); }
+.ft-fill:has(input:focus) .ft-channel + .ft-channel { border-left-color: var(--ft-accent); }
 .ft-select {
   display: flex; align-items: center; justify-content: space-between; gap: 4px;
   height: 24px; padding: 0 4px 0 8px; border: 1px solid var(--ft-i-line); border-radius: 5px;
@@ -241,56 +301,55 @@
 .ft-mode { flex: none; min-width: 54px; }
 .ft-menu {
   position: fixed; z-index: 4; min-width: 104px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 8px;
-  background: #1E1E1E; color: #FFFFFF; border-radius: 12px;
-  box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--ft-dark); color: var(--ft-on-dark); border-radius: 13px; box-shadow: var(--ft-elev-400);
 }
 .ft-menu[hidden] { display: none; }
 .ft-menu-item {
   display: flex; align-items: center; gap: 4px; width: 100%; height: 24px;
   padding: 0 8px 0 4px; border-radius: 5px; text-align: left; white-space: nowrap;
 }
-.ft-menu-item:hover { background: #0D99FF; }
+.ft-menu-item:hover { background: var(--ft-blue); }
 .ft-menu-check { display: grid; place-items: center; width: 16px; height: 16px; }
-.ft-menu-check svg { display: block; width: 12px; height: 12px; }
-.ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
+.ft-menu-check svg { display: block; width: 24px; height: 24px; margin: -4px; }
+.ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: var(--ft-on-dark-3); white-space: nowrap; }
 .ft-menu-heading:not(:first-child) { margin-top: 4px; }
 /* A line between a menu's parts, as Figma's: Motion's coded animations above, its generic ones below. */
-.ft-menu-divider { height: 1px; margin: 7px -8px; background: rgba(255, 255, 255, 0.12); }
+.ft-menu-divider { height: 1px; margin: 7px -8px; background: var(--ft-dark-line); }
 .ft-menu-trash { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin: 0 -4px 0 auto; padding-left: 8px; opacity: 0; }
 .ft-menu-item:hover .ft-menu-trash { opacity: 1; }
-.ft-menu-trash svg { display: block; width: 12px; height: 12px; }
+.ft-menu-trash svg { display: block; width: 24px; height: 24px; margin: -2px; }
 /* Layout guide styles (Figma's): a heading per part and a row per style, Delete on a row's hover. */
 .ft-styles-list { max-height: min(360px, calc(100vh - 80px)); overflow-y: auto; overscroll-behavior: none; padding: 8px 0; }
 .ft-styles-heading { display: flex; align-items: center; height: 32px; padding: 0 16px; font-weight: 550; }
 .ft-style-row { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px 0 16px; cursor: default; }
 .ft-style-row:hover { background: var(--ft-i-hover); }
-.ft-style-row > svg { display: block; flex: none; width: 16px; height: 16px; }
+.ft-style-row > svg { display: block; flex: none; width: 24px; height: 24px; margin: -4px; }
 .ft-style-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-style-trash { opacity: 0; }
 .ft-style-row:hover .ft-style-trash, .ft-style-trash:focus-visible { opacity: 1; }
 .ft-styles-empty { padding: 8px 16px; color: var(--ft-i-text-2); }
 .ft-caret { display: grid; place-items: center; width: 16px; height: 16px; color: var(--ft-i-text-2); }
-.ft-caret svg { display: block; width: 10px; height: 10px; }
+.ft-caret svg { display: block; width: 24px; height: 24px; margin: -4px; }
 
 .ft-tip {
   position: fixed; z-index: 2147483647; pointer-events: none;
-  padding: 4px 8px; border-radius: 5px; background: #1E1E1E; color: #FFFFFF;
+  padding: 4px 8px; border-radius: 5px; background: var(--ft-dark); color: var(--ft-on-dark);
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ft-elev-300);
 }
 .ft-tip[hidden] { display: none; }
-.ft-tip-key { margin-left: 8px; color: rgba(255, 255, 255, 0.5); }
+.ft-tip-key { margin-left: 8px; color: var(--ft-on-dark-2); }
 .ft-tip::before {
   content: ""; position: absolute; top: -4px; left: calc(var(--ft-caret, 50%) - 4px);
-  border-style: solid; border-width: 0 4px 4px; border-color: transparent transparent #1E1E1E;
+  border-style: solid; border-width: 0 4px 4px; border-color: transparent transparent var(--ft-dark);
 }
 .ft-tip[data-side="top"]::before {
-  top: auto; bottom: -4px; border-width: 4px 4px 0; border-color: #1E1E1E transparent transparent;
+  top: auto; bottom: -4px; border-width: 4px 4px 0; border-color: var(--ft-dark) transparent transparent;
 }
 .ft-tip[data-side="right"]::before {
   top: calc(50% - 4px); left: -5px;
-  border-width: 4px 5px 4px 0; border-color: transparent #1E1E1E transparent transparent;
+  border-width: 4px 5px 4px 0; border-color: transparent var(--ft-dark) transparent transparent;
 }
 
 .ft-toolbar {
@@ -304,8 +363,8 @@
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
 .ft-tool { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
 .ft-tool:hover { background: var(--ft-i-hover); }
-.ft-tool[aria-pressed="true"] { background: rgba(0, 0, 0, 0.08); }
-.ft-tool svg { display: block; width: 20px; height: 20px; }
+.ft-tool[aria-pressed="true"] { background: var(--ft-i-press); }
+.ft-tool svg { display: block; width: 24px; height: 24px; }
 
 .ft-type { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-right: 32px; }
 .ft-span2 { grid-column: 1 / -1; }
@@ -316,14 +375,14 @@
 .ft-dd { justify-content: space-between; gap: 4px; padding: 0 4px 0 8px; text-align: left; }
 .ft-dd-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-dd:hover, .ft-num-field:hover { box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
-.ft-num-field:has(input:focus) { box-shadow: inset 0 0 0 1px var(--ft-i-focus); }
+.ft-num-field:has(input:focus) { box-shadow: inset 0 0 0 1px var(--ft-accent); }
 .ft-field-icon { display: grid; place-items: center; flex: none; width: 24px; height: 24px; color: var(--ft-i-text-2); }
-.ft-field-icon svg { display: block; width: 12px; height: 12px; }
+.ft-field-icon svg { display: block; width: 24px; height: 24px; }
 .ft-field-letter { color: var(--ft-i-text); }
 .ft-num-input { flex: 1; min-width: 0; height: 24px; padding-left: 8px; }
 .ft-field-icon + .ft-num-input { padding-left: 0; }
 .ft-field-caret { display: grid; place-items: center; flex: none; width: 20px; height: 24px; color: var(--ft-i-text-2); }
-.ft-field-caret svg { display: block; width: 10px; height: 10px; }
+.ft-field-caret svg { display: block; width: 24px; height: 24px; margin: 0 -2px; }
 .ft-labeled { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 /* Figma's rhythm (its own panel, measured): a label is 9px on a 14px line; two fields with a label between them sit
    24 apart (6 above the label, 14 for it, 4 below); a labeled first row's field sits 60 under the section's top. */
@@ -336,7 +395,7 @@
 .ft-type > :not(.ft-labeled):not(:empty) + .ft-labeled { margin-top: -2px; }
 .ft-stroke > .ft-type { margin-top: -2px; }
 /* Figma's property labels are smaller than its values: Inter at 9.5px, measured off a Figma screenshot. */
-.ft-field-label { color: var(--ft-i-text-2); font-size: 9px; line-height: 14px; font-weight: 500; }
+.ft-field-label { color: var(--ft-i-text-2); font-size: 9px; line-height: 14px; font-weight: 450; }
 .ft-type-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* Figma's segmented boxes: each button its own grey cell, 1px apart so the panel shows between them, the
    group's outer corners rounded. Hover darkens a cell; the chosen one is white. */
@@ -344,9 +403,9 @@
 .ft-seg-btn { display: grid; place-items: center; flex: 1; height: 24px; background: var(--ft-i-field); }
 .ft-seg-btn:first-child { border-radius: 5px 0 0 5px; }
 .ft-seg-btn:last-child { border-radius: 0 5px 5px 0; }
-.ft-seg-btn:hover { background: rgba(0, 0, 0, 0.1); }
-.ft-seg-btn[aria-pressed="true"] { background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
-.ft-seg-btn svg { display: block; width: 16px; height: 16px; }
+.ft-seg-btn:hover { background: var(--ft-i-press); }
+.ft-seg-btn[aria-pressed="true"] { background: var(--ft-i-surface); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-seg-btn svg { display: block; width: 24px; height: 24px; }
 .ft-head-actions, .ft-btn-group { display: flex; }
 /* Figma's layout guides: drawn over the page, one layer each, never in the way of a click. */
 .ft-guides { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
@@ -361,21 +420,21 @@
 /* No layout yet: a warning, then a way to add one. */
 .ft-guide-empty { display: flex; flex-direction: column; gap: 8px; }
 .ft-guide-warn { display: flex; align-items: center; gap: 6px; color: var(--ft-i-text-2); }
-.ft-guide-warn svg { display: block; flex: none; width: 16px; height: 16px; }
+.ft-guide-warn svg { display: block; flex: none; width: 24px; height: 24px; margin: -4px; }
 /* Save as style: where it applies, two buttons in place. */
 .ft-pop.ft-save-pop { width: auto; }
 .ft-save-body { display: flex; flex-direction: column; gap: 6px; padding: 8px; }
 /* Plain until she points at one, as in Figma's option lists: no choice looks picked before she's touched it. */
-.ft-choice { height: 28px; padding: 0 12px; border-radius: 5px; background: none; text-align: left; white-space: nowrap; }
+.ft-choice { height: 24px; padding: 0 12px; border-radius: 5px; background: none; text-align: left; white-space: nowrap; }
 .ft-choice:hover { background: var(--ft-i-field); }
 /* Figma's secondary button: white, a hairline border, the + left of a centered label. */
 .ft-choice.ft-choice-icon {
   display: flex; align-items: center; justify-content: center; gap: 4px; height: 24px; padding: 0 8px;
-  background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); font-weight: 500;
+  background: var(--ft-i-surface); box-shadow: inset 0 0 0 1px var(--ft-i-line); font-weight: 500;
 }
 .ft-choice.ft-choice-icon:hover { background: var(--ft-i-hover); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
-.ft-choice-icon svg { display: block; width: 12px; height: 12px; }
-.ft-seg-act .ft-seg-btn:active { background: #FFFFFF; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-choice-icon svg { display: block; width: 24px; height: 24px; margin: 0 -6px; }
+.ft-seg-act .ft-seg-btn:active { background: var(--ft-i-surface); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
 .ft-guide-row > .ft-dd { flex: 1; }
 .ft-dd-static, .ft-dd-static:hover { box-shadow: none; }
 .ft-guide-row.is-hidden > .ft-dd, .ft-guide-row.is-hidden > .ft-guide-icon { opacity: 0.4; }
@@ -387,8 +446,7 @@
 .ft-with-action > .ft-type-pair { flex: 1; min-width: 0; }
 /* A toggle that's on, or a button whose menu or popover is open, stays highlighted until it's off, as in Figma
    (her call, 2026-10-14): blue in Design, pink in Motion. */
-.ft-icon-btn[aria-pressed="true"], .ft-icon-btn.is-open { background: rgba(13, 153, 255, 0.12); color: #0D99FF; }
-html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is-open { background: rgba(255, 36, 189, 0.12); color: #FF24BD; }
+.ft-icon-btn[aria-pressed="true"], .ft-icon-btn.is-open { background: var(--ft-accent-soft); color: var(--ft-accent-text); }
 .ft-swatch.ft-thumb { background: #FFFFFF center / cover no-repeat; }
 .ft-fill-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-dd.ft-fit { align-self: flex-start; width: 112px; background: none; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
@@ -396,17 +454,17 @@ html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is
 .ft-img-preview {
   position: relative; display: block; width: 100%; height: 208px; overflow: hidden; border-radius: 2px;
   background: repeating-conic-gradient(#EDEDED 0 25%, #FFFFFF 0 50%) 0 0 / 16px 16px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px var(--ft-i-stroke);
 }
 .ft-img-preview img { display: block; width: 100%; height: 100%; object-fit: contain; }
 /* Replace image, a dark button over the middle of the preview (after Figma's "Make an image"); the whole
    preview is the button, so a click anywhere on it picks a file. */
 .ft-img-replace {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center;
-  height: 32px; padding: 0 12px; border-radius: 8px; white-space: nowrap; pointer-events: none;
-  background: rgba(44, 44, 44, 0.9); color: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  height: 32px; padding: 0 12px; border-radius: 5px; white-space: nowrap; pointer-events: none;
+  background: var(--ft-toolbar); color: var(--ft-on-dark); box-shadow: inset 0 0 0 1px var(--ft-toolbar-line);
 }
-.ft-img-preview:hover .ft-img-replace { background: rgba(30, 30, 30, 0.95); }
+.ft-img-preview:hover .ft-img-replace { background: var(--ft-toolbar-hover); }
 .ft-adjust { display: grid; grid-template-columns: 76px 1fr; align-items: center; row-gap: 12px; }
 .ft-adjust-label { color: var(--ft-i-text-2); }
 .ft-adj-track {
@@ -415,14 +473,14 @@ html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is
 }
 /* Off zero, the track fills in from the middle to the knob, as in Figma. */
 .ft-adj-fill {
-  position: absolute; top: 0; bottom: 0; pointer-events: none; background: var(--ft-i-focus);
+  position: absolute; top: 0; bottom: 0; pointer-events: none; background: var(--ft-accent);
   left: calc(8px + var(--ft-lo, 0.5) * (100% - 16px)); width: calc(var(--ft-span, 0) * (100% - 16px));
 }
 /* Figma's: a white knob with the fill's color in its middle, and a small white dot marking zero. */
 .ft-adj-knob {
   position: absolute; z-index: 1; top: 50%; left: calc(8px + var(--ft-x, 0.5) * (100% - 16px));
   width: 16px; height: 16px; border-radius: 50%; pointer-events: none;
-  transform: translate(-50%, -50%); background: radial-gradient(circle, var(--ft-i-focus) 0 3px, #FFFFFF 3.5px);
+  transform: translate(-50%, -50%); background: radial-gradient(circle, var(--ft-accent) 0 3px, #FFFFFF 3.5px);
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 .ft-adj-track::after {
@@ -437,8 +495,8 @@ html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is
   border-left: 1px solid var(--ft-i-bg); touch-action: none;
 }
 .ft-num-field:hover .ft-slide-box { border-left-color: var(--ft-i-stroke); }
-.ft-slide { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.1); }
-.ft-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--ft-x, 0) * 100%); border-radius: 2px; background: var(--ft-i-focus); }
+.ft-slide { position: relative; flex: 1; height: 4px; border-radius: 2px; background: var(--ft-i-press); }
+.ft-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--ft-x, 0) * 100%); border-radius: 2px; background: var(--ft-accent); }
 .ft-slide-knob {
   position: absolute; z-index: 1; top: 50%; left: calc(var(--ft-x, 0) * 100%); width: 12px; height: 12px; border-radius: 50%;
   transform: translate(-50%, -50%); background: #FFFFFF; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
@@ -458,21 +516,21 @@ html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is
 .ft-smooth-row .ft-slide-knob { left: calc(8px + var(--ft-x, 0) * (100% - 16px)); width: 16px; height: 16px; }
 .ft-smooth-row .ft-slide-mark, .ft-smooth-row .ft-slide-note { left: calc(8px + 0.6 * (100% - 16px)); }
 .ft-smooth-row .ft-slide-note { top: 20px; }
-.ft-slide-mark { position: absolute; top: 50%; left: 60%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
+.ft-slide-mark { position: absolute; top: 50%; left: 60%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: var(--ft-i-text-3); }
 .ft-slide-note { position: absolute; top: 8px; left: 60%; transform: translateX(-50%); color: var(--ft-i-text-2); font-size: 9.5px; line-height: 12px; }
 /* Motion: the layer's keyframe animations, and, with nothing selected, the page's animated layers.
    Its accent is Motion's pink (see html.ft-motion below). */
 /* Figma's curve editor: the unit square, with room above and below for the curves that overshoot. */
 .ft-curve { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--ft-i-field); touch-action: none; }
-.ft-curve-box { fill: #FFFFFF; stroke: var(--ft-i-line); }
-.ft-curve-arm { stroke: rgba(0, 0, 0, 0.3); }
-.ft-curve-line { fill: none; stroke: #FF24BD; stroke-width: 1.5; }
-.ft-curve-knob { fill: #FFFFFF; stroke: #FF24BD; }
+.ft-curve-box { fill: var(--ft-i-surface); stroke: var(--ft-i-line); }
+.ft-curve-arm { stroke: var(--ft-i-text-3); }
+.ft-curve-line { fill: none; stroke: var(--ft-pink); stroke-width: 1.5; }
+.ft-curve-knob { fill: #FFFFFF; stroke: var(--ft-pink); }
 /* Figma's Interactions list: one row per animation, its name and duration; the open one is picked. */
 .ft-anim-rows { display: flex; flex-direction: column; gap: 2px; }
 .ft-anim-row { display: flex; align-items: center; gap: 8px; width: 100%; height: 32px; padding: 0 8px; border-radius: 5px; text-align: left; }
 .ft-anim-row:hover { background: var(--ft-i-hover); }
-.ft-anim-row[aria-pressed="true"] { background: rgba(255, 36, 189, 0.12); }
+.ft-anim-row[aria-pressed="true"] { background: var(--ft-pink-soft); }
 .ft-anim-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-anim-row > .ft-icon-btn { margin-right: -4px; }
 .ft-anim-meta { flex: none; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
@@ -496,38 +554,43 @@ html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is
 /* A dropdown's leading icon: an easing's own curve. */
 .ft-dd-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin-left: -4px; color: var(--ft-i-text-2); }
 .ft-dd-icon svg { display: block; width: 12px; height: 12px; }
+.ft-dd-icon svg.ft-ico { width: 24px; height: 24px; margin: -4px; }
 .ft-dd-icon + .ft-dd-label { flex: 1; }
 /* Figma's checkbox row (Clip content): the box, then its label. Checked, the box takes the text's color. */
 .ft-check-row { display: flex; align-items: center; gap: 8px; height: 24px; text-align: left; }
-.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
+.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
 .ft-check-row:hover .ft-check { background: var(--ft-i-hover); }
 .ft-check-row[aria-checked="true"] .ft-check { box-shadow: inset 0 0 0 1px var(--ft-i-text); }
-.ft-check svg { display: block; width: 12px; height: 12px; }
+.ft-check svg { display: block; width: 24px; height: 24px; margin: -4px; }
 /* Motion's accent: pink where Design uses its blue (the selection, focus, the bar's chosen cell, and Motion's
    own rows and curve above), so it's clear which mode is on. html.ft-motion is set while Motion shows. */
-html.ft-motion .ft-inspector { --ft-i-focus: #FF24BD; }
-html.ft-motion .ft-modes { --ft-m-sel: #FF24BD; }
-html.ft-motion .ft-modes[data-theme="dark"] { --ft-m-sel: #E61BA8; }
-html.ft-motion .ft-hover-box, html.ft-motion .ft-sel-box, html.ft-motion .ft-handle { border-color: #FF24BD; }
-html.ft-motion .ft-menu-item:hover { background: #FF24BD; }
+html.ft-motion .ft-hover-box, html.ft-motion .ft-sel-box, html.ft-motion .ft-handle { border-color: var(--ft-pink); }
+html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
 /* A layer with no animation: one full-width button to add one (Figma's secondary button). */
 .ft-choice.ft-add-anim { width: 100%; }
 
 .ft-hover-box, .ft-sel-box {
   position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none;
-  border: 1px solid #0D99FF;
+  border: 1px solid var(--ft-blue);
 }
 .ft-hover-box[hidden], .ft-sel-box[hidden] { display: none; }
+/* A column of the layout guide she's picked: outlined as a selection is, without corners or a label. */
+.ft-col-box { border-color: var(--ft-blue); }
+/* Figma's help card (its "Creating a connection"): a title band, then its icon beside a line or two of how-to. */
+.ft-help-body { display: flex; align-items: flex-start; gap: 8px; }
+.ft-help-icon { flex: none; width: 24px; height: 24px; color: var(--ft-i-text); }
+.ft-help-icon svg { display: block; width: 24px; height: 24px; }
+.ft-help-text { margin: 4px 0 0; color: var(--ft-i-text); }
 /* Figma's marquee: drag on the page to select what the box touches. */
-.ft-marquee { position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none; border: 1px solid #0D99FF; background: rgba(13, 153, 255, 0.08); }
+.ft-marquee { position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none; border: 1px solid var(--ft-blue); background: color-mix(in srgb, var(--ft-blue) 8%, transparent); }
 .ft-marquee[hidden] { display: none; }
 /* In Motion, every layer with motion on screen is outlined in pink, so what can be tuned is plain to see. */
 .ft-marks { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
 .ft-marks[hidden] { display: none; }
-.ft-mark { position: absolute; box-sizing: border-box; border: 1px solid rgba(255, 36, 189, 0.5); }
+.ft-mark { position: absolute; box-sizing: border-box; border: 1px solid color-mix(in srgb, var(--ft-pink) 50%, transparent); }
 .ft-handle {
   position: absolute; width: 7px; height: 7px; box-sizing: border-box;
-  background: #FFFFFF; border: 1px solid #0D99FF;
+  background: #FFFFFF; border: 1px solid var(--ft-blue);
 }
 .ft-nw { left: -4px; top: -4px; }
 .ft-ne { right: -4px; top: -4px; }
@@ -543,21 +606,21 @@ html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: n
 /* Figma's spacing: 8 below the selection, 6 either side of the numbers. */
 .ft-size-label {
   position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%);
-  padding: 0 6px; border-radius: 3px; background: #0D99FF; color: #FFFFFF; white-space: nowrap;
+  padding: 0 6px; border-radius: 2px; background: var(--ft-blue); color: var(--ft-on-dark); white-space: nowrap;
   font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 /* A component (componentOf), as Figma shows one: its outline, corners and size label in Figma's component purple,
    and its name with the component mark over its top left. Design only; Motion keeps its own accent. */
-.ft-sel-box.is-comp, .ft-hover-box.is-comp, .ft-sel-box.is-comp .ft-handle { border-color: #9747FF; }
-.ft-sel-box.is-comp .ft-size-label { background: #9747FF; }
+.ft-sel-box.is-comp, .ft-hover-box.is-comp, .ft-sel-box.is-comp .ft-handle { border-color: var(--ft-purple); }
+.ft-sel-box.is-comp .ft-size-label { background: var(--ft-purple); }
 .ft-comp-label {
   position: absolute; left: -1px; bottom: calc(100% + 4px); display: flex; align-items: center; gap: 4px;
-  color: #9747FF; white-space: nowrap; font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
+  color: var(--ft-purple); white-space: nowrap; font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .ft-comp-label[hidden] { display: none; }
-.ft-comp-label svg { display: block; width: 12px; height: 12px; }
+.ft-comp-label svg { display: block; width: 24px; height: 24px; margin: -6px; }
 html.ft-moving body *:not(input) { cursor: default; }
 html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: text; }
 [data-ft-editing] { outline: none; }
@@ -567,40 +630,40 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 .ft-panel {
   position: fixed; top: 16px; left: 16px; z-index: 2147483647;
   width: 280px; max-height: calc(100vh - 32px); overflow: auto;
-  background: #1c1c1c; color: #e8e8e8;
-  border: 1px solid #3a3a3a; border-radius: 8px;
+  background: var(--ft-i-bg); color: var(--ft-i-text);
+  border: 1px solid var(--ft-i-border); border-radius: 8px;
   font: 12px/1.4 "Inter", system-ui, -apple-system, sans-serif;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--ft-elev-400);
 }
 .ft-panel[hidden] { display: none; }
 .ft-panel *, .ft-panel *::before, .ft-panel *::after { box-sizing: border-box; }
 .ft-panel button, .ft-panel input, .ft-panel textarea { font: inherit; color: inherit; margin: 0; }
 .ft-head {
-  padding: 8px 12px; border-bottom: 1px solid #3a3a3a;
+  padding: 8px 12px; border-bottom: 1px solid var(--ft-i-line);
   font-weight: 600; cursor: grab; user-select: none; touch-action: none;
 }
 .ft-head:active { cursor: grabbing; }
 .ft-body { padding: 4px 12px; }
 .ft-row { padding: 6px 0; }
-.ft-label { margin-bottom: 4px; color: #a0a0a0; }
+.ft-label { margin-bottom: 4px; color: var(--ft-i-text-2); }
 .ft-line { display: flex; gap: 8px; align-items: center; }
 .ft-line input[type="range"] { flex: 1; min-width: 0; }
 .ft-num { width: 72px; }
 .ft-field { width: 100%; }
 .ft-panel input[type="number"], .ft-panel input[type="text"], .ft-panel textarea {
-  background: #111; border: 1px solid #3a3a3a; border-radius: 4px; padding: 3px 6px;
+  background: var(--ft-i-field); border: 1px solid var(--ft-i-line); border-radius: 5px; padding: 3px 6px;
 }
 .ft-grid { display: grid; gap: 4px; }
 .ft-btn {
-  background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 4px;
+  background: var(--ft-i-field); border: 1px solid var(--ft-i-line); border-radius: 5px;
   padding: 4px 6px; cursor: pointer;
 }
-.ft-btn:hover { background: #333; }
-.ft-btn[aria-pressed="true"] { background: #e8e8e8; color: #111; border-color: #e8e8e8; }
+.ft-btn:hover { background: var(--ft-i-press); }
+.ft-btn[aria-pressed="true"] { background: var(--ft-i-inverse); color: var(--ft-i-on-inverse); border-color: var(--ft-i-inverse); }
 .ft-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-.ft-chip { width: 20px; height: 20px; padding: 0; border: 1px solid #3a3a3a; border-radius: 50%; cursor: pointer; }
-.ft-chip[aria-pressed="true"] { outline: 2px solid #e8e8e8; outline-offset: 1px; }
-.ft-presets, .ft-foot { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-top: 1px solid #3a3a3a; }
+.ft-chip { width: 20px; height: 20px; padding: 0; border: 1px solid var(--ft-i-line); border-radius: 50%; cursor: pointer; }
+.ft-chip[aria-pressed="true"] { outline: 2px solid var(--ft-i-text); outline-offset: 1px; }
+.ft-presets, .ft-foot { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-top: 1px solid var(--ft-i-line); }
 .ft-out {
   display: block; width: calc(100% - 24px); height: 120px; margin: 0 12px 12px;
   resize: vertical;
@@ -716,83 +779,166 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // with 2 between.
   // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round. Rotate 90°
   // is Lucide's rotate-cw-square too, the nearest to Figma's turned square.
+  // Figma UI3's icons (the UI3 kit's Icons page): 24 frames drawn at 1:1, painted with currentColor. Each shows
+  // at 24 and is never scaled; a smaller slot centres it with negative margins (PANEL LOOK). The comment names
+  // the UI3 icon; mirrored ones are flipped across their middle.
   const ICON = {
-    angle: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M96,72a8,8,0,0,1,8-8A104.11,104.11,0,0,1,208,168a8,8,0,0,1-16,0,88.1,88.1,0,0,0-88-88A8,8,0,0,1,96,72ZM240,192H80V32a8,8,0,0,0-16,0V64H32a8,8,0,0,0,0,16H64V200a8,8,0,0,0,8,8H240a8,8,0,0,0,0-16Z"/></svg>',
-    arrowClockwise: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>',
-    refresh: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,56v48a8,8,0,0,1-8,8H184a8,8,0,0,1,0-16H211.4L184.81,71.64l-.25-.24a80,80,0,1,0-1.67,114.78,8,8,0,0,1,11,11.63A95.44,95.44,0,0,1,128,224h-1.32A96,96,0,1,1,195.75,60L224,85.8V56a8,8,0,1,1,16,0Z"/></svg>',
-    drop: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z"/></svg>',
-    checkerboard: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm-12.69,88L136,60.69V48h12.69L208,107.32V120ZM136,83.31,172.69,120H136Zm72,1.38L171.31,48H208ZM120,48v72H48V48ZM107.31,208,48,148.69V136H60.69L120,195.31V208ZM120,172.69,83.31,136H120Zm-72-1.38L84.69,208H48ZM208,208H136V136h72v72Z"/></svg>',
-    frameCorners: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,80v32a8,8,0,0,1-16,0V88H160a8,8,0,0,1,0-16h32A8,8,0,0,1,200,80ZM96,168H72V144a8,8,0,0,0-16,0v32a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16ZM232,56V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></svg>',
-    floppyDisk: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M217.9,73.42,182.58,38.1a13.9,13.9,0,0,0-9.89-4.1H48A14,14,0,0,0,34,48V208a14,14,0,0,0,14,14H208a14,14,0,0,0,14-14V83.31A13.9,13.9,0,0,0,217.9,73.42ZM170,210H86V152a2,2,0,0,1,2-2h80a2,2,0,0,1,2,2Zm40-2a2,2,0,0,1-2,2H182V152a14,14,0,0,0-14-14H88a14,14,0,0,0-14,14v58H48a2,2,0,0,1-2-2V48a2,2,0,0,1,2-2H172.69a2,2,0,0,1,1.41.58L209.42,81.9a2,2,0,0,1,.58,1.41ZM158,72a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h56A6,6,0,0,1,158,72Z"/></svg>',
-    undo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,85.66,45.66L51.31,80H168A64.07,64.07,0,0,1,232,144Z"/></svg>',
-    redo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M170.34,130.34,204.69,96H88a48,48,0,0,0,0,96h88a8,8,0,0,1,0,16H88A64,64,0,0,1,88,80H204.69L170.34,45.66a8,8,0,0,1,11.32-11.32l48,48a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32-11.32Z"/></svg>',
-    warning: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></svg>',
-    trash: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>',
-    bookmark: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M184,32H72A16,16,0,0,0,56,48V224a8,8,0,0,0,12.24,6.78L128,193.43l59.77,37.35A8,8,0,0,0,200,224V48A16,16,0,0,0,184,32Zm0,177.57-51.77-32.35a8,8,0,0,0-8.48,0L72,209.57V48H184Z"/></svg>',
-    sun: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>',
-    slidersHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z"/></svg>',
-    pencilRuler: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H160V176h24a8,8,0,0,0,0-16H160V136h24a8,8,0,0,0,0-16H160V96h24a8,8,0,0,0,0-16H160V48h48V208ZM77.66,26.34a8,8,0,0,0-11.32,0l-32,32A8,8,0,0,0,32,64V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V64a8,8,0,0,0-2.34-5.66ZM48,176V80H64v96ZM80,80H96v96H80ZM72,43.31,92.69,64H51.31ZM48,208V192H96v16Z"/></svg>',
-    play: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>',
-    pause: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>',
-    arrowLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></svg>',
-    arrowRight: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg>',
-    arrowDown: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z"/></svg>',
-    arrowUp: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/></svg>',
-    ruler: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M235.32,73.37,182.63,20.69a16,16,0,0,0-22.63,0L20.68,160a16,16,0,0,0,0,22.63l52.69,52.68a16,16,0,0,0,22.63,0L235.32,96A16,16,0,0,0,235.32,73.37ZM84.68,224,32,171.31l32-32,26.34,26.35a8,8,0,0,0,11.32-11.32L75.31,128,96,107.31l26.34,26.35a8,8,0,0,0,11.32-11.32L107.31,96,128,75.31l26.34,26.35a8,8,0,0,0,11.32-11.32L139.31,64l32-32L224,84.69Z"/></svg>',
-    timer: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg>',
-    hourglass: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M211.18,196.56,139.57,128l71.61-68.56a1.59,1.59,0,0,1,.13-.13A16,16,0,0,0,200,32H56A16,16,0,0,0,44.7,59.31l.12.13L116.43,128,44.82,196.56l-.12.13A16,16,0,0,0,56,224H200a16,16,0,0,0,11.32-27.31A1.59,1.59,0,0,1,211.18,196.56ZM56,48h0v0Zm144,0-72,68.92L56,48ZM56,208l72-68.92L200,208Z"/></svg>',
-    repeat: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M24,128A72.08,72.08,0,0,1,96,56H204.69L194.34,45.66a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L204.69,72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H51.31l10.35-10.34a8,8,0,0,0-11.32-11.32l-24,24a8,8,0,0,0,0,11.32l24,24a8,8,0,0,0,11.32-11.32L51.31,200H160a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z"/></svg>',
-    replay: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg>',
-    sidebarSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H80V200H40ZM216,200H96V56H216V200Z"/></svg>',
-    copy: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,34H88a6,6,0,0,0-6,6V82H40a6,6,0,0,0-6,6V216a6,6,0,0,0,6,6H168a6,6,0,0,0,6-6V174h42a6,6,0,0,0,6-6V40A6,6,0,0,0,216,34ZM162,210H46V94H162Zm48-48H174V88a6,6,0,0,0-6-6H94V46H210Z"/></svg>',
-    textAlignLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64Zm8,48H168a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm176,24H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-48,40H40a8,8,0,0,0,0,16H168a8,8,0,0,0,0-16Z"/></svg>',
-    textAlignCenter: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM64,96a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Zm152,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-24,40H64a8,8,0,0,0,0,16H192a8,8,0,0,0,0-16Z"/></svg>',
-    textAlignRight: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM216,96H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>',
-    textAlignJustify: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64ZM216,96H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,40H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>',
-    arrowLineUp: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,138.34a8,8,0,0,1-11.32,11.32L136,91.31V224a8,8,0,0,1-16,0V91.31L61.66,149.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0ZM216,32H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>',
-    arrowsInLineVertical: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM122.34,101.66a8,8,0,0,0,11.32,0l32-32a8,8,0,0,0-11.32-11.32L136,76.69V16a8,8,0,0,0-16,0V76.69L101.66,58.34A8,8,0,0,0,90.34,69.66Zm11.32,52.68a8,8,0,0,0-11.32,0l-32,32a8,8,0,0,0,11.32,11.32L120,179.31V240a8,8,0,0,0,16,0V179.31l18.34,18.35a8,8,0,0,0,11.32-11.32Z"/></svg>',
-    arrowLineDown: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M50.34,117.66a8,8,0,0,1,11.32-11.32L120,164.69V32a8,8,0,0,1,16,0V164.69l58.34-58.35a8,8,0,0,1,11.32,11.32l-72,72a8,8,0,0,1-11.32,0ZM216,208H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>',
-    arrowLineRight: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M189.66,122.34a8,8,0,0,1,0,11.32l-72,72a8,8,0,0,1-11.32-11.32L164.69,136H32a8,8,0,0,1,0-16H164.69L106.34,61.66a8,8,0,0,1,11.32-11.32ZM216,32a8,8,0,0,0-8,8V216a8,8,0,0,0,16,0V40A8,8,0,0,0,216,32Z"/></svg>',
-    article: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z"/></svg>',
-    arrowsVertical: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,194.34a8,8,0,0,1,0,11.32l-32,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32L120,212.69V43.31L101.66,61.66A8,8,0,0,1,90.34,50.34l32-32a8,8,0,0,1,11.32,0l32,32a8,8,0,0,1-11.32,11.32L136,43.31V212.69l18.34-18.35A8,8,0,0,1,165.66,194.34Z"/></svg>',
-    arrowsHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M237.66,133.66l-32,32a8,8,0,0,1-11.32-11.32L212.69,136H43.31l18.35,18.34a8,8,0,0,1-11.32,11.32l-32-32a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,11.32L43.31,120H212.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,133.66Z"/></svg>',
-    // A layout guide's columns, for a style's row (Figma's), drawn at 16 on whole pixels as the Flow icons.
-    columns: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1"/><path d="M6.5 2.5v11M9.5 2.5v11"/></svg>',
-    // Figma's Lock aspect ratio: a rounded square with two corner brackets inside, drawn at 16 on whole pixels.
-    lockRatio: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5.5 8V5.5H8M10.5 8v2.5H8"/></svg>',
-    // Figma's instance mark, one diamond: Override (this instance only).
-    instance: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6 6-6 6-6-6z"/></svg>',
-    // Figma's component mark: four diamonds.
-    component: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l3 3-3 3-3-3z"/><path d="M4 5l3 3-3 3-3-3z"/><path d="M12 5l3 3-3 3-3-3z"/><path d="M8 9l3 3-3 3-3-3z"/></svg>',
-    // A checkbox's tick, heavier than the menus' check, as Figma's.
-    tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-    check: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>',
-    plus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>',
-    minus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></svg>',
-    eye: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></svg>',
-    eyeClosed: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M228,175a8,8,0,0,1-10.92-3l-19-33.2A123.23,123.23,0,0,1,162,155.46l5.87,35.22a8,8,0,0,1-6.58,9.21A8.4,8.4,0,0,1,160,200a8,8,0,0,1-7.88-6.69l-5.77-34.58a133.06,133.06,0,0,1-36.68,0l-5.77,34.58A8,8,0,0,1,96,200a8.4,8.4,0,0,1-1.32-.11,8,8,0,0,1-6.58-9.21L94,155.46a123.23,123.23,0,0,1-36.06-16.69L39,172A8,8,0,1,1,25.06,164l20-35a153.47,153.47,0,0,1-19.3-20A8,8,0,1,1,38.22,99c16.6,20.54,45.64,45,89.78,45s73.18-24.49,89.78-45A8,8,0,1,1,230.22,109a153.47,153.47,0,0,1-19.3,20l20,35A8,8,0,0,1,228,175Z"/></svg>',
-    x: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>',
-    eyedropper: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,67.3a35.79,35.79,0,0,0-11.26-25.66c-14-13.28-36.72-12.78-50.62,1.13L142.8,62.2a24,24,0,0,0-33.14.77l-9,9a16,16,0,0,0,0,22.64l2,2.06-51,51a39.75,39.75,0,0,0-10.53,38l-8,18.41A13.68,13.68,0,0,0,36,219.3a15.92,15.92,0,0,0,17.71,3.35L71.23,215a39.89,39.89,0,0,0,37.06-10.75l51-51,2.06,2.06a16,16,0,0,0,22.62,0l9-9a24,24,0,0,0,.74-33.18l19.75-19.87A35.75,35.75,0,0,0,224,67.3ZM97,193a24,24,0,0,1-24,6,8,8,0,0,0-5.55.31l-18.1,7.91L57,189.41a8,8,0,0,0,.25-5.75A23.88,23.88,0,0,1,63,159l51-51,33.94,34ZM202.13,82l-25.37,25.52a8,8,0,0,0,0,11.3l4.89,4.89a8,8,0,0,1,0,11.32l-9,9L112,83.26l9-9a8,8,0,0,1,11.31,0l4.89,4.89a8,8,0,0,0,11.33,0l24.94-25.09c7.81-7.82,20.5-8.18,28.29-.81a20,20,0,0,1,.39,28.7Z"/></svg>',
-    caretDown: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg>',
-    guideStyles: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M80,40a40,40,0,1,0,40,40A40,40,0,0,0,80,40Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,104Zm96,16a40,40,0,1,0-40-40A40,40,0,0,0,176,120Zm0-64a24,24,0,1,1-24,24A24,24,0,0,1,176,56ZM80,136a40,40,0,1,0,40,40A40,40,0,0,0,80,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,80,200Zm96-64a40,40,0,1,0,40,40A40,40,0,0,0,176,136Zm0,64a24,24,0,1,1,24-24A24,24,0,0,1,176,200Z"/></svg>',
-    flipHorizontal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14v2"/><path d="M12 20v2"/><path d="M12 2v2"/><path d="M12 8v2"/><path d="M20.288 16.703A1 1 0 0022 16V8a1 1 0 00-1.712-.703l-3.99 3.991a1 1 0 00-.001 1.424z"/><path d="M3.712 16.703A1 1 0 012 16V8a1 1 0 011.712-.703l3.99 3.991a1 1 0 01.001 1.424z"/></svg>',
-    flipVertical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="M4 12H2"/><path d="M7.298 20.288A1 1 0 008 22h8a1 1 0 00.703-1.712l-3.991-3.99a1 1 0 00-1.424-.001z"/><path d="M7.298 3.712A1 1 0 018 2h8a1 1 0 01.703 1.712l-3.991 3.99a1 1 0 01-1.424.001z"/></svg>',
-    rotateSquare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5H6a2 2 0 0 0-2 2v3"/><path d="m9 8 3-3-3-3"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>',
-    flowFree: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="3.5" width="4" height="4" rx="1"/><rect x="3.5" y="9.5" width="4" height="4" rx="1"/></svg>',
-    flowVertical: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="2.5" y="9.5" width="4" height="4" rx="1"/><path d="M11.5 2.5v11"/><path d="M9 11l2.5 2.5L14 11"/></svg>',
-    flowHorizontal: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="2.5" width="4" height="4" rx="1"/><path d="M2.5 11.5h11"/><path d="M11 9l2.5 2.5L11 14"/></svg>',
-    flowGrid: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="2.5" width="4" height="4" rx="1"/><rect x="2.5" y="9.5" width="4" height="4" rx="1"/><rect x="9.5" y="9.5" width="4" height="4" rx="1"/></svg>',
-    cornerTL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17v-6a4 4 0 0 1 4-4h6"/></svg>',
-    cornerTR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h6a4 4 0 0 1 4 4v6"/></svg>',
-    cornerBL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7v6a4 4 0 0 0 4 4h6"/></svg>',
-    cornerBR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7v6a4 4 0 0 1-4 4H7"/></svg>',
-    sliders: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M64,105V40a8,8,0,0,0-16,0v65a32,32,0,0,0,0,62v49a8,8,0,0,0,16,0V167a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,56,152Zm80-95V40a8,8,0,0,0-16,0V57a32,32,0,0,0,0,62v97a8,8,0,0,0,16,0V119a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,128,104Zm104,64a32.06,32.06,0,0,0-24-31V40a8,8,0,0,0-16,0v97a32,32,0,0,0,0,62v17a8,8,0,0,0,16,0V199A32.06,32.06,0,0,0,232,168Zm-32,16a16,16,0,1,1,16-16A16,16,0,0,1,200,184Z"/></svg>',
-    alignLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="9" height="6" x="6" y="14" rx="2"/><rect fill="currentColor" stroke="none" width="16" height="6" x="6" y="4" rx="2"/><path d="M2 2v20"/></svg>',
-    alignHCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path fill="currentColor" stroke="none" d="M8 10H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h4"/><path fill="currentColor" stroke="none" d="M16 10h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4"/><path fill="currentColor" stroke="none" d="M8 20H7a2 2 0 0 1-2-2v-2c0-1.1.9-2 2-2h1"/><path fill="currentColor" stroke="none" d="M16 14h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/></svg>',
-    alignRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="16" height="6" x="2" y="4" rx="2"/><rect fill="currentColor" stroke="none" width="9" height="6" x="9" y="14" rx="2"/><path d="M22 22V2"/></svg>',
-    alignTop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="6" height="16" x="4" y="6" rx="2"/><rect fill="currentColor" stroke="none" width="6" height="9" x="14" y="6" rx="2"/><path d="M22 2H2"/></svg>',
-    alignVCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20"/><path fill="currentColor" stroke="none" d="M10 16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/><path fill="currentColor" stroke="none" d="M10 8V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v4"/><path fill="currentColor" stroke="none" d="M20 16v1a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1"/><path fill="currentColor" stroke="none" d="M14 8V7c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v1"/></svg>',
-    alignBottom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="6" height="16" x="4" y="2" rx="2"/><rect fill="currentColor" stroke="none" width="6" height="9" x="14" y="9" rx="2"/><path d="M22 22H2"/></svg>',
+    // rotation
+    angle: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 8.5C9 8.22386 8.77614 8 8.5 8C8.22386 8 8 8.22386 8 8.5V15.5C8 15.7761 8.22386 16 8.5 16H15.5C15.7761 16 16 15.7761 16 15.5C16 15.2239 15.7761 15 15.5 15H13C13 12.7909 11.2091 11 9 11V8.5ZM9 12V15H12C12 13.3431 10.6569 12 9 12Z" fill="currentColor"/></svg>',
+    // rotate
+    arrowClockwise: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.2322 6.47491C11.2085 5.4986 12.7915 5.4986 13.7678 6.47491L15.2929 8.00003H14C13.7239 8.00003 13.5 8.22389 13.5 8.50003C13.5 8.77618 13.7239 9.00003 14 9.00003H16.5C16.7761 9.00003 17 8.77618 17 8.50003V6.00003C17 5.72389 16.7761 5.50003 16.5 5.50003C16.2239 5.50003 16 5.72389 16 6.00003V7.29293L14.4749 5.7678C13.108 4.40097 10.892 4.40097 9.52513 5.7678L7.14645 8.14648C6.95118 8.34174 6.95118 8.65833 7.14645 8.85359C7.34171 9.04885 7.65829 9.04885 7.85355 8.85359L10.2322 6.47491ZM13.0607 9.64648C12.4749 9.0607 11.5251 9.06069 10.9393 9.64648L7.64645 12.9394C7.06066 13.5252 7.06066 14.4749 7.64645 15.0607L10.9393 18.3536C11.5251 18.9394 12.4749 18.9394 13.0607 18.3536L16.3536 15.0607C16.9393 14.4749 16.9393 13.5252 16.3536 12.9394L13.0607 9.64648ZM11.6464 10.3536C11.8417 10.1583 12.1583 10.1583 12.3536 10.3536L15.6464 13.6465C15.8417 13.8417 15.8417 14.1583 15.6464 14.3536L12.3536 17.6465C12.1583 17.8417 11.8417 17.8417 11.6464 17.6465L8.35355 14.3536C8.15829 14.1583 8.15829 13.8417 8.35355 13.6465L11.6464 10.3536Z" fill="currentColor"/></svg>',
+    // reset.instance
+    refresh: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.10267 10.1897C2.51688 10.7755 2.51688 11.7252 3.10267 12.311L7.14656 16.3549C7.15285 16.3612 7.15927 16.3673 7.1658 16.3732L9.45068 18.658C11.3526 20.5599 14.4981 20.3364 16.1119 18.1846C16.3283 17.8961 16.5084 17.5805 16.647 17.2479C17.8806 14.2871 15.7148 11.0003 12.5001 11.0003H10.2072L12.3536 8.8539C12.5489 8.65864 12.5489 8.34206 12.3536 8.1468C12.1584 7.95153 11.8418 7.95153 11.6465 8.1468L8.64654 11.1468C8.45128 11.3421 8.45128 11.6586 8.64654 11.8539L11.6465 14.8539C11.8418 15.0492 12.1584 15.0492 12.3536 14.8539C12.5489 14.6586 12.5489 14.3421 12.3536 14.1468L10.2072 12.0003H12.5001C14.994 12.0003 16.6858 14.5546 15.7239 16.8633C15.6171 17.1196 15.4783 17.3628 15.3119 17.5846C14.0632 19.2496 11.6294 19.4225 10.1578 17.9509L5.85365 13.6468C5.84736 13.6405 5.84095 13.6344 5.83442 13.6285L3.80978 11.6039C3.61451 11.4086 3.61451 11.0921 3.80978 10.8968L11.3961 3.31051C11.5913 3.11525 11.9079 3.11525 12.1032 3.31051L19.6895 10.8968C19.8847 11.0921 19.8847 11.4086 19.6895 11.6039L18.8379 12.4555C18.6426 12.6507 18.6426 12.9673 18.8379 13.1626C19.0331 13.3579 19.3497 13.3579 19.545 13.1626L20.3966 12.311C20.9823 11.7252 20.9823 10.7755 20.3966 10.1897L12.8103 2.6034C12.2245 2.01762 11.2747 2.01761 10.689 2.6034L3.10267 10.1897Z" fill="currentColor"/></svg>',
+    // blendmode.small
+    drop: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 15.9999C13.6569 15.9999 15 14.6567 15 12.9999C15 12.1735 14.58 11.0112 13.9224 9.75417C13.3085 8.58051 12.5596 7.45671 12 6.67141C11.4404 7.45671 10.6915 8.58051 10.0776 9.75417C9.42004 11.0112 9 12.1735 9 12.9999C9 14.6567 10.3431 15.9999 12 15.9999ZM12 16.9999C14.2091 16.9999 16 15.209 16 12.9999C16 10.8296 13.9066 7.61254 12.7486 5.99911C12.375 5.47849 11.625 5.47849 11.2514 5.99911C10.0934 7.61254 8 10.8296 8 12.9999C8 15.209 9.79086 16.9999 12 16.9999Z" fill="currentColor"/></svg>',
+    // opacity
+    checkerboard: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 7H16C16.5523 7 17 7.44772 17 8V16C17 16.5523 16.5523 17 16 17H8C7.44772 17 7 16.5523 7 16V8C7 7.44772 7.44772 7 8 7ZM6 8C6 6.89543 6.89543 6 8 6H16C17.1046 6 18 6.89543 18 8V16C18 17.1046 17.1046 18 16 18H8C6.89543 18 6 17.1046 6 16V8ZM15 9.5C15.2761 9.5 15.5 9.27614 15.5 9C15.5 8.72386 15.2761 8.5 15 8.5C14.7239 8.5 14.5 8.72386 14.5 9C14.5 9.27614 14.7239 9.5 15 9.5ZM13.5 11C13.5 11.2761 13.2761 11.5 13 11.5C12.7239 11.5 12.5 11.2761 12.5 11C12.5 10.7239 12.7239 10.5 13 10.5C13.2761 10.5 13.5 10.7239 13.5 11ZM11.5 13C11.5 13.2761 11.2761 13.5 11 13.5C10.7239 13.5 10.5 13.2761 10.5 13C10.5 12.7239 10.7239 12.5 11 12.5C11.2761 12.5 11.5 12.7239 11.5 13ZM9.5 15C9.5 15.2761 9.27614 15.5 9 15.5C8.72386 15.5 8.5 15.2761 8.5 15C8.5 14.7239 8.72386 14.5 9 14.5C9.27614 14.5 9.5 14.7239 9.5 15ZM11 15.5C11.2761 15.5 11.5 15.2761 11.5 15C11.5 14.7239 11.2761 14.5 11 14.5C10.7239 14.5 10.5 14.7239 10.5 15C10.5 15.2761 10.7239 15.5 11 15.5ZM13 13.5C13.2761 13.5 13.5 13.2761 13.5 13C13.5 12.7239 13.2761 12.5 13 12.5C12.7239 12.5 12.5 12.7239 12.5 13C12.5 13.2761 12.7239 13.5 13 13.5ZM13.5 15C13.5 15.2761 13.2761 15.5 13 15.5C12.7239 15.5 12.5 15.2761 12.5 15C12.5 14.7239 12.7239 14.5 13 14.5C13.2761 14.5 13.5 14.7239 13.5 15ZM15.5 11C15.5 11.2761 15.2761 11.5 15 11.5C14.7239 11.5 14.5 11.2761 14.5 11C14.5 10.7239 14.7239 10.5 15 10.5C15.2761 10.5 15.5 10.7239 15.5 11ZM15 13.5C15.2761 13.5 15.5 13.2761 15.5 13C15.5 12.7239 15.2761 12.5 15 12.5C14.7239 12.5 14.5 12.7239 14.5 13C14.5 13.2761 14.7239 13.5 15 13.5ZM15.5 15C15.5 15.2761 15.2761 15.5 15 15.5C14.7239 15.5 14.5 15.2761 14.5 15C14.5 14.7239 14.7239 14.5 15 14.5C15.2761 14.5 15.5 14.7239 15.5 15Z" fill="currentColor"/></svg>',
+    // radius.top.left
+    radius: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.4781 8L12.5 8H15.5C15.7761 8 16 8.22386 16 8.5C16 8.77614 15.7761 9 15.5 9H12.5C11.7917 9 11.2905 9.00039 10.8987 9.0324C10.5128 9.06393 10.2772 9.12365 10.092 9.21799C9.71569 9.40973 9.40973 9.71569 9.21799 10.092C9.12365 10.2772 9.06393 10.5128 9.0324 10.8987C9.00039 11.2905 9 11.7917 9 12.5V15.5C9 15.7761 8.77614 16 8.5 16C8.22386 16 8 15.7761 8 15.5V12.5L8 12.4781C8 11.7966 7.99999 11.2546 8.03572 10.8173C8.07231 10.3695 8.14884 9.98765 8.32698 9.63803C8.6146 9.07354 9.07354 8.6146 9.63803 8.32698C9.98765 8.14884 10.3695 8.07231 10.8173 8.03572C11.2546 7.99999 11.7966 8 12.4781 8Z" fill="currentColor"/></svg>',
+    // corners
+    corners: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.90012 6H8.87947H8.87865C8.47653 6 8.14462 6 7.87421 6.02209C7.59315 6.04506 7.33481 6.09435 7.09215 6.21799C6.71582 6.40973 6.40985 6.7157 6.21811 7.09203C6.09447 7.33469 6.04518 7.59303 6.02222 7.87408C6.00012 8.1445 6.00012 8.47641 6.00012 8.87852V8.87935V8.89999V9.5C6.00012 9.77614 6.22398 10 6.50012 10C6.77626 10 7.00012 9.77614 7.00012 9.5V8.89999C7.00012 8.47171 7.0005 8.18056 7.01889 7.95552C7.0368 7.73631 7.06927 7.62421 7.10912 7.54601C7.20499 7.35785 7.35797 7.20486 7.54613 7.10899C7.62433 7.06915 7.73643 7.03668 7.95564 7.01877C8.18068 7.00038 8.47183 7 8.90012 7H9.50012C9.77626 7 10.0001 6.77614 10.0001 6.5C10.0001 6.22386 9.77626 6 9.50012 6H8.90012ZM15.1 6H15.1207H15.1215C15.5236 6 15.8555 6 16.1259 6.02209C16.407 6.04506 16.6653 6.09435 16.908 6.21799C17.2843 6.40973 17.5903 6.7157 17.782 7.09203C17.9057 7.33469 17.9549 7.59303 17.9779 7.87408C18 8.1445 18 8.47641 18 8.87852V8.87935V8.89999V9.5C18 9.77614 17.7761 10 17.5 10C17.2239 10 17 9.77614 17 9.5V8.89999C17 8.47171 16.9996 8.18056 16.9812 7.95552C16.9633 7.73631 16.9308 7.62421 16.891 7.54601C16.7951 7.35785 16.6422 7.20486 16.454 7.10899C16.3758 7.06915 16.2637 7.03668 16.0445 7.01877C15.8194 7.00038 15.5283 7 15.1 7H14.5C14.2239 7 14 6.77614 14 6.5C14 6.22386 14.2239 6 14.5 6H15.1ZM15.1207 18H15.1H14.5C14.2239 18 14 17.7761 14 17.5C14 17.2239 14.2239 17 14.5 17H15.1C15.5283 17 15.8194 16.9996 16.0445 16.9812C16.2637 16.9633 16.3758 16.9308 16.454 16.891C16.6422 16.7951 16.7951 16.6422 16.891 16.454C16.9308 16.3758 16.9633 16.2637 16.9812 16.0445C16.9996 15.8194 17 15.5283 17 15.1V14.5C17 14.2239 17.2239 14 17.5 14C17.7761 14 18 14.2239 18 14.5V15.1V15.1207V15.1215C18 15.5236 18 15.8555 17.9779 16.1259C17.9549 16.407 17.9057 16.6653 17.782 16.908C17.5903 17.2843 17.2843 17.5903 16.908 17.782C16.6653 17.9057 16.407 17.9549 16.1259 17.9779C15.8555 18 15.5236 18 15.1215 18H15.1207ZM8.89999 18H8.87935H8.87852C8.47641 18 8.1445 18 7.87408 17.9779C7.59303 17.9549 7.33469 17.9057 7.09203 17.782C6.7157 17.5903 6.40973 17.2843 6.21799 16.908C6.09435 16.6653 6.04506 16.407 6.02209 16.1259C6 15.8555 6 15.5236 6 15.1215V15.1207V15.1V14.5C6 14.2239 6.22386 14 6.5 14C6.77614 14 7 14.2239 7 14.5V15.1C7 15.5283 7.00038 15.8194 7.01877 16.0445C7.03668 16.2637 7.06915 16.3758 7.10899 16.454C7.20486 16.6422 7.35785 16.7951 7.54601 16.891C7.62421 16.9308 7.73631 16.9633 7.95552 16.9812C8.18056 16.9996 8.47171 17 8.89999 17H9.5C9.77614 17 10 17.2239 10 17.5C10 17.7761 9.77614 18 9.5 18H8.89999Z" fill="currentColor"/></svg>',
+    // save
+    floppyDisk: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 16.0858L12.7071 16.7929L16 20.0858V5C16 4.44772 15.5523 4 15 4H9C8.44772 4 8 4.44772 8 5L8 20.0858L11.2929 16.7929L12 16.0858ZM12.7071 18.2071L15.2929 20.7929C15.9229 21.4229 17 20.9767 17 20.0858V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V20.0858C7 20.9767 8.07714 21.4229 8.70711 20.7929L11.2929 18.2071L12 17.5L12.7071 18.2071Z" fill="currentColor"/></svg>',
+    // action.back.small
+    undo: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.85355 7.14645C9.04881 7.34171 9.04882 7.65829 8.85355 7.85355L6.7071 10L15.5 10C17.433 10 19 11.567 19 13.5C19 15.433 17.433 17 15.5 17H14.5C14.2239 17 14 16.7762 14 16.5C14 16.2239 14.2239 16 14.5 16H15.5C16.8807 16 18 14.8807 18 13.5C18 12.1193 16.8807 11 15.5 11L6.70711 11L8.85355 13.1464C9.04881 13.3417 9.04882 13.6583 8.85355 13.8536C8.65829 14.0488 8.34171 14.0488 8.14645 13.8536L5.14645 10.8536C5.05268 10.7598 5 10.6326 5 10.5C5 10.3674 5.05268 10.2402 5.14645 10.1465L8.14645 7.14645C8.34171 6.95119 8.65829 6.95118 8.85355 7.14645Z" fill="currentColor"/></svg>',
+    // action.back.small (mirrored)
+    redo: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="matrix(-1 0 0 1 24 0)"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.85355 7.14645C9.04881 7.34171 9.04882 7.65829 8.85355 7.85355L6.7071 10L15.5 10C17.433 10 19 11.567 19 13.5C19 15.433 17.433 17 15.5 17H14.5C14.2239 17 14 16.7762 14 16.5C14 16.2239 14.2239 16 14.5 16H15.5C16.8807 16 18 14.8807 18 13.5C18 12.1193 16.8807 11 15.5 11L6.70711 11L8.85355 13.1464C9.04881 13.3417 9.04882 13.6583 8.85355 13.8536C8.65829 14.0488 8.34171 14.0488 8.14645 13.8536L5.14645 10.8536C5.05268 10.7598 5 10.6326 5 10.5C5 10.3674 5.05268 10.2402 5.14645 10.1465L8.14645 7.14645C8.34171 6.95119 8.65829 6.95118 8.85355 7.14645Z" fill="currentColor"/></g></svg>',
+    // warning.small
+    warning: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.2568 6.05903L5.21667 15.0193C4.46674 16.3525 5.43016 17.9998 6.95982 17.9998H17.0401C18.5697 17.9998 19.5331 16.3525 18.7832 15.0193L13.7431 6.05904C12.9785 4.69973 11.0214 4.69972 10.2568 6.05903ZM11.1284 6.54929L6.08824 15.5096C5.71328 16.1762 6.19499 16.9998 6.95982 16.9998H17.0401C17.8049 16.9998 18.2866 16.1762 17.9116 15.5096L12.8715 6.54929C12.4892 5.86964 11.5107 5.86964 11.1284 6.54929ZM11.9999 8.49976C12.2761 8.49976 12.4999 8.72361 12.4999 8.99976V12.4998C12.4999 12.7759 12.2761 12.9998 11.9999 12.9998C11.7238 12.9998 11.4999 12.7759 11.4999 12.4998V8.99976C11.4999 8.72361 11.7238 8.49976 11.9999 8.49976ZM12.7499 14.7532C12.7499 15.1674 12.4142 15.5032 11.9999 15.5032C11.5857 15.5032 11.2499 15.1674 11.2499 14.7532C11.2499 14.339 11.5857 14.0032 11.9999 14.0032C12.4142 14.0032 12.7499 14.339 12.7499 14.7532Z" fill="currentColor"/></svg>',
+    // trash
+    trash: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 6C10 5.44771 10.4477 5 11 5H13C13.5523 5 14 5.44771 14 6H10ZM9 6C9 4.89543 9.89543 4 11 4H13C14.1046 4 15 4.89543 15 6H17.5C18.3284 6 19 6.67157 19 7.5C19 8.16678 18.565 8.73193 17.9632 8.92711L17.122 18.1811C17.0283 19.2112 16.1646 20 15.1302 20H8.86983C7.83542 20 6.97168 19.2112 6.87804 18.1811L6.03677 8.92711C5.43504 8.73193 5 8.16678 5 7.5C5 6.67157 5.67157 6 6.5 6H9ZM17.4942 8H17.5027C17.7776 7.99855 18 7.77524 18 7.5C18 7.22386 17.7761 7 17.5 7H14.5H9.5H6.5C6.22386 7 6 7.22386 6 7.5C6 7.77524 6.22241 7.99855 6.49731 8H6.50578H17.4942ZM16.9525 9H7.04752L7.87393 18.0905C7.92076 18.6056 8.35262 19 8.86983 19H15.1302C15.6474 19 16.0792 18.6056 16.1261 18.0905L16.9525 9ZM11 11.5C11 11.2239 10.7761 11 10.5 11C10.2239 11 10 11.2239 10 11.5V16.5C10 16.7761 10.2239 17 10.5 17C10.7761 17 11 16.7761 11 16.5V11.5ZM14 11.5C14 11.2239 13.7761 11 13.5 11C13.2239 11 13 11.2239 13 11.5V16.5C13 16.7761 13.2239 17 13.5 17C13.7761 17 14 16.7761 14 16.5V11.5Z" fill="currentColor"/></svg>',
+    // save
+    bookmark: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 16.0858L12.7071 16.7929L16 20.0858V5C16 4.44772 15.5523 4 15 4H9C8.44772 4 8 4.44772 8 5L8 20.0858L11.2929 16.7929L12 16.0858ZM12.7071 18.2071L15.2929 20.7929C15.9229 21.4229 17 20.9767 17 20.0858V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V20.0858C7 20.9767 8.07714 21.4229 8.70711 20.7929L11.2929 18.2071L12 17.5L12.7071 18.2071Z" fill="currentColor"/></svg>',
+    // effects.small
+    sun: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.1056 5.55279C10.275 5.214 10.6212 5 11 5H15C15.3603 5 15.6927 5.19379 15.8702 5.5073C16.0477 5.82081 16.0429 6.20557 15.8575 6.5145L13.7662 10H16C16.4045 10 16.7691 10.2436 16.9239 10.6173C17.0787 10.991 16.9931 11.4211 16.7071 11.7071L9.70711 18.7071C9.37139 19.0428 8.84588 19.0962 8.44951 18.8348C8.05314 18.5735 7.89519 18.0694 8.07152 17.6286L9.52297 14H7.5C7.15342 14 6.83156 13.8205 6.64935 13.5257C6.46714 13.2309 6.45058 12.8628 6.60557 12.5528L10.1056 5.55279ZM9.92297 13H11L10.6 14L9.94281 15.643L9 18L10.7951 16.2049L15 12L16 11H14.5858H13.1662H12L12.6 10L14.4 7L15 6H13.8338H11L8 12L7.5 13H8.61804H9.92297Z" fill="currentColor"/></svg>',
+    // adjust
+    slidersHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 4.5C7 4.22386 7.22386 4 7.5 4C7.77614 4 8 4.22386 8 4.5V12C8 12.0167 7.99918 12.0332 7.99758 12.0495C9.1399 12.2802 10 13.2897 10 14.5C10 15.7103 9.1399 16.7198 7.99758 16.9505C7.99918 16.9668 8 16.9833 8 17V19.5C8 19.7761 7.77614 20 7.5 20C7.22386 20 7 19.7761 7 19.5V17C7 16.9833 7.00082 16.9668 7.00242 16.9505C5.86009 16.7198 5 15.7103 5 14.5C5 13.2897 5.86009 12.2802 7.00242 12.0495C7.00082 12.0332 7 12.0167 7 12V4.5ZM9 14.5C9 15.3284 8.32843 16 7.5 16C6.67157 16 6 15.3284 6 14.5C6 13.6716 6.67157 13 7.5 13C8.32843 13 9 13.6716 9 14.5ZM16 19.5C16 19.7761 16.2239 20 16.5 20C16.7761 20 17 19.7761 17 19.5V12C17 11.9833 16.9992 11.9668 16.9976 11.9505C18.1399 11.7198 19 10.7103 19 9.5C19 8.28967 18.1399 7.28022 16.9976 7.04952C16.9992 7.03323 17 7.01671 17 7V4.5C17 4.22386 16.7761 4 16.5 4C16.2239 4 16 4.22386 16 4.5V7C16 7.01671 16.0008 7.03323 16.0024 7.04952C14.8601 7.28022 14 8.28967 14 9.5C14 10.7103 14.8601 11.7198 16.0024 11.9505C16.0008 11.9668 16 11.9833 16 12V19.5ZM18 9.5C18 8.67157 17.3284 8 16.5 8C15.6716 8 15 8.67157 15 9.5C15 10.3284 15.6716 11 16.5 11C17.3284 11 18 10.3284 18 9.5Z" fill="currentColor"/></svg>',
+    // design
+    pencilRuler: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.35986 5.69366L10.851 10.1441L10.8526 10.1457C11.0484 10.0521 11.2676 9.99972 11.499 9.99972C12.3274 9.99972 12.999 10.6713 12.999 11.4997C12.999 12.3281 12.3274 12.9997 11.499 12.9997C10.6706 12.9997 9.999 12.3281 9.999 11.4997C9.999 11.268 10.0515 11.0486 10.1453 10.8527L5.72664 6.474L7.61052 13.0614L7.61559 13.0791L7.61934 13.0971C8.05545 15.1959 9.91152 16.7711 12.1321 16.7711C12.5159 16.7711 12.8881 16.7241 13.2436 16.6359C13.6226 16.5419 14.0555 16.6279 14.361 16.9341L15.5777 18.1537C15.8699 18.4466 16.3431 18.4466 16.6353 18.1537L18.1544 16.631C18.4472 16.3375 18.4472 15.861 18.1544 15.5674L16.9162 14.3262C16.6149 14.0242 16.5279 13.5982 16.6169 13.2232C16.6985 12.879 16.7419 12.5194 16.7419 12.1491C16.7419 9.99433 15.2711 8.18388 13.2821 7.67193L13.2693 7.66863L13.2694 7.66846L6.35986 5.69366ZM6.45953 4.68211C5.37497 4.37213 4.37225 5.37501 4.68241 6.45952L6.64412 13.319C7.18137 15.8616 9.43304 17.7711 12.1321 17.7711C12.5978 17.7711 13.0508 17.7141 13.4844 17.6065C13.5645 17.5866 13.6245 17.6118 13.653 17.6404L14.8697 18.86C15.5526 19.5445 16.6604 19.5445 17.3433 18.86L18.8623 17.3373C19.5446 16.6534 19.5446 15.5451 18.8623 14.8612L17.6241 13.62C17.5959 13.5917 17.5711 13.5328 17.5898 13.454C17.6893 13.0347 17.7419 12.5977 17.7419 12.1491C17.7419 9.53085 15.9562 7.33075 13.5379 6.70518L6.45953 4.68211ZM11.499 11.9997C11.7751 11.9997 11.999 11.7759 11.999 11.4997C11.999 11.2236 11.7751 10.9997 11.499 10.9997C11.2229 10.9997 10.999 11.2236 10.999 11.4997C10.999 11.7759 11.2229 11.9997 11.499 11.9997Z" fill="currentColor"/></svg>',
+    // animate
+    motion: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7C7.22386 7 7 7.22386 7 7.5C7 7.77614 7.22386 8 7.5 8H11.5C11.7761 8 12 7.77614 12 7.5C12 7.22386 11.7761 7 11.5 7H7.5ZM3.5 10C3.22386 10 3 10.2239 3 10.5C3 10.7761 3.22386 11 3.5 11H9.5C9.77614 11 10 10.7761 10 10.5C10 10.2239 9.77614 10 9.5 10H3.5ZM3.5 13C3.22386 13 3 13.2239 3 13.5C3 13.7761 3.22386 14 3.5 14H9.5C9.77614 14 10 13.7761 10 13.5C10 13.2239 9.77614 13 9.5 13H3.5ZM7.5 16C7.22386 16 7 16.2239 7 16.5C7 16.7761 7.22386 17 7.5 17H11.5C11.7761 17 12 16.7761 12 16.5C12 16.2239 11.7761 16 11.5 16H7.5ZM20 12C20 14.2091 18.2091 16 16 16C13.7909 16 12 14.2091 12 12C12 9.79086 13.7909 8 16 8C18.2091 8 20 9.79086 20 12ZM21 12C21 14.7614 18.7614 17 16 17C13.2386 17 11 14.7614 11 12C11 9.23857 13.2386 7 16 7C18.7614 7 21 9.23857 21 12Z" fill="currentColor"/></svg>',
+    // play.small
+    play: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.1587 7.17447C9.6598 6.85016 9 7.20822 9 7.8033V16.1966C9 16.7917 9.6598 17.1497 10.1587 16.8254L16.8086 12.503C17.1726 12.2664 17.1726 11.7335 16.8086 11.4969L10.1587 7.17447ZM8 7.8033C8 6.41478 9.53954 5.5793 10.7037 6.33603L17.3536 10.6584C18.3243 11.2894 18.3243 12.7105 17.3536 13.3415L10.7037 17.6639C9.53954 18.4206 8 17.5851 8 16.1966V7.8033Z" fill="currentColor"/></svg>',
+    // pause.small
+    pause: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7H9.5C9.77614 7 10 7.22386 10 7.5V16.5C10 16.7761 9.77614 17 9.5 17H7.5C7.22386 17 7 16.7761 7 16.5V7.5C7 7.22386 7.22386 7 7.5 7ZM6 7.5C6 6.67157 6.67157 6 7.5 6H9.5C10.3284 6 11 6.67157 11 7.5V16.5C11 17.3284 10.3284 18 9.5 18H7.5C6.67157 18 6 17.3284 6 16.5V7.5ZM14.5 7H16.5C16.7761 7 17 7.22386 17 7.5V16.5C17 16.7761 16.7761 17 16.5 17H14.5C14.2239 17 14 16.7761 14 16.5V7.5C14 7.22386 14.2239 7 14.5 7ZM13 7.5C13 6.67157 13.6716 6 14.5 6H16.5C17.3284 6 18 6.67157 18 7.5V16.5C18 17.3284 17.3284 18 16.5 18H14.5C13.6716 18 13 17.3284 13 16.5V7.5Z" fill="currentColor"/></svg>',
+    // al.layout-horizontal (mirrored)
+    arrowLeft: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="matrix(-1 0 0 1 24 0)"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 11.5C8 11.7761 8.22386 12 8.5 12H15.289L12.8899 14.3883C12.6942 14.5831 12.6935 14.8997 12.8883 15.0954C13.0831 15.2911 13.3997 15.2918 13.5954 15.097L16.8528 11.8543C16.947 11.7605 17 11.633 17 11.5C17 11.367 16.947 11.2394 16.8528 11.1456L13.5954 7.90297C13.3997 7.70815 13.0831 7.70887 12.8883 7.90457C12.6935 8.10028 12.6942 8.41686 12.8899 8.61168L15.289 11H8.5C8.22386 11 8 11.2238 8 11.5Z" fill="currentColor"/></g></svg>',
+    // al.layout-horizontal
+    arrowRight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 11.5C8 11.7761 8.22386 12 8.5 12H15.289L12.8899 14.3883C12.6942 14.5831 12.6935 14.8997 12.8883 15.0954C13.0831 15.2911 13.3997 15.2918 13.5954 15.097L16.8528 11.8543C16.947 11.7605 17 11.633 17 11.5C17 11.367 16.947 11.2394 16.8528 11.1456L13.5954 7.90297C13.3997 7.70815 13.0831 7.70887 12.8883 7.90457C12.6935 8.10028 12.6942 8.41686 12.8899 8.61168L15.289 11H8.5C8.22386 11 8 11.2238 8 11.5Z" fill="currentColor"/></svg>',
+    // al.layout-vertical
+    arrowDown: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 7C12.2238 7 12 7.22386 12 7.5V14.289L9.61168 11.8899C9.41686 11.6942 9.10028 11.6935 8.90457 11.8883C8.70887 12.0831 8.70815 12.3997 8.90297 12.5954L12.1456 15.8528C12.2394 15.947 12.367 16 12.5 16C12.633 16 12.7605 15.947 12.8543 15.8528L16.097 12.5954C16.2918 12.3997 16.2911 12.0831 16.0954 11.8883C15.8997 11.6935 15.5831 11.6942 15.3883 11.8899L13 14.289V7.5C13 7.22386 12.7761 7 12.5 7Z" fill="currentColor"/></svg>',
+    // al.layout-vertical-up
+    arrowUp: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 16C12.2238 16 12 15.7761 12 15.5V8.71098L9.61168 11.1101C9.41686 11.3058 9.10028 11.3065 8.90457 11.1117C8.70887 10.9169 8.70815 10.6003 8.90297 10.4046L12.1456 7.14725C12.2394 7.05299 12.367 7 12.5 7C12.633 7 12.7605 7.05299 12.8543 7.14725L16.097 10.4046C16.2918 10.6003 16.2911 10.9169 16.0954 11.1117C15.8997 11.3065 15.5831 11.3058 15.3883 11.1101L13 8.71098V15.5C13 15.7761 12.7761 16 12.5 16Z" fill="currentColor"/></svg>',
+    // measure.small
+    ruler: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.29289 10.2071C4.90237 9.81658 4.90237 9.18342 5.29289 8.79289L8.79289 5.29289C9.18342 4.90237 9.81658 4.90237 10.2071 5.29289L18.7071 13.7929C19.0976 14.1834 19.0976 14.8166 18.7071 15.2071L15.2071 18.7071C14.8166 19.0976 14.1834 19.0976 13.7929 18.7071L5.29289 10.2071ZM6.70711 10.2071L6 9.5L6.70711 8.79289L8.79289 6.70711L9.5 6L10.2071 6.70711L17.2929 13.7929L18 14.5L17.2929 15.2071L15.2071 17.2929L14.5 18L13.7929 17.2929L10.1036 13.6036L11.8536 11.8536C12.0488 11.6583 12.0488 11.3417 11.8536 11.1464C11.6583 10.9512 11.3417 10.9512 11.1464 11.1464L9.39645 12.8964L8.10355 11.6036L8.85355 10.8536C9.04882 10.6583 9.04882 10.3417 8.85355 10.1464C8.65829 9.95118 8.34171 9.95118 8.14645 10.1464L7.39645 10.8964L6.70711 10.2071ZM13.5 14.5C13.5 15.0523 13.9477 15.5 14.5 15.5C15.0523 15.5 15.5 15.0523 15.5 14.5C15.5 13.9477 15.0523 13.5 14.5 13.5C13.9477 13.5 13.5 13.9477 13.5 14.5Z" fill="currentColor"/></svg>',
+    // time.small
+    timer: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12ZM19 12C19 15.866 15.866 19 12 19C8.134 19 5 15.866 5 12C5 8.134 8.134 5 12 5C15.866 5 19 8.134 19 12ZM12.5 8.5C12.5 8.22386 12.2761 8 12 8C11.7239 8 11.5 8.22386 11.5 8.5V12C11.5 12.1326 11.5527 12.2598 11.6465 12.3535L13.6465 14.3535C13.8417 14.5488 14.1583 14.5488 14.3535 14.3535C14.5488 14.1583 14.5488 13.8417 14.3535 13.6465L12.5 11.7929V8.5Z" fill="currentColor"/></svg>',
+    // interaction.delay.small
+    hourglass: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 5C11.7239 5 11.5 5.22386 11.5 5.5C11.5 5.77614 11.7239 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12C6 11.7239 5.77614 11.5 5.5 11.5C5.22386 11.5 5 11.7239 5 12C5 15.866 8.13401 19 12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5ZM8.3005 6.91783C7.9046 6.66167 7.38356 6.71688 7.05014 7.05031C6.71672 7.38374 6.66153 7.90479 6.9177 8.30067L9.99202 13.0517C10.7573 14.2343 12.4182 14.4103 13.4142 13.4142C14.4103 12.4181 14.2343 10.7572 13.0516 9.99199L8.3005 6.91783ZM12.5084 10.8316L9.80624 9.08317L7.75726 7.75741L9.08309 9.80634L10.8316 12.5084C11.251 13.1566 12.1612 13.253 12.7071 12.7071C13.253 12.1612 13.1566 11.251 12.5084 10.8316Z" fill="currentColor"/></svg>',
+    // loop.small
+    repeat: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.85355 6.14645C9.65829 5.95118 9.34171 5.95118 9.14645 6.14645C8.95118 6.34171 8.95118 6.65829 9.14645 6.85355L10.2929 8H9C6.79086 8 5 9.79086 5 12C5 14.2091 6.79086 16 9 16H9.5C9.77614 16 10 15.7761 10 15.5C10 15.2239 9.77614 15 9.5 15H9C7.34315 15 6 13.6569 6 12C6 10.3431 7.34315 9 9 9H10.2929L9.14645 10.1464C8.95118 10.3417 8.95118 10.6583 9.14645 10.8536C9.34171 11.0488 9.65829 11.0488 9.85355 10.8536L11.8536 8.85355C12.0488 8.65829 12.0488 8.34171 11.8536 8.14645L9.85355 6.14645ZM14.5 8C14.2239 8 14 8.22386 14 8.5C14 8.77614 14.2239 9 14.5 9H15C16.6569 9 18 10.3431 18 12C18 13.6569 16.6569 15 15 15H13.7071L14.8536 13.8536C15.0488 13.6583 15.0488 13.3417 14.8536 13.1464C14.6583 12.9512 14.3417 12.9512 14.1464 13.1464L12.1464 15.1464C11.9512 15.3417 11.9512 15.6583 12.1464 15.8536L14.1464 17.8536C14.3417 18.0488 14.6583 18.0488 14.8536 17.8536C15.0488 17.6583 15.0488 17.3417 14.8536 17.1464L13.7071 16H15C17.2091 16 19 14.2091 19 12C19 9.79086 17.2091 8 15 8H14.5Z" fill="currentColor"/></svg>',
+    // restart
+    replay: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.85355 5.85355C9.04882 5.65829 9.04882 5.34171 8.85355 5.14645C8.65829 4.95118 8.34171 4.95118 8.14645 5.14645L5.14645 8.14645C4.95118 8.34171 4.95118 8.65829 5.14645 8.85355L8.14645 11.8536C8.34171 12.0488 8.65829 12.0488 8.85355 11.8536C9.04882 11.6583 9.04882 11.3417 8.85355 11.1464L6.70711 9H13.9999C16.2091 9 17.9999 10.7909 17.9999 13C17.9999 15.2091 16.2091 17 13.9999 17C12.2832 17 10.8191 15.9186 10.2517 14.3998C10.17 14.1812 9.96929 14.0226 9.73602 14.0226C9.41028 14.0226 9.1658 14.3231 9.27201 14.6311C9.94825 16.5916 11.8096 18 13.9999 18C16.7614 18 18.9999 15.7614 18.9999 13C18.9999 10.2391 16.7623 8.00091 14.0016 8C14.0011 8 14.0005 8 14 8H13.9999H6.70711L8.85355 5.85355Z" fill="currentColor"/></svg>',
+    // sidebars.hide.default
+    sidebarSimple: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17 6H19C19.5523 6 20 6.44772 20 7V17C20 17.5523 19.5523 18 19 18H17V6ZM16 6H8V18H16V6ZM7 18V6H5C4.44772 6 4 6.44772 4 7V17C4 17.5523 4.44772 18 5 18H7ZM3 7C3 5.89543 3.89543 5 5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" fill="currentColor"/></svg>',
+    // copy.small
+    copy: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 6C6.67157 6 6 6.67157 6 7.5V13.5C6 14.3284 6.67157 15 7.5 15H9V16.5C9 17.3284 9.67157 18 10.5 18H16.5C17.3284 18 18 17.3284 18 16.5V10.5C18 9.67157 17.3284 9 16.5 9H15V7.5C15 6.67157 14.3284 6 13.5 6H7.5ZM15 10V13.5C15 14.3284 14.3284 15 13.5 15H10V16.5C10 16.7761 10.2239 17 10.5 17H16.5C16.7761 17 17 16.7761 17 16.5V10.5C17 10.2239 16.7761 10 16.5 10H15ZM7 7.5C7 7.22386 7.22386 7 7.5 7H13.5C13.7761 7 14 7.22386 14 7.5V13.5C14 13.7761 13.7761 14 13.5 14H7.5C7.22386 14 7 13.7761 7 13.5V7.5Z" fill="currentColor"/></svg>',
+    // text.align-left
+    textAlignLeft: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 7.5C5 7.22386 5.22386 7 5.5 7H18.5C18.7761 7 19 7.22386 19 7.5C19 7.77614 18.7761 8 18.5 8H5.5C5.22386 8 5 7.77614 5 7.5ZM5 11.5C5 11.2239 5.22386 11 5.5 11H12.5C12.7761 11 13 11.2239 13 11.5C13 11.7761 12.7761 12 12.5 12H5.5C5.22386 12 5 11.7761 5 11.5ZM5.5 15C5.22386 15 5 15.2239 5 15.5C5 15.7761 5.22386 16 5.5 16H14.5C14.7761 16 15 15.7761 15 15.5C15 15.2239 14.7761 15 14.5 15H5.5Z" fill="currentColor"/></svg>',
+    // text.align-center
+    textAlignCenter: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 7.5C5 7.22386 5.22386 7 5.5 7H18.5C18.7761 7 19 7.22386 19 7.5C19 7.77614 18.7761 8 18.5 8H5.5C5.22386 8 5 7.77614 5 7.5ZM8 11.5C8 11.2239 8.22386 11 8.5 11H15.5C15.7761 11 16 11.2239 16 11.5C16 11.7761 15.7761 12 15.5 12H8.5C8.22386 12 8 11.7761 8 11.5ZM7.5 15C7.22386 15 7 15.2239 7 15.5C7 15.7761 7.22386 16 7.5 16H16.5C16.7761 16 17 15.7761 17 15.5C17 15.2239 16.7761 15 16.5 15H7.5Z" fill="currentColor"/></svg>',
+    // text.align-right
+    textAlignRight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M19 7.5C19 7.22386 18.7761 7 18.5 7H5.5C5.22386 7 5 7.22386 5 7.5C5 7.77614 5.22386 8 5.5 8H18.5C18.7761 8 19 7.77614 19 7.5ZM19 11.5C19 11.2239 18.7761 11 18.5 11H11.5C11.2239 11 11 11.2239 11 11.5C11 11.7761 11.2239 12 11.5 12H18.5C18.7761 12 19 11.7761 19 11.5ZM18.5 15C18.7761 15 19 15.2239 19 15.5C19 15.7761 18.7761 16 18.5 16H9.5C9.22386 16 9 15.7761 9 15.5C9 15.2239 9.22386 15 9.5 15H18.5Z" fill="currentColor"/></svg>',
+    // stroke-weight
+    strokeWeight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 6.5C6 6.22386 6.22386 6 6.5 6H17.5C17.7761 6 18 6.22386 18 6.5C18 6.77614 17.7761 7 17.5 7H6.5C6.22386 7 6 6.77614 6 6.5ZM7 10V11H17V10H7ZM6.75 9C6.33579 9 6 9.33579 6 9.75V11.25C6 11.6642 6.33579 12 6.75 12H17.25C17.6642 12 18 11.6642 18 11.25V9.75C18 9.33579 17.6642 9 17.25 9H6.75ZM7 17V15H17V17H7ZM6 14.75C6 14.3358 6.33579 14 6.75 14H17.25C17.6642 14 18 14.3358 18 14.75V17.25C18 17.6642 17.6642 18 17.25 18H6.75C6.33579 18 6 17.6642 6 17.25V14.75Z" fill="currentColor"/></svg>',
+    // text.align-top
+    arrowLineUp: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5 5C5.22386 5 5 5.22386 5 5.5C5 5.77614 5.22386 6 5.5 6H17.5C17.7761 6 18 5.77614 18 5.5C18 5.22386 17.7761 5 17.5 5H5.5ZM11.8536 7.14645C11.6583 6.95118 11.3417 6.95118 11.1464 7.14645L8.14645 10.1464C7.95118 10.3417 7.95118 10.6583 8.14645 10.8536C8.34171 11.0488 8.65829 11.0488 8.85355 10.8536L11 8.70711V16.5C11 16.7761 11.2239 17 11.5 17C11.7761 17 12 16.7761 12 16.5V8.70711L14.1464 10.8536C14.3417 11.0488 14.6583 11.0488 14.8536 10.8536C15.0488 10.6583 15.0488 10.3417 14.8536 10.1464L11.8536 7.14645Z" fill="currentColor"/></svg>',
+    // text.align-middle
+    arrowsInLineVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.8536 9.85355L13.8536 7.85355C14.0488 7.65829 14.0488 7.34171 13.8536 7.14645C13.6583 6.95118 13.3417 6.95118 13.1464 7.14645L12 8.29289V4.5C12 4.22386 11.7761 4 11.5 4C11.2239 4 11 4.22386 11 4.5V8.29289L9.85355 7.14645C9.65829 6.95118 9.34171 6.95118 9.14645 7.14645C8.95118 7.34171 8.95118 7.65829 9.14645 7.85355L11.1464 9.85355C11.3417 10.0488 11.6583 10.0488 11.8536 9.85355ZM11.8536 13.1464L13.8536 15.1464C14.0488 15.3417 14.0488 15.6583 13.8536 15.8536C13.6583 16.0488 13.3417 16.0488 13.1464 15.8536L12 14.7071V18.5C12 18.7761 11.7761 19 11.5 19C11.2239 19 11 18.7761 11 18.5V14.7071L9.85355 15.8536C9.65829 16.0488 9.34171 16.0488 9.14645 15.8536C8.95118 15.6583 8.95118 15.3417 9.14645 15.1464L11.1464 13.1464C11.3417 12.9512 11.6583 12.9512 11.8536 13.1464ZM5.5 11C5.22386 11 5 11.2239 5 11.5C5 11.7761 5.22386 12 5.5 12H17.5C17.7761 12 18 11.7761 18 11.5C18 11.2239 17.7761 11 17.5 11H5.5Z" fill="currentColor"/></svg>',
+    // text.align-bottom
+    arrowLineDown: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8536 13.8536L11.8536 16.8536C11.6583 17.0488 11.3417 17.0488 11.1464 16.8536L8.14645 13.8536C7.95118 13.6583 7.95118 13.3417 8.14645 13.1464C8.34171 12.9512 8.65829 12.9512 8.85355 13.1464L11 15.2929V7.5C11 7.22386 11.2239 7 11.5 7C11.7761 7 12 7.22386 12 7.5V15.2929L14.1464 13.1464C14.3417 12.9512 14.6583 12.9512 14.8536 13.1464C15.0488 13.3417 15.0488 13.6583 14.8536 13.8536ZM5.5 19C5.22386 19 5 18.7761 5 18.5C5 18.2239 5.22386 18 5.5 18H17.5C17.7761 18 18 18.2239 18 18.5C18 18.7761 17.7761 19 17.5 19H5.5Z" fill="currentColor"/></svg>',
+    // text.resize-width
+    arrowLineRight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.1464 8.14645C14.3417 7.95118 14.6583 7.95118 14.8536 8.14645L17.8536 11.1464C17.9473 11.2402 18 11.3674 18 11.5C18 11.6326 17.9473 11.7598 17.8536 11.8536L14.8536 14.8536C14.6583 15.0488 14.3417 15.0488 14.1464 14.8536C13.9512 14.6583 13.9512 14.3417 14.1464 14.1464L16.2929 12L7.70708 12.0002L9.85355 14.1467C10.0488 14.342 10.0488 14.6585 9.85355 14.8538C9.65829 15.0491 9.34171 15.0491 9.14645 14.8538L6.14645 11.8538C5.95118 11.6585 5.95118 11.342 6.14645 11.1467L9.14645 8.14669C9.34171 7.95143 9.65829 7.95143 9.85355 8.14669C10.0488 8.34195 10.0488 8.65854 9.85355 8.8538L7.70713 11.0002L16.2929 11L14.1464 8.85355C13.9512 8.65829 13.9512 8.34171 14.1464 8.14645Z" fill="currentColor"/></svg>',
+    // text.resize-height
+    resizeHeight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 6C6.77614 6 7 6.22386 7 6.5V17.5C7 17.7761 6.77614 18 6.5 18C6.22386 18 6 17.7761 6 17.5V6.5C6 6.22386 6.22386 6 6.5 6ZM9.50002 10.0002L14.5 10C14.7762 9.99999 15 9.77612 15 9.49998C15 9.22383 14.7761 8.99999 14.5 9L9.49998 9.00024C9.22383 9.00026 8.99999 9.22413 9 9.50027C9.00001 9.77641 9.22388 10.0003 9.50002 10.0002ZM14.5 12.5L9.50002 12.5002C9.22388 12.5003 9.00001 12.2764 9 12.0003C8.99999 11.7241 9.22383 11.5003 9.49998 11.5002L14.5 11.5C14.7761 11.5 15 11.7238 15 12C15 12.2761 14.7762 12.5 14.5 12.5ZM9 14.5C9 14.2239 9.22386 14 9.5 14H12.5C12.7761 14 13 14.2239 13 14.5C13 14.7761 12.7761 15 12.5 15H9.5C9.22386 15 9 14.7761 9 14.5ZM18 6.5C18 6.22386 17.7761 6 17.5 6C17.2239 6 17 6.22386 17 6.5V17.5C17 17.7761 17.2239 18 17.5 18C17.7761 18 18 17.7761 18 17.5V6.5Z" fill="currentColor"/></svg>',
+    // text.resize-fixed
+    article: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17 7H7L7 17H17V7ZM7 6C6.44772 6 6 6.44772 6 7V17C6 17.5523 6.44772 18 7 18H17C17.5523 18 18 17.5523 18 17V7C18 6.44772 17.5523 6 17 6H7Z" fill="currentColor"/></svg>',
+    // al.spacing-vertical
+    arrowsVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7C7.77614 7 8 7.22386 8 7.5V7.75C8 7.88807 8.11193 8 8.25 8H14.75C14.8881 8 15 7.88807 15 7.75V7.5C15 7.22386 15.2239 7 15.5 7C15.7761 7 16 7.22386 16 7.5V7.75C16 8.44036 15.4404 9 14.75 9H8.25C7.55964 9 7 8.44036 7 7.75V7.5C7 7.22386 7.22386 7 7.5 7ZM8.25 15C8.11193 15 8 15.1119 8 15.25V15.5C8 15.7761 7.77614 16 7.5 16C7.22386 16 7 15.7761 7 15.5V15.25C7 14.5596 7.55964 14 8.25 14H14.7501C15.4405 14 16.0001 14.5596 16.0001 15.25V15.5C16.0001 15.7761 15.7763 16 15.5001 16C15.224 16 15.0001 15.7761 15.0001 15.5V15.25C15.0001 15.1119 14.8882 15 14.7501 15H8.25ZM9.5 11C9.22386 11 9 11.2239 9 11.5C9 11.7761 9.22386 12 9.5 12H13.5C13.7761 12 14 11.7761 14 11.5C14 11.2239 13.7761 11 13.5 11H9.5Z" fill="currentColor"/></svg>',
+    // al.spacing-horizontal
+    arrowsHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 15.5C7 15.2239 7.22386 15 7.5 15H7.75C7.88807 15 8 14.8881 8 14.75V8.25C8 8.11193 7.88807 8 7.75 8H7.5C7.22386 8 7 7.77614 7 7.5C7 7.22386 7.22386 7 7.5 7H7.75C8.44036 7 9 7.55964 9 8.25V14.75C9 15.4404 8.44036 16 7.75 16H7.5C7.22386 16 7 15.7761 7 15.5ZM15 14.7502C15 14.8883 15.1119 15.0002 15.25 15.0002H15.5C15.7761 15.0002 16 15.2241 16 15.5002C16 15.7764 15.7761 16.0002 15.5 16.0002H15.25C14.5596 16.0002 14 15.4406 14 14.7502V8.25012C14 7.55977 14.5596 7.00012 15.25 7.00012H15.5C15.7761 7.00012 16 7.22398 16 7.50012C16 7.77626 15.7761 8.00012 15.5 8.00012H15.25C15.1119 8.00012 15 8.11205 15 8.25012V14.7502ZM11 13.5C11 13.7761 11.2239 14 11.5 14C11.7761 14 12 13.7761 12 13.5V9.5C12 9.22386 11.7761 9 11.5 9C11.2239 9 11 9.22386 11 9.5V13.5Z" fill="currentColor"/></svg>',
+    // text.line-height
+    lineHeight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5.5C5 5.22386 5.22386 5 5.5 5H18.5C18.7761 5 19 5.22386 19 5.5C19 5.77614 18.7761 6 18.5 6H5.5C5.22386 6 5 5.77614 5 5.5ZM5 18.5C5 18.2239 5.22386 18 5.5 18H18.5C18.7761 18 19 18.2239 19 18.5C19 18.7761 18.7761 19 18.5 19H5.5C5.22386 19 5 18.7761 5 18.5ZM8.56445 16H9.58008L10.3843 13.7344H13.6196L14.4238 16H15.4395L12.502 8H11.502L8.56445 16ZM13.3145 12.875L12.0332 9.26562H11.9707L10.6894 12.875H13.3145Z" fill="currentColor"/></svg>',
+    // text.letter-spacing
+    letterSpacing: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 6C4.77614 6 5 6.22386 5 6.5L5 17.5C5 17.7761 4.77614 18 4.5 18C4.22386 18 4 17.7761 4 17.5V6.5C4 6.22386 4.22386 6 4.5 6ZM19.5 6C19.7761 6 20 6.22386 20 6.5L20 17.5C20 17.7761 19.7761 18 19.5 18C19.2239 18 19 17.7761 19 17.5L19 6.5C19 6.22386 19.2239 6 19.5 6ZM8.56445 16H9.58008L10.3843 13.7344H13.6196L14.4238 16H15.4395L12.502 8H11.502L8.56445 16ZM13.3145 12.875L12.0332 9.26562H11.9707L10.6894 12.875H13.3145Z" fill="currentColor"/></svg>',
+    // layout-grid-columns
+    columns: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V19H5V5ZM11 5H14V19H11V5ZM20 5H17V19H20V5Z" fill="currentColor"/></svg>',
+    // link-connected
+    lockRatio: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V9.5C14 9.77614 14.2239 10 14.5 10C14.7761 10 15 9.77614 15 9.5V8C15 6.34314 13.6569 5 12 5C10.3431 5 9 6.34314 9 8V9.5C9 9.77614 9.22386 10 9.5 10C9.77614 10 10 9.77614 10 9.5V8ZM10 16C10 17.1046 10.8954 18 12 18C13.1046 18 14 17.1046 14 16V14.5C14 14.2239 14.2239 14 14.5 14C14.7761 14 15 14.2239 15 14.5V16C15 17.6569 13.6569 19 12 19C10.3431 19 9 17.6569 9 16V14.5C9 14.2239 9.22386 14 9.5 14C9.77614 14 10 14.2239 10 14.5V16ZM12.5 10C12.5 9.72386 12.2761 9.5 12 9.5C11.7239 9.5 11.5 9.72386 11.5 10V14C11.5 14.2761 11.7239 14.5 12 14.5C12.2761 14.5 12.5 14.2761 12.5 14V10Z" fill="currentColor"/></svg>',
+    // instance.small
+    instance: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.8233 6.59105L6.59105 11.8233C6.49342 11.9209 6.49341 12.0792 6.59105 12.1768L11.8233 17.4091C11.9209 17.5067 12.0792 17.5067 12.1768 17.4091L17.4091 12.1768C17.5067 12.0792 17.5067 11.9209 17.4091 11.8233L12.1768 6.59105C12.0792 6.49342 11.9209 6.49341 11.8233 6.59105ZM11.1162 5.88394L5.88394 11.1162C5.39578 11.6043 5.39578 12.3958 5.88394 12.8839L11.1162 18.1162C11.6043 18.6043 12.3958 18.6043 12.8839 18.1162L18.1162 12.8839C18.6043 12.3958 18.6043 11.6043 18.1162 11.1162L12.8839 5.88394C12.3958 5.39578 11.6043 5.39578 11.1162 5.88394Z" fill="currentColor"/></svg>',
+    // component.small
+    component: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.96966 10.4444L6.59105 11.823C6.49341 11.9207 6.49341 12.079 6.59105 12.1766L7.96977 13.5553C8.06741 13.6529 8.2257 13.6529 8.32333 13.5553L9.70195 12.1767C9.79958 12.0791 9.79958 11.9208 9.70195 11.8231L8.32322 10.4444C8.22559 10.3468 8.0673 10.3468 7.96966 10.4444ZM9.02968 9.73666C8.54147 9.24915 7.7505 9.24937 7.26256 9.73731L5.88394 11.1159C5.39578 11.6041 5.39578 12.3955 5.88394 12.8837L7.26267 14.2624C7.75082 14.7506 8.54228 14.7506 9.03043 14.2624L10.4091 12.8838C10.4093 12.8836 10.4095 12.8833 10.4098 12.8831C10.8972 12.3948 10.897 11.6039 10.4091 11.116L9.03032 9.73731C9.03011 9.73709 9.0299 9.73688 9.02968 9.73666ZM11.1169 13.5902C11.1167 13.5904 11.1164 13.5907 11.1162 13.5909L9.73754 14.9695C9.24939 15.4577 9.24939 16.2491 9.73754 16.7373L11.1162 18.1159C11.6043 18.6041 12.3958 18.6041 12.8839 18.1159L14.2626 16.7373C14.7505 16.2494 14.7507 15.4585 14.2633 14.9703C14.2631 14.97 14.2628 14.9698 14.2626 14.9695L12.8839 13.5909C12.8838 13.5907 12.8836 13.5906 12.8834 13.5904C12.3955 13.103 11.6049 13.1029 11.1169 13.5902ZM9.73679 9.02956C9.737 9.02977 9.73722 9.02999 9.73743 9.0302L11.1162 10.4089C11.1163 10.4091 11.1165 10.4093 11.1167 10.4095C11.6049 10.8971 12.3959 10.8969 12.8839 10.4089L14.2627 9.03019C14.7508 8.54204 14.7508 7.75058 14.2627 7.26242L12.8839 5.88369C12.3958 5.39554 11.6043 5.39554 11.1162 5.88369L9.73743 7.26244C9.24949 7.75038 9.24928 8.54135 9.73679 9.02956ZM10.4445 8.3231L11.8233 9.70182C11.9209 9.79946 12.0792 9.79946 12.1768 9.70182L13.5556 8.32308C13.6532 8.22545 13.6532 8.06716 13.5556 7.96953L12.1768 6.5908C12.0792 6.49317 11.9209 6.49317 11.8233 6.5908L10.4445 7.96954C10.3469 8.06717 10.3469 8.22546 10.4445 8.3231ZM14.9698 9.7373L13.591 11.116C13.1029 11.6042 13.1029 12.3956 13.591 12.8838L14.9697 14.2624C15.4578 14.7506 16.2493 14.7506 16.7374 14.2624L18.1162 12.8837C18.6043 12.3955 18.6043 11.6041 18.1162 11.1159L16.7375 9.7373C16.2494 9.24914 15.4579 9.24914 14.9698 9.7373ZM15.6769 10.4444L14.2981 11.8231C14.2005 11.9208 14.2005 12.0791 14.2981 12.1767L15.6768 13.5553C15.7744 13.653 15.9327 13.653 16.0303 13.5553L17.4091 12.1766C17.5067 12.079 17.5067 11.9207 17.4091 11.823L16.0304 10.4444C15.9328 10.3468 15.7745 10.3468 15.6769 10.4444ZM13.5555 15.6766L12.1768 14.298C12.0792 14.2004 11.9209 14.2004 11.8233 14.298L10.4446 15.6766C10.347 15.7743 10.347 15.9326 10.4446 16.0302L11.8233 17.4088C11.9209 17.5065 12.0792 17.5065 12.1768 17.4088L13.5555 16.0302C13.6531 15.9326 13.6531 15.7743 13.5555 15.6766Z" fill="currentColor"/></svg>',
+    // check
+    tick: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2519 8.56819C15.4905 8.70733 15.571 9.01349 15.4319 9.25202L11.9319 15.252C11.8498 15.3928 11.7041 15.4848 11.5416 15.4983C11.3792 15.5119 11.2203 15.4454 11.1159 15.3202L8.6159 12.3202C8.43912 12.108 8.46778 11.7928 8.67992 11.616C8.89206 11.4392 9.20734 11.4679 9.38412 11.68L11.4275 14.1321L14.5681 8.74815C14.7073 8.50962 15.0134 8.42905 15.2519 8.56819Z" fill="currentColor"/></svg>',
+    // check
+    check: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2519 8.56819C15.4905 8.70733 15.571 9.01349 15.4319 9.25202L11.9319 15.252C11.8498 15.3928 11.7041 15.4848 11.5416 15.4983C11.3792 15.5119 11.2203 15.4454 11.1159 15.3202L8.6159 12.3202C8.43912 12.108 8.46778 11.7928 8.67992 11.616C8.89206 11.4392 9.20734 11.4679 9.38412 11.68L11.4275 14.1321L14.5681 8.74815C14.7073 8.50962 15.0134 8.42905 15.2519 8.56819Z" fill="currentColor"/></svg>',
+    // plus.small
+    plus: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 6C12.2761 6 12.5 6.22386 12.5 6.5V11.5H17.5C17.7761 11.5 18 11.7239 18 12C18 12.2761 17.7761 12.5 17.5 12.5H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H11.5V6.5C11.5 6.22386 11.7239 6 12 6Z" fill="currentColor"/></svg>',
+    // minus.small
+    minus: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 12C18 12.2761 17.7761 12.5 17.5 12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H17.5C17.7761 11.5 18 11.7239 18 12Z" fill="currentColor"/></svg>',
+    // eye.small
+    eye: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 12C6 11.9345 6.0545 11.642 6.31257 11.1754C6.55343 10.7399 6.92629 10.2367 7.43394 9.76077C8.44172 8.81598 9.95481 8 12 8C14.0452 8 15.5583 8.81599 16.5661 9.76079C17.0737 10.2367 17.4466 10.7399 17.6874 11.1754C17.9455 11.642 18 11.9345 18 12C18 12.0655 17.9455 12.358 17.6874 12.8246C17.4466 13.2601 17.0737 13.7633 16.5661 14.2392C15.5583 15.184 14.0452 16 12 16C9.95482 16 8.44173 15.184 7.43394 14.2392C6.92629 13.7633 6.55343 13.2601 6.31257 12.8246C6.0545 12.358 6 12.0655 6 12ZM5 12C5 10.75 7.33333 7 12 7C16.6667 7 19 10.75 19 12C19 13.25 16.6667 17 12 17C7.33333 17 5 13.25 5 12ZM13 12C13 12.5522 12.5523 13 12 13C11.4477 13 11 12.5522 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12ZM14 12C14 13.1045 13.1046 14 12 14C10.8954 14 10 13.1045 10 12C10 10.8954 10.8954 9.99996 12 9.99996C13.1046 9.99996 14 10.8954 14 12Z" fill="currentColor"/></svg>',
+    // hidden.small
+    eyeClosed: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.5001 9C5.77622 9 6.03289 9.22343 6.1415 9.47729C6.18496 9.57887 6.24092 9.69501 6.31258 9.82457C6.55344 10.2601 6.9263 10.7633 7.43395 11.2392C8.44173 12.184 9.95483 13 12 13C14.0452 13 15.5583 12.184 16.5661 11.2392C17.0737 10.7633 17.4466 10.2601 17.6874 9.8246C17.7591 9.69506 17.815 9.57895 17.8585 9.47738C17.9671 9.2235 18.2239 9 18.5 9C18.7761 9 18.9951 9.22492 18.9168 9.48974C18.7152 10.1719 18.1468 11.14 17.2116 12.0045L18.3536 13.1464C18.5488 13.3417 18.5488 13.6583 18.3536 13.8536C18.1583 14.0488 17.8417 14.0488 17.6464 13.8536L16.429 12.6361C15.8852 13.0177 15.2551 13.3517 14.5388 13.5937L14.9851 15.3787C15.052 15.6466 14.8892 15.9181 14.6213 15.9851C14.3534 16.052 14.0819 15.8892 14.0149 15.6213L13.5722 13.8502C13.0814 13.9465 12.5573 14 12 14C11.4427 14 10.9186 13.9465 10.4278 13.8502L9.98508 15.6213C9.9181 15.8892 9.64664 16.052 9.37874 15.9851C9.11084 15.9181 8.94796 15.6466 9.01494 15.3787L9.4612 13.5937C8.74487 13.3517 8.11481 13.0177 7.57101 12.6361L6.35355 13.8536C6.15829 14.0488 5.84171 14.0488 5.64645 13.8536C5.45118 13.6583 5.45118 13.3417 5.64645 13.1464L6.78841 12.0045C5.8533 11.14 5.28489 10.172 5.0832 9.48982C5.0049 9.22497 5.22391 9 5.5001 9Z" fill="currentColor"/></svg>',
+    // close.small
+    x: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.3536 6.64645C17.5488 6.84171 17.5488 7.15829 17.3536 7.35355L12.7071 12L17.3536 16.6464C17.5488 16.8417 17.5488 17.1583 17.3536 17.3536C17.1583 17.5488 16.8417 17.5488 16.6464 17.3536L12 12.7071L7.35355 17.3536C7.15829 17.5488 6.84171 17.5488 6.64645 17.3536C6.45118 17.1583 6.45118 16.8417 6.64645 16.6464L11.2929 12L6.64645 7.35365C6.45119 7.15839 6.45118 6.84181 6.64644 6.64654C6.84171 6.45128 7.15829 6.45128 7.35355 6.64654L12 11.2929L16.6464 6.64645C16.8417 6.45118 17.1583 6.45118 17.3536 6.64645Z" fill="currentColor"/></svg>',
+    // eyedropper
+    eyedropper: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M19.3966 4.60357C18.6253 3.83234 17.3749 3.83234 16.6037 4.60357L13.3536 7.8537L13 8.20727L12.6464 7.85367L12.601 7.80826C12.2691 7.47628 11.7309 7.47627 11.3989 7.80823L11.3083 7.89886C10.9763 8.2308 10.9763 8.76899 11.3083 9.10094L11.8537 9.64635L14.3537 12.1463L14.8991 12.6917C15.231 13.0237 15.7692 13.0237 16.1012 12.6918L16.1918 12.6011C16.5238 12.2692 16.5237 11.7309 16.1918 11.399L16.1465 11.3537L15.7929 11.0002L16.1464 10.6466L19.3966 7.39647C20.1678 6.62523 20.1678 5.37481 19.3966 4.60357ZM15.8966 3.89647C17.0583 2.73471 18.9419 2.73471 20.1037 3.89647C21.2654 5.05823 21.2654 6.94181 20.1037 8.10357L17.1706 11.0367C17.6058 11.749 17.5152 12.6919 16.8989 13.3082L16.8083 13.3989C16.0858 14.1213 14.9144 14.1213 14.192 13.3989L14.0001 13.207L6.64645 20.5607C6.36514 20.842 5.98361 21 5.58579 21H3.5C3.22386 21 3 20.7762 3 20.5V18.4142C3 18.0164 3.15804 17.6349 3.43934 17.3536L10.793 9.9999L10.6012 9.80805C9.87869 9.08558 9.87869 7.91422 10.6012 7.19175L10.6918 7.10112C11.3081 6.48477 12.2512 6.39424 12.9635 6.82952L15.8966 3.89647ZM11.5001 10.707L4.14645 18.0607C4.05268 18.1544 4 18.2816 4 18.4142V20H5.58579C5.71839 20 5.84557 19.9473 5.93934 19.8536L13.293 12.4999L11.5001 10.707Z" fill="currentColor"/></svg>',
+    // chevron.down
+    caretDown: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.64645 11.1464C9.84171 10.9512 10.1583 10.9512 10.3536 11.1464L12 12.7929L13.6464 11.1464C13.8417 10.9512 14.1583 10.9512 14.3536 11.1464C14.5488 11.3417 14.5488 11.6583 14.3536 11.8536L12.3536 13.8536C12.1583 14.0488 11.8417 14.0488 11.6464 13.8536L9.64645 11.8536C9.45118 11.6583 9.45118 11.3417 9.64645 11.1464Z" fill="currentColor"/></svg>',
+    // styles
+    guideStyles: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 10C7.67157 10 7 9.32843 7 8.5C7 7.67157 7.67157 7 8.5 7C9.32843 7 10 7.67157 10 8.5C10 9.32843 9.32843 10 8.5 10ZM8.5 11C7.11929 11 6 9.88071 6 8.5C6 7.11929 7.11929 6 8.5 6C9.88071 6 11 7.11929 11 8.5C11 9.88071 9.88071 11 8.5 11ZM15.5 10C14.6716 10 14 9.32843 14 8.5C14 7.67157 14.6716 7 15.5 7C16.3284 7 17 7.67157 17 8.5C17 9.32843 16.3284 10 15.5 10ZM15.5 11C14.1193 11 13 9.88071 13 8.5C13 7.11929 14.1193 6 15.5 6C16.8807 6 18 7.11929 18 8.5C18 9.88071 16.8807 11 15.5 11ZM14 15.5C14 16.3284 14.6716 17 15.5 17C16.3284 17 17 16.3284 17 15.5C17 14.6716 16.3284 14 15.5 14C14.6716 14 14 14.6716 14 15.5ZM13 15.5C13 16.8807 14.1193 18 15.5 18C16.8807 18 18 16.8807 18 15.5C18 14.1193 16.8807 13 15.5 13C14.1193 13 13 14.1193 13 15.5ZM8.5 17C7.67157 17 7 16.3284 7 15.5C7 14.6716 7.67157 14 8.5 14C9.32843 14 10 14.6716 10 15.5C10 16.3284 9.32843 17 8.5 17ZM8.5 18C7.11929 18 6 16.8807 6 15.5C6 14.1193 7.11929 13 8.5 13C9.88071 13 11 14.1193 11 15.5C11 16.8807 9.88071 18 8.5 18Z" fill="currentColor"/></svg>',
+    // flip.horizontal.small
+    flipHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 6.5C12.5 6.22386 12.2761 6 12 6C11.7239 6 11.5 6.22386 11.5 6.5V17.5C11.5 17.7761 11.7239 18 12 18C12.2761 18 12.5 17.7761 12.5 17.5V6.5ZM6 9.10355C6 8.43538 6.80786 8.10075 7.28033 8.57323L10 11.2929C10.3905 11.6834 10.3905 12.3166 10 12.7071L7.28033 15.4268C6.80785 15.8993 6 15.5646 6 14.8965V9.10355ZM7 14.2929L9.29289 12L7 9.70711V14.2929ZM18 9.10355C18 8.43538 17.1921 8.10075 16.7197 8.57323L14 11.2929C13.6095 11.6834 13.6095 12.3166 14 12.7071L16.7197 15.4268C17.1922 15.8993 18 15.5646 18 14.8965V9.10355ZM17 14.2929L14.7071 12L17 9.70711V14.2929Z" fill="currentColor"/></svg>',
+    // flip.vertical
+    flipVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5 12.5C17.7761 12.5 18 12.2761 18 12C18 11.7239 17.7761 11.5 17.5 11.5L6.5 11.5C6.22386 11.5 6 11.7239 6 12C6 12.2761 6.22386 12.5 6.5 12.5L17.5 12.5ZM14.8964 18C15.5646 18 15.8992 17.1921 15.4268 16.7197L12.7071 14C12.3166 13.6095 11.6834 13.6095 11.2929 14L8.57322 16.7197C8.10075 17.1921 8.43538 18 9.10355 18L14.8964 18ZM14.2929 17L9.70711 17L12 14.7071L14.2929 17ZM14.8964 6C15.5646 6 15.8992 6.80786 15.4268 7.28033L12.7071 10C12.3166 10.3905 11.6834 10.3905 11.2929 10L8.57322 7.28033C8.10075 6.80785 8.43538 6 9.10355 6L14.8964 6ZM14.2929 7L9.70711 7L12 9.29289L14.2929 7Z" fill="currentColor"/></svg>',
+    // rotate
+    rotateSquare: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.2322 6.47491C11.2085 5.4986 12.7915 5.4986 13.7678 6.47491L15.2929 8.00003H14C13.7239 8.00003 13.5 8.22389 13.5 8.50003C13.5 8.77618 13.7239 9.00003 14 9.00003H16.5C16.7761 9.00003 17 8.77618 17 8.50003V6.00003C17 5.72389 16.7761 5.50003 16.5 5.50003C16.2239 5.50003 16 5.72389 16 6.00003V7.29293L14.4749 5.7678C13.108 4.40097 10.892 4.40097 9.52513 5.7678L7.14645 8.14648C6.95118 8.34174 6.95118 8.65833 7.14645 8.85359C7.34171 9.04885 7.65829 9.04885 7.85355 8.85359L10.2322 6.47491ZM13.0607 9.64648C12.4749 9.0607 11.5251 9.06069 10.9393 9.64648L7.64645 12.9394C7.06066 13.5252 7.06066 14.4749 7.64645 15.0607L10.9393 18.3536C11.5251 18.9394 12.4749 18.9394 13.0607 18.3536L16.3536 15.0607C16.9393 14.4749 16.9393 13.5252 16.3536 12.9394L13.0607 9.64648ZM11.6464 10.3536C11.8417 10.1583 12.1583 10.1583 12.3536 10.3536L15.6464 13.6465C15.8417 13.8417 15.8417 14.1583 15.6464 14.3536L12.3536 17.6465C12.1583 17.8417 11.8417 17.8417 11.6464 17.6465L8.35355 14.3536C8.15829 14.1583 8.15829 13.8417 8.35355 13.6465L11.6464 10.3536Z" fill="currentColor"/></svg>',
+    // frame
+    flowFree: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 4C7.22386 4 7 4.22386 7 4.5V7H4.5C4.22386 7 4 7.22386 4 7.5C4 7.77614 4.22386 8 4.5 8H7V16H4.5C4.22386 16 4 16.2239 4 16.5C4 16.7761 4.22386 17 4.5 17H7V19.5C7 19.7761 7.22386 20 7.5 20C7.77614 20 8 19.7761 8 19.5V17H16V19.5C16 19.7761 16.2239 20 16.5 20C16.7761 20 17 19.7761 17 19.5V17H19.5C19.7761 17 20 16.7761 20 16.5C20 16.2239 19.7761 16 19.5 16H17V8H19.5C19.7761 8 20 7.77614 20 7.5C20 7.22386 19.7761 7 19.5 7H17V4.5C17 4.22386 16.7761 4 16.5 4C16.2239 4 16 4.22386 16 4.5V7H8V4.5C8 4.22386 7.77614 4 7.5 4ZM16 8H8V16H16V8Z" fill="currentColor"/></svg>',
+    // al.layout-vertical
+    flowVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 7C12.2238 7 12 7.22386 12 7.5V14.289L9.61168 11.8899C9.41686 11.6942 9.10028 11.6935 8.90457 11.8883C8.70887 12.0831 8.70815 12.3997 8.90297 12.5954L12.1456 15.8528C12.2394 15.947 12.367 16 12.5 16C12.633 16 12.7605 15.947 12.8543 15.8528L16.097 12.5954C16.2918 12.3997 16.2911 12.0831 16.0954 11.8883C15.8997 11.6935 15.5831 11.6942 15.3883 11.8899L13 14.289V7.5C13 7.22386 12.7761 7 12.5 7Z" fill="currentColor"/></svg>',
+    // al.layout-horizontal
+    flowHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 11.5C8 11.7761 8.22386 12 8.5 12H15.289L12.8899 14.3883C12.6942 14.5831 12.6935 14.8997 12.8883 15.0954C13.0831 15.2911 13.3997 15.2918 13.5954 15.097L16.8528 11.8543C16.947 11.7605 17 11.633 17 11.5C17 11.367 16.947 11.2394 16.8528 11.1456L13.5954 7.90297C13.3997 7.70815 13.0831 7.70887 12.8883 7.90457C12.6935 8.10028 12.6942 8.41686 12.8899 8.61168L15.289 11H8.5C8.22386 11 8 11.2238 8 11.5Z" fill="currentColor"/></svg>',
+    // layout-grid-uniform
+    flowGrid: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V8H5V5ZM15 5H18V8H15V5ZM13 5H10V8H13V5ZM5 10H8V13H5V10ZM18 10H15V13H18V10ZM10 10H13V13H10V10ZM8 15H5V18H8V15ZM15 15H18V18H15V15ZM13 15H10V18H13V15Z" fill="currentColor"/></svg>',
+    // radius.top.left
+    cornerTL: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.4781 8L12.5 8H15.5C15.7761 8 16 8.22386 16 8.5C16 8.77614 15.7761 9 15.5 9H12.5C11.7917 9 11.2905 9.00039 10.8987 9.0324C10.5128 9.06393 10.2772 9.12365 10.092 9.21799C9.71569 9.40973 9.40973 9.71569 9.21799 10.092C9.12365 10.2772 9.06393 10.5128 9.0324 10.8987C9.00039 11.2905 9 11.7917 9 12.5V15.5C9 15.7761 8.77614 16 8.5 16C8.22386 16 8 15.7761 8 15.5V12.5L8 12.4781C8 11.7966 7.99999 11.2546 8.03572 10.8173C8.07231 10.3695 8.14884 9.98765 8.32698 9.63803C8.6146 9.07354 9.07354 8.6146 9.63803 8.32698C9.98765 8.14884 10.3695 8.07231 10.8173 8.03572C11.2546 7.99999 11.7966 8 12.4781 8Z" fill="currentColor"/></svg>',
+    // radius.top.right
+    cornerTR: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.5219 8L11.5 8H8.5C8.22386 8 8 8.22386 8 8.5C8 8.77614 8.22386 9 8.5 9H11.5C12.2083 9 12.7095 9.00039 13.1013 9.0324C13.4872 9.06393 13.7228 9.12365 13.908 9.21799C14.2843 9.40973 14.5903 9.71569 14.782 10.092C14.8764 10.2772 14.9361 10.5128 14.9676 10.8987C14.9996 11.2905 15 11.7917 15 12.5V15.5C15 15.7761 15.2239 16 15.5 16C15.7761 16 16 15.7761 16 15.5V12.5V12.4781C16 11.7966 16 11.2546 15.9643 10.8173C15.9277 10.3695 15.8512 9.98765 15.673 9.63803C15.3854 9.07354 14.9265 8.6146 14.362 8.32698C14.0123 8.14884 13.6305 8.07231 13.1827 8.03572C12.7454 7.99999 12.2034 8 11.5219 8Z" fill="currentColor"/></svg>',
+    // radius.bottom.left
+    cornerBL: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.4781 16H12.5H15.5C15.7761 16 16 15.7761 16 15.5C16 15.2239 15.7761 15 15.5 15H12.5C11.7917 15 11.2905 14.9996 10.8987 14.9676C10.5128 14.9361 10.2772 14.8764 10.092 14.782C9.71569 14.5903 9.40973 14.2843 9.21799 13.908C9.12365 13.7228 9.06393 13.4872 9.0324 13.1013C9.00039 12.7095 9 12.2083 9 11.5V8.5C9 8.22386 8.77614 8 8.5 8C8.22386 8 8 8.22386 8 8.5V11.5L8 11.5219C8 12.2034 7.99999 12.7454 8.03572 13.1827C8.07231 13.6305 8.14884 14.0123 8.32698 14.362C8.6146 14.9265 9.07354 15.3854 9.63803 15.673C9.98765 15.8512 10.3695 15.9277 10.8173 15.9643C11.2546 16 11.7966 16 12.4781 16Z" fill="currentColor"/></svg>',
+    // radius.bottom.right
+    cornerBR: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.5219 16H11.5H8.5C8.22386 16 8 15.7761 8 15.5C8 15.2239 8.22386 15 8.5 15H11.5C12.2083 15 12.7095 14.9996 13.1013 14.9676C13.4872 14.9361 13.7228 14.8764 13.908 14.782C14.2843 14.5903 14.5903 14.2843 14.782 13.908C14.8764 13.7228 14.9361 13.4872 14.9676 13.1013C14.9996 12.7095 15 12.2083 15 11.5V8.5C15 8.22386 15.2239 8 15.5 8C15.7761 8 16 8.22386 16 8.5V11.5V11.5219C16 12.2034 16 12.7454 15.9643 13.1827C15.9277 13.6305 15.8512 14.0123 15.673 14.362C15.3854 14.9265 14.9265 15.3854 14.362 15.673C14.0123 15.8512 13.6305 15.9277 13.1827 15.9643C12.7454 16 12.2034 16 11.5219 16Z" fill="currentColor"/></svg>',
+    // adjust.small
+    sliders: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 5.5C8 5.22386 8.22386 5 8.5 5C8.77614 5 9 5.22386 9 5.5V12.05C10.1411 12.2816 11 13.2905 11 14.5C11 15.7095 10.1411 16.7184 9 16.95V18.5C9 18.7761 8.77614 19 8.5 19C8.22386 19 8 18.7761 8 18.5V16.95C6.85888 16.7184 6 15.7095 6 14.5C6 13.2905 6.85888 12.2816 8 12.05V5.5ZM7 14.5C7 13.6716 7.67157 13 8.5 13C9.32843 13 10 13.6716 10 14.5C10 15.3284 9.32843 16 8.5 16C7.67157 16 7 15.3284 7 14.5ZM15 18.5C15 18.7761 15.2239 19 15.5 19C15.7761 19 16 18.7761 16 18.5V11.95C17.1411 11.7184 18 10.7095 18 9.5C18 8.29052 17.1411 7.28164 16 7.05001V5.5C16 5.22386 15.7761 5 15.5 5C15.2239 5 15 5.22386 15 5.5V7.05001C13.8589 7.28164 13 8.29052 13 9.5C13 10.7095 13.8589 11.7184 15 11.95V18.5ZM14 9.5C14 10.3284 14.6716 11 15.5 11C16.3284 11 17 10.3284 17 9.5C17 8.67157 16.3284 8 15.5 8C14.6716 8 14 8.67157 14 9.5Z" fill="currentColor"/></svg>',
+    // layout-align-left
+    alignLeft: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.25 10C17.6642 10 18 9.66421 18 9.25V8.75C18 8.33579 17.6642 8 17.25 8H8.75C8.33579 8 8 8.33579 8 8.75V9.25C8 9.66421 8.33579 10 8.75 10H17.25ZM13.25 15C13.6642 15 14 14.6642 14 14.25V13.75C14 13.3358 13.6642 13 13.25 13H8.75C8.33579 13 8 13.3358 8 13.75V14.25C8 14.6642 8.33579 15 8.75 15H13.25Z" fill="currentColor"/><path d="M6 17.5C6 17.7761 5.77614 18 5.5 18C5.22386 18 5 17.7761 5 17.5V5.5C5 5.22386 5.22386 5 5.5 5C5.77614 5 6 5.22386 6 5.5V17.5Z" fill="currentColor" fill-opacity="0.333"/></svg>',
+    // layout-align-horizontal-center
+    alignHCenter: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.25 10C17.6642 10 18 9.66421 18 9.25V8.75C18 8.33579 17.6642 8 17.25 8H7.75C7.33579 8 7 8.33579 7 8.75V9.25C7 9.66421 7.33579 10 7.75 10H17.25ZM15.25 15C15.6642 15 16 14.6642 16 14.25V13.75C16 13.3358 15.6642 13 15.25 13H9.75C9.33579 13 9 13.3358 9 13.75V14.25C9 14.6642 9.33579 15 9.75 15H15.25Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13 17.5C13 17.7761 12.7761 18 12.5 18C12.2239 18 12 17.7761 12 17.5V15H13V17.5ZM13 13V10H12V13H13ZM13 5.5V8H12V5.5C12 5.22386 12.2239 5 12.5 5C12.7761 5 13 5.22386 13 5.5Z" fill="currentColor" fill-opacity="0.333"/></svg>',
+    // layout-align-right
+    alignRight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6.75 10C6.33579 10 6 9.66421 6 9.25V8.75C6 8.33579 6.33579 8 6.75 8H15.25C15.6642 8 16 8.33579 16 8.75V9.25C16 9.66421 15.6642 10 15.25 10H6.75ZM10.75 15C10.3358 15 10 14.6642 10 14.25V13.75C10 13.3358 10.3358 13 10.75 13H15.25C15.6642 13 16 13.3358 16 13.75V14.25C16 14.6642 15.6642 15 15.25 15H10.75Z" fill="currentColor"/><path d="M18 17.5C18 17.7761 18.2239 18 18.5 18C18.7761 18 19 17.7761 19 17.5V5.5C19 5.22386 18.7761 5 18.5 5C18.2239 5 18 5.22386 18 5.5V17.5Z" fill="currentColor" fill-opacity="0.333"/></svg>',
+    // layout-align-top
+    alignTop: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 17.25C10 17.6642 9.66421 18 9.25 18H8.75C8.33579 18 8 17.6642 8 17.25L8 8.75C8 8.33579 8.33579 8 8.75 8H9.25C9.66421 8 10 8.33579 10 8.75V17.25ZM15 13.25C15 13.6642 14.6642 14 14.25 14H13.75C13.3358 14 13 13.6642 13 13.25V8.75C13 8.33579 13.3358 8 13.75 8H14.25C14.6642 8 15 8.33579 15 8.75V13.25Z" fill="currentColor"/><path d="M17.5 6C17.7761 6 18 5.77614 18 5.5C18 5.22386 17.7761 5 17.5 5L5.5 5C5.22386 5 5 5.22386 5 5.5C5 5.77614 5.22386 6 5.5 6L17.5 6Z" fill="currentColor" fill-opacity="0.333"/></svg>',
+    // layout-align-vertical-center
+    alignVCenter: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 6.75C10 6.33579 9.66421 6 9.25 6H8.75C8.33579 6 8 6.33579 8 6.75V16.25C8 16.6642 8.33579 17 8.75 17H9.25C9.66421 17 10 16.6642 10 16.25V6.75ZM15 8.75C15 8.33579 14.6642 8 14.25 8H13.75C13.3358 8 13 8.33579 13 8.75V14.25C13 14.6642 13.3358 15 13.75 15H14.25C14.6642 15 15 14.6642 15 14.25V8.75Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5 11C17.7761 11 18 11.2239 18 11.5C18 11.7761 17.7761 12 17.5 12H15V11H17.5ZM13 11H10V12H13V11ZM5.5 11H8V12H5.5C5.22386 12 5 11.7761 5 11.5C5 11.2239 5.22386 11 5.5 11Z" fill="currentColor" fill-opacity="0.333"/></svg>',
+    // grid-column (Figma's columns layout grid): the column help card
+    gridColumn: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 6C7.77614 6 8 6.22386 8 6.5V7H11.5V6.5C11.5 6.22386 11.7239 6 12 6C12.2761 6 12.5 6.22386 12.5 6.5V7H16V6.5C16 6.22386 16.2239 6 16.5 6C16.7761 6 17 6.22386 17 6.5V7H17.5C17.7761 7 18 7.22386 18 7.5C18 7.77614 17.7761 8 17.5 8H17V16H17.5C17.7761 16 18 16.2239 18 16.5C18 16.7761 17.7761 17 17.5 17H17V17.5C17 17.7761 16.7761 18 16.5 18C16.2239 18 16 17.7761 16 17.5V17H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V17H8V17.5C8 17.7761 7.77614 18 7.5 18C7.22386 18 7 17.7761 7 17.5V17H6.5C6.22386 17 6 16.7761 6 16.5C6 16.2239 6.22386 16 6.5 16H7V8H6.5C6.22386 8 6 7.77614 6 7.5C6 7.22386 6.22386 7 6.5 7H7V6.5C7 6.22386 7.22386 6 7.5 6ZM8 16H11.5V8H8V16ZM12.5 16H16V8H12.5V16Z" fill="currentColor"/></svg>',
+    // close (the large one, as Figma's help card has)
+    dismiss: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.3536 6.64645C17.5488 6.84171 17.5488 7.15829 17.3536 7.35355L12.7071 12L17.3536 16.6464C17.5488 16.8417 17.5488 17.1583 17.3536 17.3536C17.1583 17.5488 16.8417 17.5488 16.6464 17.3536L12 12.7071L7.35355 17.3536C7.15829 17.5488 6.84171 17.5488 6.64645 17.3536C6.45118 17.1583 6.45118 16.8417 6.64645 16.6464L11.2929 12L6.64645 7.35365C6.45119 7.15839 6.45118 6.84181 6.64644 6.64654C6.84171 6.45128 7.15829 6.45128 7.35355 6.64654L12 11.2929L16.6464 6.64645C16.8417 6.45118 17.1583 6.45118 17.3536 6.64645Z" fill="currentColor"/></svg>',
+    // layout-align-bottom
+    alignBottom: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 6.75C10 6.33579 9.66421 6 9.25 6H8.75C8.33579 6 8 6.33579 8 6.75L8 15.25C8 15.6642 8.33579 16 8.75 16H9.25C9.66421 16 10 15.6642 10 15.25V6.75ZM15 10.75C15 10.3358 14.6642 10 14.25 10H13.75C13.3358 10 13 10.3358 13 10.75V15.25C13 15.6642 13.3358 16 13.75 16H14.25C14.6642 16 15 15.6642 15 15.25V10.75Z" fill="currentColor"/><path d="M17.5 18C17.7761 18 18 18.2239 18 18.5C18 18.7761 17.7761 19 17.5 19H5.5C5.22386 19 5 18.7761 5 18.5C5 18.2239 5.22386 18 5.5 18H17.5Z" fill="currentColor" fill-opacity="0.333"/></svg>',
   };
 
 
@@ -1428,6 +1574,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== "Backslash" || typing(e.target)) return;
     e.preventDefault();
     toggleUi();
+  });
+
+  // finetune's theme, Figma UI3's light or dark (html[data-ft-theme], PANEL LOOK): the system's, until ⌥⌘T flips it.
+  // The flip is kept in this browser; one that lands back on the system's theme goes back to following the system.
+  const THEME_KEY = "finetune:theme";
+  const systemDark = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  const systemTheme = () => (systemDark && systemDark.matches ? "dark" : "light");
+  function theme() {
+    let t = null;
+    try { t = localStorage.getItem(THEME_KEY); } catch (e) {}
+    return t === "dark" || t === "light" ? t : systemTheme();
+  }
+  const showTheme = () => document.documentElement.setAttribute("data-ft-theme", theme());
+  function setTheme(next) {
+    try {
+      if (next === systemTheme()) localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, next);
+    } catch (e) {}
+    showTheme();
+  }
+  showTheme();
+  if (systemDark) systemDark.addEventListener("change", showTheme);
+  window.addEventListener("keydown", (e) => {
+    if (!(MAC ? e.metaKey : e.ctrlKey) || !e.altKey || e.shiftKey || e.code !== "KeyT" || typing(e.target)) return;
+    e.preventDefault();
+    setTheme(theme() === "dark" ? "light" : "dark");
   });
 
   // Text means an element with words of its own, not just inside its children.
@@ -2468,9 +2640,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.body.appendChild(toastEl);
     }
     toastEl.textContent = text;
-    toastEl.classList.toggle("has-action", !!action);
+    // One action (Undo) or several, each the same plain button (neither stands out), then the close.
+    const acts = !action ? [] : Array.isArray(action) ? action : [action];
+    toastEl.classList.toggle("has-action", acts.length > 0);
     toastEl.classList.remove("is-fading");
-    if (action) {
+    if (acts.length) {
       const actions = el("div", "ft-toast-actions");
       const close = button("ft-toast-close", null, () => {
         clearTimeout(toastTimer);
@@ -2480,10 +2654,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       close.setAttribute("aria-label", "Close");
       close.setAttribute("data-ft-tip", "Close");
       withTip(close);
-      actions.append(button("ft-toast-btn", action.label, () => {
+      actions.append(...acts.map((a) => button("ft-toast-btn", a.label, () => {
+        clearTimeout(toastTimer);
         toastEl.hidden = true;
-        action.run();
-      }), close);
+        a.run();
+      })), close);
       toastEl.appendChild(actions);
     }
     toastEl.hidden = false;
@@ -2530,14 +2705,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     compLabel.hidden = true;
     selBox.appendChild(compLabel);
     const marquee = el("div", "ft-marquee");
+    // A column of the layout guide, picked with a click on the page inside it (see columnAt).
+    const colBox = el("div", "ft-sel-box ft-col-box");
     hoverBox.hidden = true;
     selBox.hidden = true;
     marquee.hidden = true;
-    document.body.append(hoverBox, selBox, marquee);
+    colBox.hidden = true;
+    document.body.append(hoverBox, selBox, marquee, colBox);
     // One layer, or two or more: a group, or what shift-clicks gathered.
     let selected = null;
     let many = [];
     let group = null;
+    // A column of the layout guide, { i }, on its own or with the layers (Design, while a columns layout shows).
+    let column = null;
     // The group she double-clicked into: inside it, its layers select one at a time.
     let inside = null;
     let editing = null;
@@ -2629,7 +2809,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       selBox.classList.toggle("is-comp", !!comp);
       compLabel.hidden = !comp;
       if (comp) compName.textContent = comp;
+      placeColumn();
     }
+    function placeColumn() {
+      const r = column && columnRect(column.i);
+      colBox.hidden = !r;
+      if (r) frameRect(colBox, r);
+    }
+    // The column of the layout that shows under x, as { i }: Design only, and only on a column, not a gutter.
+    function columnAt(x) {
+      const g = motion() ? null : shownGuide();
+      if (!g) return null;
+      const { starts, ends } = guideEdges(g);
+      const i = starts.findIndex((st, k) => x >= st && x <= ends[k]);
+      return i < 0 ? null : { i };
+    }
+    const sameColumn = (a, b) => (a ? a.i : -1) === (b ? b.i : -1);
     function moved() {
       place();
       refreshPanel();
@@ -2656,36 +2851,53 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (current().some((t) => t === e.target || t.contains(e.target))) follow();
     }, true));
 
-    function show(one, list, g) {
+    function show(one, list, g, col) {
       instanceCache.clear();
       stopEditing();
       current().forEach((t) => sizes.unobserve(t));
       selected = one;
       many = list;
       group = g;
+      column = col || null;
       const now = current();
       selBox.hidden = !now.length;
       hoverBox.hidden = true;
       now.forEach((t) => sizes.observe(t));
       if (now.length) place();
+      else placeColumn();
       if (busy()) follow();
-      showInPanel(selected || (many.length ? many : null), group ? "group" : "selected");
+      showInPanel(selected || (many.length ? many : null), group ? "group" : "selected", column);
+    }
+    // Layers, and a column with them when she's picked one: a group if the layers are exactly one.
+    function choose(list, col) {
+      if (list.length === 1) return show(list[0], [], null, col);
+      const sels = list.map(selectorFor);
+      const g = list.length ? edits.groups.find((gr) => gr.length === sels.length && gr.every((x) => sels.includes(x))) : null;
+      show(null, list, g || null, col);
+    }
+    // The layout changed (hidden, removed, fewer columns): a picked column that's gone is let go.
+    function guidesChanged() {
+      if (!column) return;
+      if (columnRect(column.i)) placeColumn();
+      else choose(current(), null);
     }
     // After an undo or redo: the same layers, redrawn, as a group if they still are one.
     function reshow() {
       inside = null;
       const one = selected;
       const list = many.slice();
-      if (one) show(one, [], null);
+      const col = column && columnRect(column.i) ? column : null;
+      if (one) show(one, [], null, col);
       else if (list.length) {
         const sels = list.map(selectorFor);
-        show(null, list, edits.groups.find((g) => g.length === sels.length && g.every((x) => sels.includes(x))) || null);
-      } else showInPanel(null);
+        show(null, list, edits.groups.find((g) => g.length === sels.length && g.every((x) => sels.includes(x))) || null, col);
+      } else if (col) show(null, [], null, col);
+      else showInPanel(null);
     }
     finishTyping = () => stopEditing();
 
     function select(t) {
-      if (t === selected && !many.length) return;
+      if (t === selected && !many.length && !column) return;
       show(t, [], null);
     }
     function selectMany(list, g) {
@@ -2693,10 +2905,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       show(null, list, g || null);
     }
 
-    // A set of layers as the selection: a group if it's exactly one, else "N selected". No change, no redraw.
-    function pick(next) {
+    // A set of layers as the selection: a group if it's exactly one, else "N selected" (col keeps a picked column
+    // with them). No change, no redraw.
+    function pick(next, col) {
       const now = current();
-      if (next.length === now.length && next.every((t) => now.includes(t))) return;
+      if (sameColumn(col, column) && next.length === now.length && next.every((t) => now.includes(t))) return;
+      if (col) return choose(next, col);
       const sels = next.map(selectorFor);
       const g = edits.groups.find((gr) => gr.length === sels.length && gr.every((s) => sels.includes(s)));
       selectMany(next, g);
@@ -2708,6 +2922,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const x0 = e.clientX;
       const y0 = e.clientY;
       const base = e.shiftKey ? current().slice() : [];
+      const baseCol = e.shiftKey ? column : null;
       let dragging = false;
       const move = (ev) => {
         if (!dragging && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 3) return;
@@ -2721,13 +2936,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         marquee.hidden = false;
         const touches = (b) => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
         const hit = pageUnits().filter((u) => u.some((t) => touches(t.getBoundingClientRect()))).flat();
-        pick(base.concat(hit.filter((h) => !base.includes(h))));
+        pick(base.concat(hit.filter((h) => !base.includes(h))), baseCol);
       };
       const up = () => {
         document.removeEventListener("mousemove", move, true);
         document.removeEventListener("mouseup", up, true);
         marquee.hidden = true;
-        if (!dragging && !e.shiftKey) select(null);
+        if (dragging) return;
+        // A click on the page: inside a column of the layout that shows, that column (Shift adds it to the layers
+        // picked, or takes it back off); anywhere else, nothing.
+        const at = columnAt(x0);
+        if (e.shiftKey) {
+          if (at) choose(current(), sameColumn(at, column) ? null : at);
+        } else if (at) choose([], at);
+        else select(null);
       };
       document.addEventListener("mousemove", move, true);
       document.addEventListener("mouseup", up, true);
@@ -2902,6 +3124,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     // Back in Motion, a selection with motion becomes its whole group; one without stays, ready for one to be added.
     function tabChanged() {
+      // Columns are picked in Design only.
+      if (motion() && column) choose(current(), null);
       const now = current();
       if (motion() && now.length && now.every(hasMotion)) selectLayers(motionGroupOf(now[0]));
       place();
@@ -2953,6 +3177,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const unit = moving_ ? { list: motionGroupOf(moving_) } : unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
       const now = current();
+      // On the page itself, a column of the layout that shows outlines as a click would pick it.
+      const col = live && !t && !isUi(e.target) ? columnAt(e.clientX) : null;
+      if (col && !over.length) {
+        hoverBox.hidden = sameColumn(col, column);
+        if (!hoverBox.hidden) frameRect(hoverBox, columnRect(col.i));
+        hoverBox.classList.remove("is-comp");
+        return;
+      }
       hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
       if (!hoverBox.hidden) frameRect(hoverBox, unionRect(over));
       hoverBox.classList.toggle("is-comp", !motion() && over.length === 1 && !!componentOf(over[0]));
@@ -2991,7 +3223,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (e.shiftKey) {
         const now = current().slice();
         const has = picked.every((p) => now.includes(p));
-        return pick(has ? now.filter((n) => !picked.includes(n)) : now.concat(picked.filter((p) => !now.includes(p))));
+        return pick(has ? now.filter((n) => !picked.includes(n)) : now.concat(picked.filter((p) => !now.includes(p))), column);
       }
       const pickIt = () => (unit ? show(null, unit.list, unit.g) : select(t));
       // A press inside a bigger selection keeps it, so it drags as one; as in Figma, a click without a drag
@@ -3055,7 +3287,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         else groupSelection();
         return;
       }
-      if (!current().length) return;
+      if (!current().length && !column) return;
       if (e.key === "Escape") {
         // Out a level: from a layer inside a group to the group, then to nothing.
         if (selected && inside && groupOf(selected) === inside) {
@@ -3095,7 +3327,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     sync();
 
-    return { sync, refresh: place, reshow, selectLayers, tabChanged };
+    return { sync, refresh: place, reshow, selectLayers, tabChanged, guidesChanged };
   }
 
   const WEIGHT_NAMES = {
@@ -3516,16 +3748,31 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     undoToast("Align all items " + ALIGN_WORD[how], undo);
   }
 
-  // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box.
-  // A selected group moves as one; a selection that is just one group lines up its own layers. A layer inside
-  // another selected one rides along with it. Every move is recorded.
-  function alignSelection(list, how) {
+  // The columns layout that shows (one at a time), and column i of it as a box down the window.
+  const shownGuide = () => edits.guides.find((g) => g.visible) || null;
+  function columnRect(i) {
+    const g = shownGuide();
+    if (!g || i >= g.count) return null;
+    const { starts, ends } = guideEdges(g);
+    return { left: starts[i], right: ends[i], width: ends[i] - starts[i], top: 0, bottom: window.innerHeight, height: window.innerHeight };
+  }
+  // A column picked with layers (Design, the layout showing): they line up with its left edge, its middle or its
+  // right edge, moved as alignSelection moves them (a group as one).
+  function alignToColumn(i, list, how) {
+    const box = columnRect(i);
+    if (box) alignSelection(list, how, box);
+  }
+
+  // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box (or
+  // of box, a column's). A selected group moves as one; a selection that is just one group lines up its own
+  // layers. A layer inside another selected one rides along with it. Every move is recorded.
+  function alignSelection(list, how, box) {
     const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
     const groups = edits.groups.map(groupMembers).filter((m) => m.length > 1 && m.every((t) => top.includes(t)));
     const grouped = groups.flat();
     const units = groups.length === 1 && grouped.length === top.length ? top.map((t) => [t])
       : groups.concat(top.filter((t) => !grouped.includes(t)).map((t) => [t]));
-    alignTo(units, unionRect(top), how);
+    alignTo(units, box || unionRect(top), how);
   }
 
   // One layer lines up inside its parent, as in Figma's frame: the parent's box inside its border and
@@ -4432,7 +4679,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const motionPane = el("div", "ft-pane");
     motionPane.hidden = true;
     const modes = el("div", "ft-modes");
-    const modeBtns = [["design", "Design", "pencilRuler"], ["motion", "Motion", "play"]].map(([name, label, icon]) => {
+    const modeBtns = [["design", "Design", "pencilRuler"], ["motion", "Motion", "motion"]].map(([name, label, icon]) => {
       const b = button("ft-modes-btn", null, () => {
         modeBtns.forEach((m) => m.setAttribute("aria-selected", String(m === b)));
         root.setAttribute("data-tab", name);
@@ -4460,20 +4707,6 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
     modes.append(...modeBtns);
     root.setAttribute("data-tab", "design");
-    // The bar's theme follows the page: dark when what paints behind everything is dark. Checked again when
-    // the page switches theme (an attribute or class on html or body, or the system's setting) and when its
-    // fill is edited.
-    function themeModes() {
-      // An edited page fill paints as gradients over a transparent color, so read its top layer instead.
-      const bg = edits.page ? layers.find((l) => l.visible)
-        : [pageEl, document.body, document.documentElement].map((e) => e && toFill(getComputedStyle(e).backgroundColor)).find(Boolean);
-      const n = bg ? parseInt(bg.hex, 16) : 0xffffff;
-      const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
-      modes.setAttribute("data-theme", lum < 0.5 ? "dark" : "light");
-    }
-    const themeWatch = new MutationObserver(() => themeModes());
-    [document.documentElement, document.body].forEach((e) => themeWatch.observe(e, { attributes: true, attributeFilter: ["class", "data-theme", "style"] }));
-    if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeModes);
     historyChanged = () => {
       undoBtn.disabled = !history.past.length && !history.timer && !undoReset;
       redoBtn.disabled = !history.future.length;
@@ -4504,7 +4737,6 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       pageEl.style.backgroundColor = "transparent";
       pageEl.style.backgroundImage = shown.length ? shown.join(", ") : "none";
       picker.sync();
-      themeModes();
     }
 
     function paintAndSave() {
@@ -4716,6 +4948,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const guidePop = makeGuidePop(root, menu, picker, () => drawGuides());
     const effectPop = makeEffectPop(root, menu, picker);
     let guideRows = [];
+    // After the guides redraw: the column help card, and a picked column whose layout went (set further down).
+    let afterGuides = () => {};
 
     // No layout yet: say so, and offer the usual one to start from (12 columns).
     const guideEmpty = el("div", "ft-guide-empty");
@@ -4735,6 +4969,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // spring back.
     const ACROSS = [["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontally"], ["right", "alignRight", "Align right"]];
     const alignSeg = (g) => actionSeg(ACROSS, (how) => alignAll(g, how));
+    // With a column picked, Alignment's across buttons line the layers up with the column (same keys).
+    const COLUMN_ACROSS = [["left", "alignLeft", "Align left to column", KEYS.alt + "A"], ["hcenter", "alignHCenter", "Align to column center", KEYS.alt + "H"], ["right", "alignRight", "Align right to column", KEYS.alt + "D"]];
+    const COLUMN_KEYS = { KeyA: "left", KeyH: "hcenter", KeyD: "right" };
     // Figma's Alignment row: across, then up and down.
     const alignRow = (act) => {
       const row = el("div", "ft-type-pair");
@@ -4832,6 +5069,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       overlay.replaceChildren(...guides.filter((g) => g.visible).map(guideLayer));
       noteChange();
+      afterGuides();
     }
     drawGuides();
     let fillLayers = [];
@@ -5229,7 +5467,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       let split = false;
       const draws2 = [];
       if (corners) {
-        const radius = numField(ICON.frameCorners, "Corner radius");
+        const radius = numField(ICON.radius, "Corner radius");
         const all = (n) => writeCorners([n, n, n, n], smoothing());
         editable(radius.input, changed, (v) => {
           const n = parseFloat(v);
@@ -5246,7 +5484,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const each = el("div", "ft-span2 ft-corners");
         if (!rect) {
           split = new Set(radii()).size > 1;
-          const toggle = iconButton(ICON.frameCorners, "Independent corners", () => {
+          const toggle = iconButton(ICON.corners, "Independent corners", () => {
             split = !split;
             each.hidden = !split;
             toggle.setAttribute("aria-pressed", String(split));
@@ -5424,7 +5662,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function iconStroke(target) {
       const s = section("Stroke");
       const shape = [...target.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect")].find((e) => getComputedStyle(e).stroke !== "none");
-      const weight = numField(ICON.textAlignJustify, "Weight");
+      const weight = numField(ICON.strokeWeight, "Weight");
       const show = (force) => weight.set(Math.round(parseFloat(getComputedStyle(shape || target).strokeWidth) * 100) / 100, force);
       editable(weight.input, show, (v) => {
         const n = parseFloat(v);
@@ -5475,7 +5713,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           build();
         }));
         at.label.textContent = STROKE_AT.find(([v]) => v === st.position)[1];
-        const weight = numField(ICON.textAlignJustify, "Weight");
+        const weight = numField(ICON.strokeWeight, "Weight");
         const show = (force) => weight.set(st.weight, force);
         editable(weight.input, show, (v) => {
           const n = parseFloat(v);
@@ -5566,7 +5804,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const resize = (nw, nh) => setSize(target, nw, nh);
       const resizing = segmented([
         ["hug", "arrowLineRight", "Auto width"],
-        ["auto", "textAlignJustify", "Auto height"],
+        ["auto", "resizeHeight", "Auto height"],
         ["fixed", "article", "Fixed size"],
       ], (v) => {
         boxed(target);
@@ -5787,8 +6025,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       sizeCaret.innerHTML = ICON.caretDown;
       size.wrap.appendChild(sizeCaret);
-      const leading = numField(ICON.arrowsVertical, "Line height");
-      const tracking = numField(ICON.arrowsHorizontal, "Letter spacing");
+      const leading = numField(ICON.lineHeight, "Line height");
+      const tracking = numField(ICON.letterSpacing, "Letter spacing");
 
       const align = segmented([
         ["left", "textAlignLeft", "Align left"],
@@ -5896,7 +6134,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (i < 0) edits.overrides.push(sel);
         else edits.overrides.splice(i, 1);
         noteChange();
-        showInPanel(shown, shownKind);
+        showInPanel(shown, shownKind, shownColumn);
       });
       override.setAttribute("aria-pressed", String(on));
       const mark = el("span");
@@ -5933,6 +6171,74 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const motionChosen = el("div", "ft-chosen");
     let shown = null;
     let shownKind = null;
+    // A column of the layout guide picked with (or without) the layers shown, as { i }.
+    let shownColumn = null;
+
+    // Figma's help card (its "Creating a connection"), for lining layers up with a column. At the bottom of the
+    // panel while a columns layout shows and nothing is selected, with a close that puts it away for good in this
+    // browser; shorter, without the close, as the panel when just a column is picked.
+    const COLUMN_TIP_KEY = "finetune:tip:column";
+    function helpCard(text, onClose) {
+      const s = el("div", "ft-section ft-help");
+      const head = el("div", "ft-section-head");
+      head.appendChild(el("span", null, "Aligning items to a column"));
+      if (onClose) head.appendChild(iconButton(ICON.dismiss, "Close", onClose));
+      const body = el("div", "ft-help-body");
+      const icon = el("span", "ft-help-icon");
+      icon.innerHTML = ICON.gridColumn;
+      body.append(icon, el("p", "ft-help-text", text));
+      s.append(head, body);
+      return s;
+    }
+    let tipClosed = false;
+    try { tipClosed = localStorage.getItem(COLUMN_TIP_KEY) === "closed"; } catch (e) {}
+    const colTip = helpCard("Click empty space in a column to select it, then shift-click layers and use Alignment to line them up with the column.", () => {
+      tipClosed = true;
+      try { localStorage.setItem(COLUMN_TIP_KEY, "closed"); } catch (e) {}
+      drawColumnTip();
+    });
+    const drawColumnTip = () => { colTip.hidden = tipClosed || !!(shown || shownColumn) || !guides.some((g) => g.visible); };
+    afterGuides = () => {
+      drawColumnTip();
+      if (selection) selection.guidesChanged();
+    };
+    drawColumnTip();
+
+    // A picked column, named as Figma names a layer: "Column 3", of how many, and how many layers are picked with it.
+    function columnLine(i, n) {
+      const g = guides.find((gd) => gd.visible);
+      const row = el("div", "ft-kind");
+      row.append(el("span", "ft-kind-name", "Column " + (i + 1)), el("span", "ft-kind-el", g ? "of " + g.count : ""));
+      if (n) row.appendChild(el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " layer" : " layers")));
+      return row;
+    }
+    // A column and layers: Alignment lines the layers up with the column's left edge, its center or its right edge.
+    function columnSection(i, list) {
+      const s = section("Position");
+      const row = el("div", "ft-type-pair");
+      row.append(actionSeg(COLUMN_ACROSS, (how) => alignColumn(i, list, how)), el("div"));
+      const grid = el("div", "ft-type");
+      grid.appendChild(labeled("Align to column", row, true));
+      s.appendChild(grid);
+      return s;
+    }
+    function alignColumn(i, list, how) {
+      alignToColumn(i, list, how);
+      changed(true);
+      offerStyle();
+    }
+    // After lining layers up with a column of a layout that isn't a saved style yet (once a visit per layout): a
+    // toast offers to save it, for this page or every page.
+    const offered = new Set();
+    function offerStyle() {
+      const g = guides.find((gd) => gd.visible);
+      if (!g) return;
+      const name = styleName(g);
+      if (offered.has(name) || [STYLES_PAGE, STYLES_ALL].some((k) => loadStyles(k).some((st) => st.name === name))) return;
+      offered.add(name);
+      toast("Save this new column style?", [{ label: "Page", run: () => saveStyle(STYLES_PAGE) }, { label: "Website", run: () => saveStyle(STYLES_ALL) }], 15000);
+    }
+
     function drawMotion() {
       motionChosen.textContent = "";
       animsSec.hidden = !!shown;
@@ -6172,7 +6478,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         lists.forEach(([p, v]) => setStyle(t, p, v));
       });
       motionGroups(true);
-      showInPanel(shown, shownKind);
+      showInPanel(shown, shownKind, shownColumn);
     }
 
     function animationSection(layers) {
@@ -6444,7 +6750,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // Figma's order: Position, Layout, Appearance, then Typography and the text's Fill for
     // text, the image's Fill for an img, the background Fill for anything else, then Stroke and Effects.
-    showInPanel = (target, kind) => {
+    showInPanel = (target, kind, col) => {
       menu.close();
       imagePop.close();
       if (textLayer) picker.closeFor(textLayer);
@@ -6457,8 +6763,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       effectPop.close();
       shown = target;
       shownKind = kind;
+      shownColumn = col || null;
       drawMotion();
-      page.hidden = guideSec.hidden = !!target;
+      page.hidden = guideSec.hidden = !!(target || shownColumn);
+      drawColumnTip();
+      if (shownColumn) {
+        const list = !target ? [] : Array.isArray(target) ? target : [target];
+        chosen.append(columnLine(shownColumn.i, list.length), list.length ? columnSection(shownColumn.i, list)
+          : helpCard("Shift-click layers to add them, then use Alignment to line them up with this column."));
+        changed(true);
+        return;
+      }
       if (!target) return;
       if (Array.isArray(target)) {
         chosen.append(kindLineMany(target, kind === "group"), setSection(target, kind === "group"));
@@ -6592,6 +6907,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         e.preventDefault();
         return copyChanges();
       }
+      if (root.getAttribute("data-tab") === "design" && shownColumn && shown && only(false, true, false) && COLUMN_KEYS[e.code]) {
+        e.preventDefault();
+        return alignColumn(shownColumn.i, Array.isArray(shown) ? shown : [shown], COLUMN_KEYS[e.code]);
+      }
       if (root.getAttribute("data-tab") !== "design" || !shown) return;
       const list = Array.isArray(shown) ? shown : [shown];
       const one = Array.isArray(shown) ? null : shown;
@@ -6612,7 +6931,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
     });
 
-    designPane.append(chosen, page, guideSec);
+    designPane.append(chosen, page, guideSec, colTip);
     // Playback speed, for debugging, shown while an animation is selected: its layers play slower (or faster)
     // while she watches them, from 0.25× to 1.5×; the rest of the page stays at 1×. It's only a way of viewing:
     // nothing is edited, saved or copied, and leaving Motion (or the selection) puts them back to 1×. A replay,
@@ -6697,7 +7016,6 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       thumb.addEventListener("pointerup", up);
       thumb.addEventListener("pointercancel", up);
     });
-    themeModes();
     // After the panel, so the overlay hides with it (.ft-inspector[hidden] ~ .ft-guides).
     document.body.append(root, overlay);
     return root;
