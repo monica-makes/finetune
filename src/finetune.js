@@ -32,7 +32,7 @@
 }
 .ft-inspector {
   position: fixed; top: 12px; right: 12px; z-index: 2147483646;
-  width: 240px; max-height: calc(100vh - 24px); overflow: hidden auto;
+  width: 242px; max-height: calc(100vh - 24px); overflow: hidden auto; overscroll-behavior: none;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text);
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
@@ -40,6 +40,18 @@
   cursor: default; user-select: none;
 }
 .ft-inspector[hidden] { display: none; }
+/* The panel's scrollbar floats over its content, as Figma's does, so the content keeps its 240 when it scrolls: the
+   browser's own is hidden and finetune draws the thumb (drawThumb). The thumb is a 4px pill, 2px in from the panel's
+   right edge and 4px from its top and bottom: an 8px element with a clear 2px border all round (an 8px target to
+   drag, its ends rounding evenly), on a track 2px in at each end. It rides a zero-height sticky rail at the top. */
+.ft-inspector { scrollbar-width: none; }
+.ft-inspector::-webkit-scrollbar { display: none; }
+.ft-scroll-rail { position: sticky; top: 0; z-index: 2; height: 0; pointer-events: none; }
+.ft-scroll-thumb {
+  position: absolute; top: 0; right: 0; width: 8px; border: 2px solid transparent; border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2); background-clip: padding-box; pointer-events: auto; touch-action: none;
+}
+.ft-scroll-thumb[hidden] { display: none; }
 .ft-inspector *, .ft-inspector *::before, .ft-inspector *::after { box-sizing: border-box; }
 .ft-inspector :where(button, input) {
   font: inherit; letter-spacing: inherit; color: inherit;
@@ -62,20 +74,21 @@
 .ft-ui[data-min] { background: var(--ft-i-bg); border-color: var(--ft-i-border); }
 .ft-actions { display: flex; }
 /* Every floating box (the panel, the toolbar, this bar, popovers, menus, the toast) has the panel's 8px corners;
-   a cell inside one sits 4px in, so its corners are 4px.
+   a cell inside one sits 4px in, so its corners are 4px (the Design / Motion bar's sit 6px in, her call).
    Design and Motion, at the bottom of the window like Figma's toolbar: one bar of cells, each with its icon
-   and its name; the chosen one sits in a cell of its own with the blue icon. It takes the page's theme:
-   light on a light page, Figma's dark on a dark one (data-theme, set from the page's background). */
+   and its name; the chosen one is filled with the accent, its icon and name white, as Figma's selected tool
+   (blue, pink in Motion). It takes the page's theme: light on a light page, Figma's dark on a dark
+   one (data-theme, set from the page's background). */
 .ft-modes {
-  --ft-m-bg: #FFFFFF; --ft-m-text: rgba(0, 0, 0, 0.7); --ft-m-on: rgba(0, 0, 0, 0.9); --ft-m-cell: rgba(0, 0, 0, 0.06);
-  --ft-m-hover: rgba(0, 0, 0, 0.04); --ft-m-icon: #0D99FF;
-  position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px;
+  --ft-m-bg: #FFFFFF; --ft-m-text: rgba(0, 0, 0, 0.7);
+  --ft-m-hover: rgba(0, 0, 0, 0.04); --ft-m-sel: #0D99FF;
+  position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px;
   border-radius: 8px; background: var(--ft-m-bg);
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-modes[data-theme="dark"] {
-  --ft-m-bg: #2C2C2C; --ft-m-text: rgba(255, 255, 255, 0.8); --ft-m-on: #FFFFFF; --ft-m-cell: #1E1E1E;
-  --ft-m-hover: rgba(255, 255, 255, 0.06); --ft-m-icon: #7CC4F8;
+  --ft-m-bg: #2C2C2C; --ft-m-text: rgba(255, 255, 255, 0.8);
+  --ft-m-hover: rgba(255, 255, 255, 0.06); --ft-m-sel: #0C8CE9;
 }
 .ft-modes-btn {
   display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 6px; border-radius: 4px;
@@ -83,29 +96,49 @@
 }
 .ft-modes-btn svg { display: block; width: 20px; height: 20px; }
 .ft-modes-btn:hover { background: var(--ft-m-hover); }
-.ft-modes-btn[aria-selected="true"] { background: var(--ft-m-cell); color: var(--ft-m-on); }
-.ft-modes-btn[aria-selected="true"] svg { color: var(--ft-m-icon); }
+.ft-modes-btn[aria-selected="true"] { background: var(--ft-m-sel); color: #FFFFFF; }
 .ft-icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+/* The toast sits above the Design / Motion bar, spaced as Figma's (40 tall, 16 in, 12 between the words and its
+   buttons) in finetune's colors. One with an action (Reset's Undo) takes clicks, has Figma's close button after it,
+   and fades out. */
 .ft-toast {
-  position: fixed; left: 50%; bottom: 24px; z-index: 2147483647; transform: translateX(-50%);
-  padding: 8px 12px; border-radius: 8px; background: #1E1E1E; color: #FFFFFF; pointer-events: none;
+  position: fixed; left: 50%; bottom: 64px; z-index: 2147483647; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; min-height: 40px; box-sizing: border-box;
+  padding: 0 16px; border-radius: 8px; background: #1E1E1E; color: #FFFFFF; pointer-events: none;
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
   white-space: nowrap; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  transition: opacity 0.4s;
 }
 .ft-toast[hidden] { display: none; }
+.ft-toast.has-action { padding: 0 8px 0 16px; pointer-events: auto; }
+.ft-toast-actions { display: flex; align-items: center; gap: 8px; }
+.ft-toast.is-fading { opacity: 0; }
+.ft-toast-btn {
+  height: 24px; margin: 0; padding: 0 8px; border: 0; border-radius: 5px; background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF; font: inherit; letter-spacing: inherit; cursor: default;
+}
+.ft-toast-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.ft-toast-close {
+  display: grid; place-items: center; width: 24px; height: 24px; margin: 0; padding: 0; border: 0; border-radius: 5px;
+  background: none; color: rgba(255, 255, 255, 0.7); cursor: default;
+}
+.ft-toast-close:hover { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; }
+.ft-toast-close svg { display: block; width: 16px; height: 16px; }
 .ft-pane[hidden] { display: none; }
-/* The last divider would sit on the panel's own border and read as a double line. Motion is empty, so
-   there the top row's divider is the last one. */
-.ft-pane > .ft-section:last-child, .ft-chosen > .ft-section:last-child { border-bottom: 0; }
-.ft-inspector[data-tab="motion"] .ft-top { border-bottom: 0; }
-.ft-section { padding: 0 8px 12px 16px; border-bottom: 1px solid var(--ft-i-line); }
+/* The last divider would sit on the panel's own border and read as a double line. */
+.ft-pane > .ft-section:last-child, .ft-chosen > .ft-section:last-child, .ft-chosen > .ft-kind:last-child { border-bottom: 0; }
+/* The same when the sections after it are hidden (Motion's Not started yet, with nothing waiting). */
+.ft-pane > .ft-section:not([hidden]):not(:has(~ :not([hidden]):not(:empty))) { border-bottom: 0; }
+.ft-section { padding: 0 8px 16px 16px; border-bottom: 1px solid var(--ft-i-line); }
+/* Figma's rows start 4 under a section's 40px title. A labeled first row does it with its label (below). */
+.ft-section > .ft-section-head + :not(.ft-type), .ft-section > .ft-section-head + .ft-type > :first-child:not(.ft-labeled) { margin-top: 4px; }
 .ft-section-head { display: flex; align-items: center; justify-content: space-between; height: 40px; font-weight: 550; }
 .ft-fills { display: flex; flex-direction: column; gap: 8px; }
 .ft-icon-btn { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 5px; }
 .ft-icon-btn:hover { background: var(--ft-i-hover); }
 .ft-icon-btn svg { display: block; width: 16px; height: 16px; }
 .ft-fill-row { display: flex; align-items: center; gap: 8px; }
-.ft-fill-actions { display: flex; flex: none; }
+.ft-fill-actions { display: flex; flex: none; gap: 4px; }
 /* Once any row has a remove button, rows without one keep its gap so every field is the same width. */
 .ft-fills:has(.ft-fill-remove) .ft-fill-row:not(:has(.ft-fill-remove)) .ft-fill-actions::before { content: ""; width: 24px; }
 .ft-fill {
@@ -138,9 +171,16 @@
 .ft-stroke { display: flex; flex-direction: column; gap: 8px; }
 /* The layer's kind, read from the code (Group, Text, Image, Vector, SVG, Box), and its element, as Figma's
    header names the layer; Figma's tools on that line are left out. */
-.ft-kind { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 12px 8px 12px 16px; border-bottom: 1px solid var(--ft-i-line); }
-.ft-kind-name { flex: none; font-weight: 550; }
+/* Figma's header: 48 tall, its name 13px on a 22px line. */
+.ft-kind { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 13px 8px 13px 16px; border-bottom: 1px solid var(--ft-i-line); }
+.ft-kind-name { flex: none; font-weight: 550; font-size: 13px; line-height: 22px; }
 .ft-kind-el { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
+.ft-kind-count { margin-left: auto; color: var(--ft-i-text-2); }
+/* A component's line: its name, what an edit reaches, then Override across the width (pressed while it's on). */
+.ft-kind-comp { flex-direction: column; align-items: stretch; gap: 4px; }
+.ft-kind-comp .ft-kind-el { white-space: normal; }
+.ft-choice.ft-override { margin-top: 8px; }
+.ft-choice.ft-override[aria-pressed="true"], .ft-choice.ft-override[aria-pressed="true"]:hover { background: rgba(151, 71, 255, 0.12); color: #9747FF; box-shadow: none; }
 /* A section with nothing under its head (Fill, Stroke or Effects before the +) is just the head, as in Figma. */
 .ft-section:has(> .ft-section-head + :is(.ft-fills, .ft-stroke):empty:last-child) { padding-bottom: 0; }
 .ft-section > :is(.ft-fills, .ft-stroke):empty { display: none; }
@@ -148,7 +188,7 @@
 /* Inside the panel, overlays stack in a set order over its rows (a faded row, at 40% opacity, is a layer
    of its own and would otherwise paint over them): popovers, then the color picker opened from one, then menus. */
 .ft-pop {
-  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 8px;
+  position: fixed; z-index: 2; width: 240px; background: #FFFFFF; border-radius: 12px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-pop[hidden] { display: none; }
@@ -161,13 +201,15 @@
 }
 .ft-pop-body { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
 .ft-sv {
-  position: relative; height: 208px; border-radius: 2px; touch-action: none;
+  position: relative; height: 208px; border-radius: 4px; touch-action: none;
   background: linear-gradient(to top, #000000, transparent), linear-gradient(to right, #FFFFFF, var(--ft-hue));
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 .ft-pop-tools { display: flex; align-items: center; gap: 12px; }
-.ft-sliders { display: flex; flex-direction: column; gap: 16px; flex: 1; min-width: 0; }
-.ft-track { position: relative; height: 12px; border-radius: 6px; touch-action: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+/* Figma's picker (measured): 16px tracks 12 apart, 12 between the square, the sliders and the hex row. */
+.ft-sliders { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+.ft-pop.ft-picker-pop .ft-pop-body { gap: 12px; }
+.ft-track { position: relative; height: 16px; border-radius: 8px; touch-action: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
 .ft-hue { background: linear-gradient(90deg, #F00 0%, #FF0 16.67%, #0F0 33.33%, #0FF 50%, #00F 66.67%, #F0F 83.33%, #F00 100%); }
 .ft-alpha-track {
   background:
@@ -175,15 +217,15 @@
     repeating-conic-gradient(#D9D9D9 0 25%, #FFFFFF 0 50%) 0 0 / 8px 8px;
 }
 .ft-knob {
-  position: absolute; top: 50%; left: calc(6px + var(--ft-x, 0) * (100% - 12px));
-  width: 14px; height: 14px; border-radius: 50%; pointer-events: none;
+  position: absolute; top: 50%; left: calc(8px + var(--ft-x, 0) * (100% - 16px));
+  width: 16px; height: 16px; border-radius: 50%; pointer-events: none;
   transform: translate(-50%, -50%); background: var(--ft-k);
-  box-shadow: inset 0 0 0 3px #FFFFFF, 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 0 0 4px #FFFFFF, 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 .ft-sv-knob {
   top: calc(var(--ft-y, 0) * 100%); left: calc(var(--ft-x, 0) * 100%);
-  width: 12px; height: 12px;
-  box-shadow: inset 0 0 0 2px #FFFFFF, 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+  width: 16px; height: 16px;
+  box-shadow: inset 0 0 0 4px #FFFFFF, 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 .ft-pop-row { display: flex; gap: 8px; }
 .ft-channels { display: flex; flex: 1; min-width: 0; }
@@ -199,22 +241,34 @@
 .ft-mode { flex: none; min-width: 54px; }
 .ft-menu {
   position: fixed; z-index: 4; min-width: 104px; max-height: calc(100vh - 16px); overflow-y: auto; padding: 8px;
-  background: #1E1E1E; color: #FFFFFF; border-radius: 8px;
+  background: #1E1E1E; color: #FFFFFF; border-radius: 12px;
   box-shadow: 0 0 0.5px rgba(0, 0, 0, 0.15), 0 5px 12px rgba(0, 0, 0, 0.13), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .ft-menu[hidden] { display: none; }
 .ft-menu-item {
   display: flex; align-items: center; gap: 4px; width: 100%; height: 24px;
-  padding: 0 16px 0 4px; border-radius: 5px; text-align: left; white-space: nowrap;
+  padding: 0 8px 0 4px; border-radius: 5px; text-align: left; white-space: nowrap;
 }
 .ft-menu-item:hover { background: #0D99FF; }
 .ft-menu-check { display: grid; place-items: center; width: 16px; height: 16px; }
 .ft-menu-check svg { display: block; width: 12px; height: 12px; }
 .ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
 .ft-menu-heading:not(:first-child) { margin-top: 4px; }
-.ft-menu-trash { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin: 0 -12px 0 auto; padding-left: 8px; opacity: 0; }
+/* A line between a menu's parts, as Figma's: Motion's coded animations above, its generic ones below. */
+.ft-menu-divider { height: 1px; margin: 7px -8px; background: rgba(255, 255, 255, 0.12); }
+.ft-menu-trash { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin: 0 -4px 0 auto; padding-left: 8px; opacity: 0; }
 .ft-menu-item:hover .ft-menu-trash { opacity: 1; }
 .ft-menu-trash svg { display: block; width: 12px; height: 12px; }
+/* Layout guide styles (Figma's): a heading per part and a row per style, Delete on a row's hover. */
+.ft-styles-list { max-height: min(360px, calc(100vh - 80px)); overflow-y: auto; overscroll-behavior: none; padding: 8px 0; }
+.ft-styles-heading { display: flex; align-items: center; height: 32px; padding: 0 16px; font-weight: 550; }
+.ft-style-row { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px 0 16px; cursor: default; }
+.ft-style-row:hover { background: var(--ft-i-hover); }
+.ft-style-row > svg { display: block; flex: none; width: 16px; height: 16px; }
+.ft-style-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-style-trash { opacity: 0; }
+.ft-style-row:hover .ft-style-trash, .ft-style-trash:focus-visible { opacity: 1; }
+.ft-styles-empty { padding: 8px 16px; color: var(--ft-i-text-2); }
 .ft-caret { display: grid; place-items: center; width: 16px; height: 16px; color: var(--ft-i-text-2); }
 .ft-caret svg { display: block; width: 10px; height: 10px; }
 
@@ -231,6 +285,9 @@
   content: ""; position: absolute; top: -4px; left: calc(var(--ft-caret, 50%) - 4px);
   border-style: solid; border-width: 0 4px 4px; border-color: transparent transparent #1E1E1E;
 }
+.ft-tip[data-side="top"]::before {
+  top: auto; bottom: -4px; border-width: 4px 4px 0; border-color: #1E1E1E transparent transparent;
+}
 .ft-tip[data-side="right"]::before {
   top: calc(50% - 4px); left: -5px;
   border-width: 4px 5px 4px 0; border-color: transparent #1E1E1E transparent transparent;
@@ -238,7 +295,7 @@
 
 .ft-toolbar {
   position: fixed; top: 12px; left: 12px; z-index: 2147483646;
-  display: flex; flex-direction: column; padding: 8px;
+  display: flex; flex-direction: column; gap: 4px; padding: 8px;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
 }
@@ -268,8 +325,18 @@
 .ft-field-caret { display: grid; place-items: center; flex: none; width: 20px; height: 24px; color: var(--ft-i-text-2); }
 .ft-field-caret svg { display: block; width: 10px; height: 10px; }
 .ft-labeled { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+/* Figma's rhythm (its own panel, measured): a label is 9px on a 14px line; two fields with a label between them sit
+   24 apart (6 above the label, 14 for it, 4 below); a labeled first row's field sits 60 under the section's top. */
+.ft-labeled > .ft-field-label { margin-top: 2px; }
+.ft-type > .ft-labeled { margin-top: -4px; }
+.ft-type:has(> .ft-labeled:first-child) { padding-top: 4px; }
+/* After a row without a label, Figma's labeled row sits 2 lower (26 between the fields). Cells in a row line up on
+   their fields. */
+.ft-type { align-items: end; }
+.ft-type > :not(.ft-labeled):not(:empty) + .ft-labeled { margin-top: -2px; }
+.ft-stroke > .ft-type { margin-top: -2px; }
 /* Figma's property labels are smaller than its values: Inter at 9.5px, measured off a Figma screenshot. */
-.ft-field-label { color: var(--ft-i-text-2); font-size: 9.5px; }
+.ft-field-label { color: var(--ft-i-text-2); font-size: 9px; line-height: 14px; font-weight: 500; }
 .ft-type-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 /* Figma's segmented boxes: each button its own grey cell, 1px apart so the panel shows between them, the
    group's outer corners rounded. Hover darkens a cell; the chosen one is white. */
@@ -318,7 +385,10 @@
 .ft-num-input:disabled { color: var(--ft-i-text-2); }
 .ft-with-action { display: flex; align-items: center; gap: 8px; margin-right: -32px; }
 .ft-with-action > .ft-type-pair { flex: 1; min-width: 0; }
-.ft-icon-btn[aria-pressed="true"] { background: rgba(13, 153, 255, 0.12); color: #0D99FF; }
+/* A toggle that's on, or a button whose menu or popover is open, stays highlighted until it's off, as in Figma
+   (her call, 2026-10-14): blue in Design, pink in Motion. */
+.ft-icon-btn[aria-pressed="true"], .ft-icon-btn.is-open { background: rgba(13, 153, 255, 0.12); color: #0D99FF; }
+html.ft-motion .ft-icon-btn[aria-pressed="true"], html.ft-motion .ft-icon-btn.is-open { background: rgba(255, 36, 189, 0.12); color: #FF24BD; }
 .ft-swatch.ft-thumb { background: #FFFFFF center / cover no-repeat; }
 .ft-fill-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-dd.ft-fit { align-self: flex-start; width: 112px; background: none; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
@@ -348,12 +418,100 @@
   position: absolute; top: 0; bottom: 0; pointer-events: none; background: var(--ft-i-focus);
   left: calc(8px + var(--ft-lo, 0.5) * (100% - 16px)); width: calc(var(--ft-span, 0) * (100% - 16px));
 }
+/* Figma's: a white knob with the fill's color in its middle, and a small white dot marking zero. */
 .ft-adj-knob {
-  position: absolute; top: 50%; left: calc(8px + var(--ft-x, 0.5) * (100% - 16px));
+  position: absolute; z-index: 1; top: 50%; left: calc(8px + var(--ft-x, 0.5) * (100% - 16px));
   width: 16px; height: 16px; border-radius: 50%; pointer-events: none;
-  transform: translate(-50%, -50%); background: #FFFFFF;
+  transform: translate(-50%, -50%); background: radial-gradient(circle, var(--ft-i-focus) 0 3px, #FFFFFF 3.5px);
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
+.ft-adj-track::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  border-radius: 50%; background: #FFFFFF; pointer-events: none;
+}
+/* Figma's inline slider (Opacity, Corner radius, Corner smoothing): after the number, in the same field, a thin
+   track filled from the left to a white knob. */
+.ft-slider-field .ft-num-input { flex: none; width: 44px; }
+.ft-slide-box {
+  display: flex; align-items: center; flex: 1; min-width: 0; height: 24px; padding: 0 10px;
+  border-left: 1px solid var(--ft-i-bg); touch-action: none;
+}
+.ft-num-field:hover .ft-slide-box { border-left-color: var(--ft-i-stroke); }
+.ft-slide { position: relative; flex: 1; height: 4px; border-radius: 2px; background: rgba(0, 0, 0, 0.1); }
+.ft-slide-fill { position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--ft-x, 0) * 100%); border-radius: 2px; background: var(--ft-i-focus); }
+.ft-slide-knob {
+  position: absolute; z-index: 1; top: 50%; left: calc(var(--ft-x, 0) * 100%); width: 12px; height: 12px; border-radius: 50%;
+  transform: translate(-50%, -50%); background: #FFFFFF; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.ft-with-action > .ft-num-field { flex: 1; min-width: 0; }
+/* Independent corners: two rows of two, under Corner radius, in its columns (Figma's). */
+.ft-corners { display: flex; flex-direction: column; gap: 8px; }
+.ft-corners[hidden] { display: none; }
+.ft-action-gap { flex: none; width: 24px; }
+/* Corner smoothing: Figma's popover, its slider marked at iOS's 60%. */
+.ft-smooth-row { display: flex; align-items: center; gap: 8px; }
+.ft-smooth-row > .ft-slide-box { height: 36px; padding: 0 8px; border-left: 0; }
+.ft-smooth-row > .ft-num-field { flex: none; width: 44px; }
+/* Its slider, as Figma's: a 16px pill in the field color with a hairline, a 16px knob, the iOS dot on it. */
+.ft-smooth-row .ft-slide { height: 16px; border-radius: 8px; background: var(--ft-i-field); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-smooth-row .ft-slide-fill { width: calc(8px + var(--ft-x, 0) * (100% - 16px)); border-radius: 8px; opacity: clamp(0, calc(var(--ft-x, 0) * 1000), 1); }
+.ft-smooth-row .ft-slide-knob { left: calc(8px + var(--ft-x, 0) * (100% - 16px)); width: 16px; height: 16px; }
+.ft-smooth-row .ft-slide-mark, .ft-smooth-row .ft-slide-note { left: calc(8px + 0.6 * (100% - 16px)); }
+.ft-smooth-row .ft-slide-note { top: 20px; }
+.ft-slide-mark { position: absolute; top: 50%; left: 60%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
+.ft-slide-note { position: absolute; top: 8px; left: 60%; transform: translateX(-50%); color: var(--ft-i-text-2); font-size: 9.5px; line-height: 12px; }
+/* Motion: the layer's keyframe animations, and, with nothing selected, the page's animated layers.
+   Its accent is Motion's pink (see html.ft-motion below). */
+/* Figma's curve editor: the unit square, with room above and below for the curves that overshoot. */
+.ft-curve { display: block; width: 100%; height: auto; border-radius: 2px; background: var(--ft-i-field); touch-action: none; }
+.ft-curve-box { fill: #FFFFFF; stroke: var(--ft-i-line); }
+.ft-curve-arm { stroke: rgba(0, 0, 0, 0.3); }
+.ft-curve-line { fill: none; stroke: #FF24BD; stroke-width: 1.5; }
+.ft-curve-knob { fill: #FFFFFF; stroke: #FF24BD; }
+/* Figma's Interactions list: one row per animation, its name and duration; the open one is picked. */
+.ft-anim-rows { display: flex; flex-direction: column; gap: 2px; }
+.ft-anim-row { display: flex; align-items: center; gap: 8px; width: 100%; height: 32px; padding: 0 8px; border-radius: 5px; text-align: left; }
+.ft-anim-row:hover { background: var(--ft-i-hover); }
+.ft-anim-row[aria-pressed="true"] { background: rgba(255, 36, 189, 0.12); }
+.ft-anim-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ft-anim-row > .ft-icon-btn { margin-right: -4px; }
+.ft-anim-meta { flex: none; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
+/* An animation's settings open in the panel under its row, laid out as Figma's Interaction popover: a label
+   column, then the control, in groups split by a line that runs the panel's width, as its sections' do. */
+.ft-anim-settings { margin: 8px -8px 0 -16px; border-top: 1px solid var(--ft-i-line); }
+.ft-anim-settings:last-child { margin-bottom: -16px; }
+.ft-anim-settings:not(:last-child) { margin-bottom: 8px; border-bottom: 1px solid var(--ft-i-line); }
+/* Each group of settings, as Figma's untitled stacks: its first row 12 under the line, 16 under its last row. */
+.ft-anim-group { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 8px 0; padding: 12px 8px 16px 16px; border-bottom: 1px solid var(--ft-i-line); }
+.ft-anim-group:last-child { border-bottom: 0; }
+.ft-anim-group > .ft-span2 { grid-column: 1 / -1; }
+.ft-anim-group > [hidden] { display: none; }
+.ft-anim-label { color: var(--ft-i-text-2); }
+/* Playback speed, at the top of Motion: Alignment's segmented cells, spread across the row, with words. */
+/* Playback speed is a section like the rest: its name in the 40px title band, the speeds 4 under it. */
+.ft-speed { padding-top: 0; }
+/* Its label reads as a section's title: 11px, 550, the panel's text. */
+.ft-speed-label { display: flex; align-items: center; height: 40px; font-weight: 550; }
+.ft-speed .ft-seg-btn { font-size: 11px; }
+/* A dropdown's leading icon: an easing's own curve. */
+.ft-dd-icon { display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin-left: -4px; color: var(--ft-i-text-2); }
+.ft-dd-icon svg { display: block; width: 12px; height: 12px; }
+.ft-dd-icon + .ft-dd-label { flex: 1; }
+/* Figma's checkbox row (Clip content): the box, then its label. Checked, the box takes the text's color. */
+.ft-check-row { display: flex; align-items: center; gap: 8px; height: 24px; text-align: left; }
+.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 3px; box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
+.ft-check-row:hover .ft-check { background: var(--ft-i-hover); }
+.ft-check-row[aria-checked="true"] .ft-check { box-shadow: inset 0 0 0 1px var(--ft-i-text); }
+.ft-check svg { display: block; width: 12px; height: 12px; }
+/* Motion's accent: pink where Design uses its blue (the selection, focus, the bar's chosen cell, and Motion's
+   own rows and curve above), so it's clear which mode is on. html.ft-motion is set while Motion shows. */
+html.ft-motion .ft-inspector { --ft-i-focus: #FF24BD; }
+html.ft-motion .ft-modes { --ft-m-sel: #FF24BD; }
+html.ft-motion .ft-modes[data-theme="dark"] { --ft-m-sel: #E61BA8; }
+html.ft-motion .ft-hover-box, html.ft-motion .ft-sel-box, html.ft-motion .ft-handle { border-color: #FF24BD; }
+html.ft-motion .ft-menu-item:hover { background: #FF24BD; }
+/* A layer with no animation: one full-width button to add one (Figma's secondary button). */
+.ft-choice.ft-add-anim { width: 100%; }
 
 .ft-hover-box, .ft-sel-box {
   position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none;
@@ -363,6 +521,10 @@
 /* Figma's marquee: drag on the page to select what the box touches. */
 .ft-marquee { position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none; border: 1px solid #0D99FF; background: rgba(13, 153, 255, 0.08); }
 .ft-marquee[hidden] { display: none; }
+/* In Motion, every layer with motion on screen is outlined in pink, so what can be tuned is plain to see. */
+.ft-marks { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
+.ft-marks[hidden] { display: none; }
+.ft-mark { position: absolute; box-sizing: border-box; border: 1px solid rgba(255, 36, 189, 0.5); }
 .ft-handle {
   position: absolute; width: 7px; height: 7px; box-sizing: border-box;
   background: #FFFFFF; border: 1px solid #0D99FF;
@@ -378,15 +540,29 @@
 html.ft-moving .ft-sel-box .ft-nw, html.ft-moving .ft-sel-box .ft-se { cursor: nwse-resize; }
 html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: nesw-resize; }
 .ft-sel-box.no-resize .ft-handle { display: none; }
+/* Figma's spacing: 8 below the selection, 6 either side of the numbers. */
 .ft-size-label {
-  position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%);
-  padding: 0 4px; border-radius: 3px; background: #0D99FF; color: #FFFFFF; white-space: nowrap;
+  position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%);
+  padding: 0 6px; border-radius: 3px; background: #0D99FF; color: #FFFFFF; white-space: nowrap;
   font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
+/* A component (componentOf), as Figma shows one: its outline, corners and size label in Figma's component purple,
+   and its name with the component mark over its top left. Design only; Motion keeps its own accent. */
+.ft-sel-box.is-comp, .ft-hover-box.is-comp, .ft-sel-box.is-comp .ft-handle { border-color: #9747FF; }
+.ft-sel-box.is-comp .ft-size-label { background: #9747FF; }
+.ft-comp-label {
+  position: absolute; left: -1px; bottom: calc(100% + 4px); display: flex; align-items: center; gap: 4px;
+  color: #9747FF; white-space: nowrap; font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.ft-comp-label[hidden] { display: none; }
+.ft-comp-label svg { display: block; width: 12px; height: 12px; }
 html.ft-moving body *:not(input) { cursor: default; }
 html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: text; }
 [data-ft-editing] { outline: none; }
+/* A layer being read or dragged runs no transitions, so an edit lands at once (see still()). */
+[data-ft-still], [data-ft-still] * { transition: none !important; }
 
 .ft-panel {
   position: fixed; top: 16px; left: 16px; z-index: 2147483647;
@@ -534,6 +710,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // guide alignments are Lucide (ISC, lucide.dev, v1.56.0) at stroke 1.5, a weight under Lucide's default;
   // the alignments' bars are filled with no stroke around them (her call), their alignment line stays a stroke.
   // The selection's top / middle / bottom (alignTop, alignVCenter, alignBottom) are drawn the same way.
+  // Flow's four (flowFree, flowVertical, flowHorizontal, flowGrid) are drawn after Figma's: small rounded squares
+  // scattered, stacked with a down arrow, side by side over a right arrow, and two by two. They're drawn at 16, the
+  // size they show at, with a 1px line on half pixels, so every edge lands on a whole pixel; the squares are 5 across
+  // with 2 between.
   // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round. Rotate 90°
   // is Lucide's rotate-cw-square too, the nearest to Figma's turned square.
   const ICON = {
@@ -543,7 +723,6 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     drop: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z"/></svg>',
     checkerboard: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm-12.69,88L136,60.69V48h12.69L208,107.32V120ZM136,83.31,172.69,120H136Zm72,1.38L171.31,48H208ZM120,48v72H48V48ZM107.31,208,48,148.69V136H60.69L120,195.31V208ZM120,172.69,83.31,136H120Zm-72-1.38L84.69,208H48ZM208,208H136V136h72v72Z"/></svg>',
     frameCorners: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,80v32a8,8,0,0,1-16,0V88H160a8,8,0,0,1,0-16h32A8,8,0,0,1,200,80ZM96,168H72V144a8,8,0,0,0-16,0v32a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16ZM232,56V200a16,16,0,0,1-16,16H40a16,16,0,0,1-16-16V56A16,16,0,0,1,40,40H216A16,16,0,0,1,232,56ZM216,200V56H40V200H216Z"/></svg>',
-    linkSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,90.34a8,8,0,0,1,0,11.32l-64,64a8,8,0,0,1-11.32-11.32l64-64A8,8,0,0,1,165.66,90.34ZM215.6,40.4a56,56,0,0,0-79.2,0L106.34,70.45a8,8,0,0,0,11.32,11.32l30.06-30a40,40,0,0,1,56.57,56.56l-30.07,30.06a8,8,0,0,0,11.31,11.32L215.6,119.6a56,56,0,0,0,0-79.2ZM138.34,174.22l-30.06,30.06a40,40,0,1,1-56.56-56.57l30.05-30.05a8,8,0,0,0-11.32-11.32L40.4,136.4a56,56,0,0,0,79.2,79.2l30.06-30.07a8,8,0,0,0-11.32-11.31Z"/></svg>',
     floppyDisk: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M217.9,73.42,182.58,38.1a13.9,13.9,0,0,0-9.89-4.1H48A14,14,0,0,0,34,48V208a14,14,0,0,0,14,14H208a14,14,0,0,0,14-14V83.31A13.9,13.9,0,0,0,217.9,73.42ZM170,210H86V152a2,2,0,0,1,2-2h80a2,2,0,0,1,2,2Zm40-2a2,2,0,0,1-2,2H182V152a14,14,0,0,0-14-14H88a14,14,0,0,0-14,14v58H48a2,2,0,0,1-2-2V48a2,2,0,0,1,2-2H172.69a2,2,0,0,1,1.41.58L209.42,81.9a2,2,0,0,1,.58,1.41ZM158,72a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h56A6,6,0,0,1,158,72Z"/></svg>',
     undo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M232,144a64.07,64.07,0,0,1-64,64H80a8,8,0,0,1,0-16h88a48,48,0,0,0,0-96H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48A8,8,0,0,1,85.66,45.66L51.31,80H168A64.07,64.07,0,0,1,232,144Z"/></svg>',
     redo: '<svg viewBox="0 -8 256 256" fill="currentColor" aria-hidden="true"><path d="M170.34,130.34,204.69,96H88a48,48,0,0,0,0,96h88a8,8,0,0,1,0,16H88A64,64,0,0,1,88,80H204.69L170.34,45.66a8,8,0,0,1,11.32-11.32l48,48a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32-11.32Z"/></svg>',
@@ -554,10 +733,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     slidersHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z"/></svg>',
     pencilRuler: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H160V176h24a8,8,0,0,0,0-16H160V136h24a8,8,0,0,0,0-16H160V96h24a8,8,0,0,0,0-16H160V48h48V208ZM77.66,26.34a8,8,0,0,0-11.32,0l-32,32A8,8,0,0,0,32,64V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V64a8,8,0,0,0-2.34-5.66ZM48,176V80H64v96ZM80,80H96v96H80ZM72,43.31,92.69,64H51.31ZM48,208V192H96v16Z"/></svg>',
     play: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>',
-    shapes: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M71.59,61.47a8,8,0,0,0-15.18,0l-40,120A8,8,0,0,0,24,192h80a8,8,0,0,0,7.59-10.53ZM35.1,176,64,89.3,92.9,176ZM208,76a52,52,0,1,0-52,52A52.06,52.06,0,0,0,208,76Zm-88,0a36,36,0,1,1,36,36A36,36,0,0,1,120,76Zm104,68H136a8,8,0,0,0-8,8v56a8,8,0,0,0,8,8h88a8,8,0,0,0,8-8V152A8,8,0,0,0,224,144Zm-8,56H144V160h72Z"/></svg>',
-    rows: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,136H48a16,16,0,0,0-16,16v40a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V152A16,16,0,0,0,208,136Zm0,56H48V152H208v40Zm0-144H48A16,16,0,0,0,32,64v40a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V64A16,16,0,0,0,208,48Zm0,56H48V64H208v40Z"/></svg>',
-    columns: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M104,32H64A16,16,0,0,0,48,48V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,104,32Zm0,176H64V48h40ZM192,32H152a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,192,32Zm0,176H152V48h40Z"/></svg>',
-    gridFour: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,40H56A16,16,0,0,0,40,56V200a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,80H136V56h64ZM120,56v64H56V56ZM56,136h64v64H56Zm144,64H136V136h64v64Z"/></svg>',
+    pause: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>',
+    arrowLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></svg>',
+    arrowRight: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg>',
+    arrowDown: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,149.66l-72,72a8,8,0,0,1-11.32,0l-72-72a8,8,0,0,1,11.32-11.32L120,196.69V40a8,8,0,0,1,16,0V196.69l58.34-58.35a8,8,0,0,1,11.32,11.32Z"/></svg>',
+    arrowUp: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/></svg>',
+    ruler: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M235.32,73.37,182.63,20.69a16,16,0,0,0-22.63,0L20.68,160a16,16,0,0,0,0,22.63l52.69,52.68a16,16,0,0,0,22.63,0L235.32,96A16,16,0,0,0,235.32,73.37ZM84.68,224,32,171.31l32-32,26.34,26.35a8,8,0,0,0,11.32-11.32L75.31,128,96,107.31l26.34,26.35a8,8,0,0,0,11.32-11.32L107.31,96,128,75.31l26.34,26.35a8,8,0,0,0,11.32-11.32L139.31,64l32-32L224,84.69Z"/></svg>',
+    timer: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M128,40a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,40Zm0,176a80,80,0,1,1,80-80A80.09,80.09,0,0,1,128,216ZM173.66,90.34a8,8,0,0,1,0,11.32l-40,40a8,8,0,0,1-11.32-11.32l40-40A8,8,0,0,1,173.66,90.34ZM96,16a8,8,0,0,1,8-8h48a8,8,0,0,1,0,16H104A8,8,0,0,1,96,16Z"/></svg>',
+    hourglass: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M211.18,196.56,139.57,128l71.61-68.56a1.59,1.59,0,0,1,.13-.13A16,16,0,0,0,200,32H56A16,16,0,0,0,44.7,59.31l.12.13L116.43,128,44.82,196.56l-.12.13A16,16,0,0,0,56,224H200a16,16,0,0,0,11.32-27.31A1.59,1.59,0,0,1,211.18,196.56ZM56,48h0v0Zm144,0-72,68.92L56,48ZM56,208l72-68.92L200,208Z"/></svg>',
+    repeat: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M24,128A72.08,72.08,0,0,1,96,56H204.69L194.34,45.66a8,8,0,0,1,11.32-11.32l24,24a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L204.69,72H96a56.06,56.06,0,0,0-56,56,8,8,0,0,1-16,0Zm200-8a8,8,0,0,0-8,8,56.06,56.06,0,0,1-56,56H51.31l10.35-10.34a8,8,0,0,0-11.32-11.32l-24,24a8,8,0,0,0,0,11.32l24,24a8,8,0,0,0,11.32-11.32L51.31,200H160a72.08,72.08,0,0,0,72-72A8,8,0,0,0,224,120Z"/></svg>',
+    replay: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg>',
     sidebarSimple: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H80V200H40ZM216,200H96V56H216V200Z"/></svg>',
     copy: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,34H88a6,6,0,0,0-6,6V82H40a6,6,0,0,0-6,6V216a6,6,0,0,0,6,6H168a6,6,0,0,0,6-6V174h42a6,6,0,0,0,6-6V40A6,6,0,0,0,216,34ZM162,210H46V94H162Zm48-48H174V88a6,6,0,0,0-6-6H94V46H210Z"/></svg>',
     textAlignLeft: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M32,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H40A8,8,0,0,1,32,64Zm8,48H168a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm176,24H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm-48,40H40a8,8,0,0,0,0,16H168a8,8,0,0,0,0-16Z"/></svg>',
@@ -571,6 +756,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     article: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM184,96a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,96Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,128Zm0,32a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z"/></svg>',
     arrowsVertical: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M165.66,194.34a8,8,0,0,1,0,11.32l-32,32a8,8,0,0,1-11.32,0l-32-32a8,8,0,0,1,11.32-11.32L120,212.69V43.31L101.66,61.66A8,8,0,0,1,90.34,50.34l32-32a8,8,0,0,1,11.32,0l32,32a8,8,0,0,1-11.32,11.32L136,43.31V212.69l18.34-18.35A8,8,0,0,1,165.66,194.34Z"/></svg>',
     arrowsHorizontal: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M237.66,133.66l-32,32a8,8,0,0,1-11.32-11.32L212.69,136H43.31l18.35,18.34a8,8,0,0,1-11.32,11.32l-32-32a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,11.32L43.31,120H212.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,237.66,133.66Z"/></svg>',
+    // A layout guide's columns, for a style's row (Figma's), drawn at 16 on whole pixels as the Flow icons.
+    columns: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="1"/><path d="M6.5 2.5v11M9.5 2.5v11"/></svg>',
+    // Figma's Lock aspect ratio: a rounded square with two corner brackets inside, drawn at 16 on whole pixels.
+    lockRatio: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M5.5 8V5.5H8M10.5 8v2.5H8"/></svg>',
+    // Figma's instance mark, one diamond: Override (this instance only).
+    instance: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6 6-6 6-6-6z"/></svg>',
+    // Figma's component mark: four diamonds.
+    component: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1l3 3-3 3-3-3z"/><path d="M4 5l3 3-3 3-3-3z"/><path d="M12 5l3 3-3 3-3-3z"/><path d="M8 9l3 3-3 3-3-3z"/></svg>',
+    // A checkbox's tick, heavier than the menus' check, as Figma's.
+    tick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     check: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>',
     plus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>',
     minus: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></svg>',
@@ -583,6 +778,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     flipHorizontal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 14v2"/><path d="M12 20v2"/><path d="M12 2v2"/><path d="M12 8v2"/><path d="M20.288 16.703A1 1 0 0022 16V8a1 1 0 00-1.712-.703l-3.99 3.991a1 1 0 00-.001 1.424z"/><path d="M3.712 16.703A1 1 0 012 16V8a1 1 0 011.712-.703l3.99 3.991a1 1 0 01.001 1.424z"/></svg>',
     flipVertical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="M4 12H2"/><path d="M7.298 20.288A1 1 0 008 22h8a1 1 0 00.703-1.712l-3.991-3.99a1 1 0 00-1.424-.001z"/><path d="M7.298 3.712A1 1 0 018 2h8a1 1 0 01.703 1.712l-3.991 3.99a1 1 0 01-1.424.001z"/></svg>',
     rotateSquare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5H6a2 2 0 0 0-2 2v3"/><path d="m9 8 3-3-3-3"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg>',
+    flowFree: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="3.5" width="4" height="4" rx="1"/><rect x="3.5" y="9.5" width="4" height="4" rx="1"/></svg>',
+    flowVertical: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="2.5" y="9.5" width="4" height="4" rx="1"/><path d="M11.5 2.5v11"/><path d="M9 11l2.5 2.5L14 11"/></svg>',
+    flowHorizontal: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="2.5" width="4" height="4" rx="1"/><path d="M2.5 11.5h11"/><path d="M11 9l2.5 2.5L11 14"/></svg>',
+    flowGrid: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="4" height="4" rx="1"/><rect x="9.5" y="2.5" width="4" height="4" rx="1"/><rect x="2.5" y="9.5" width="4" height="4" rx="1"/><rect x="9.5" y="9.5" width="4" height="4" rx="1"/></svg>',
+    cornerTL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17v-6a4 4 0 0 1 4-4h6"/></svg>',
+    cornerTR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h6a4 4 0 0 1 4 4v6"/></svg>',
+    cornerBL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7v6a4 4 0 0 0 4 4h6"/></svg>',
+    cornerBR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7v6a4 4 0 0 1-4 4H7"/></svg>',
+    sliders: '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M64,105V40a8,8,0,0,0-16,0v65a32,32,0,0,0,0,62v49a8,8,0,0,0,16,0V167a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,56,152Zm80-95V40a8,8,0,0,0-16,0V57a32,32,0,0,0,0,62v97a8,8,0,0,0,16,0V119a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,128,104Zm104,64a32.06,32.06,0,0,0-24-31V40a8,8,0,0,0-16,0v97a32,32,0,0,0,0,62v17a8,8,0,0,0,16,0V199A32.06,32.06,0,0,0,232,168Zm-32,16a16,16,0,1,1,16-16A16,16,0,0,1,200,184Z"/></svg>',
     alignLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="9" height="6" x="6" y="14" rx="2"/><rect fill="currentColor" stroke="none" width="16" height="6" x="6" y="4" rx="2"/><path d="M2 2v20"/></svg>',
     alignHCenter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path fill="currentColor" stroke="none" d="M8 10H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h4"/><path fill="currentColor" stroke="none" d="M16 10h4a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-4"/><path fill="currentColor" stroke="none" d="M8 20H7a2 2 0 0 1-2-2v-2c0-1.1.9-2 2-2h1"/><path fill="currentColor" stroke="none" d="M16 14h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/></svg>',
     alignRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect fill="currentColor" stroke="none" width="16" height="6" x="2" y="4" rx="2"/><rect fill="currentColor" stroke="none" width="9" height="6" x="9" y="14" rx="2"/><path d="M22 22V2"/></svg>',
@@ -617,14 +821,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       tipEl.style.top = r.top + r.height / 2 - tipEl.offsetHeight / 2 + "px";
       return;
     }
-    tipEl.removeAttribute("data-side");
+    // Above the button when it sits at the bottom of the window (the Design / Motion bar), else below it.
+    const above = target.getAttribute("data-ft-tip-side") === "top";
+    if (above) tipEl.setAttribute("data-side", "top");
+    else tipEl.removeAttribute("data-side");
     const cx = r.left + r.width / 2;
     const left = Math.min(Math.max(8, cx - tipEl.offsetWidth / 2), window.innerWidth - tipEl.offsetWidth - 8);
     tipEl.style.left = left + "px";
-    tipEl.style.top = r.bottom + 6 + "px";
+    tipEl.style.top = (above ? r.top - 6 - tipEl.offsetHeight : r.bottom + 6) + "px";
     // The box shifts to stay on screen; the caret keeps pointing at the button.
     tipEl.style.setProperty("--ft-caret", cx - left + "px");
   }
+
+  // A shortcut's keys as the tooltip shows them: Mac's symbols on a Mac, words elsewhere.
+  const MAC = /Mac|iPhone|iPad/.test(navigator.platform || "");
+  const KEYS = { mod: MAC ? "⌘" : "Ctrl+", alt: MAC ? "⌥" : "Alt+", shift: MAC ? "⇧" : "Shift+" };
 
   function hideTip() {
     clearTimeout(tipTimer);
@@ -714,6 +925,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (force || document.activeElement !== alpha) alpha.value = String(layer.opacity);
       row.classList.toggle("is-hidden", !layer.visible);
       eye.innerHTML = layer.visible ? ICON.eye : ICON.eyeClosed;
+      eye.setAttribute("aria-pressed", String(!layer.visible));
       const tip = (layer.visible ? "Hide " : "Show ") + noun;
       eye.setAttribute("data-ft-tip", tip);
       eye.setAttribute("aria-label", tip);
@@ -1133,6 +1345,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
 
     return {
+      close,
       toggle(l, row, swatch, onPick) {
         if (layer === l) close();
         else open(l, row, swatch, onPick);
@@ -1165,13 +1378,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   function makeToolbar(hotkey) {
     const bar = el("div", "ft-toolbar");
     const actions = [
-      ["copy", "Copy changes", copyChanges],
-      ["floppyDisk", "Save changes in this browser", saveNow],
-    ].map(([icon, name, onClick]) => {
+      ["copy", "Copy changes and prompt", copyChanges, KEYS.shift + KEYS.mod + "E"],
+      ["floppyDisk", "Save changes in this browser", saveNow, KEYS.alt + KEYS.mod + "S"],
+    ].map(([icon, name, onClick, keys]) => {
       const b = button("ft-tool", null, onClick);
       b.innerHTML = ICON[icon];
       b.setAttribute("aria-label", name);
       b.setAttribute("data-ft-tip", name);
+      if (keys) b.setAttribute("data-ft-tip-key", keys);
       b.setAttribute("data-ft-tip-side", "right");
       withTip(b);
       return b;
@@ -1180,7 +1394,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     document.body.appendChild(bar);
     uiBox = el("div", "ft-ui");
     uiButton = iconButton(ICON.sidebarSimple, "Hide UI", toggleUi);
-    uiButton.setAttribute("data-ft-tip-key", hotkey.toUpperCase());
+    uiButton.setAttribute("data-ft-tip-key", KEYS.mod + "\\");
     uiBox.appendChild(uiButton);
     document.body.appendChild(uiBox);
     return bar;
@@ -1221,6 +1435,77 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // [data-finetune-ui] marks a page's own controls (its nav, its buttons): never selected, and they keep
   // working while the inspector is open.
   const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-tip, .ft-toast, .ft-sel-box, .ft-hover-box, .ft-marquee, [data-finetune-ui]");
+
+  // Components, as Figma's instances: an element is one when a component in the code renders it as its one
+  // outermost element (a React component's single root), or when it's a custom element (a web component). Its
+  // name is the one the code gives it. React's names, and where each element was written, come from its
+  // development build, so a production build shows none. A run of components can start at one element (an icon
+  // library's Envelope renders its own IconBase, which renders the svg): the outermost one written in the page's
+  // code is it. Components written in node_modules (the framework's own, around a page) are passed over.
+  const COMPONENT_TAGS = [0, 1, 11, 14, 15]; // React's function, class, forwardRef, memo and simple memo fibers
+  const HOST_TAGS = [5, 26, 27]; // an element, a hoisted one, html / head / body
+  const typeName = (t) => (!t ? "" : typeof t === "function" ? t.displayName || t.name || ""
+    : typeof t === "object" ? t.displayName || typeName(t.render) || typeName(t.type) : "");
+  const fiberOf = (e) => {
+    const k = Object.keys(e).find((key) => key.slice(0, 13) === "__reactFiber$");
+    return k ? e[k] : null;
+  };
+  // Where the code wrote this fiber's element: React 18's recorded file, or React 19's creation stack, its first
+  // frame past React's own call. "" when the build doesn't say.
+  function writtenAt(f) {
+    if (f._debugSource && f._debugSource.fileName) return f._debugSource.fileName;
+    const stack = f._debugStack && f._debugStack.stack;
+    if (!stack) return "";
+    return stack.split("\n").slice(1).find((l) => !/jsx|createElement|fakeJSXCallSite/.test(l)) || "";
+  }
+  const inPageCode = (where) => !!where && !/node_modules|<anonymous>/.test(where);
+  // A component is one layer only when it renders exactly one outermost element (no fragment of several).
+  function oneRoot(f) {
+    let n = 0;
+    const walk = (c) => {
+      for (; c && n < 2; c = c.sibling) {
+        if (HOST_TAGS.includes(c.tag) || (c.tag === 6 && String(c.memoizedProps).trim())) n++;
+        else if (c.tag !== 4) walk(c.child);
+      }
+    };
+    walk(f.child);
+    return n === 1;
+  }
+  const components = new WeakMap();
+  function componentOf(e) {
+    if (!e || e.nodeType !== 1) return "";
+    if (components.has(e)) return components.get(e);
+    let name = "";
+    const fiber = fiberOf(e);
+    let found = false;
+    for (let p = fiber && fiber.return; p && !HOST_TAGS.includes(p.tag); p = p.return) {
+      if (!COMPONENT_TAGS.includes(p.tag)) continue;
+      if (!inPageCode(writtenAt(p))) {
+        if (found) break;
+        continue;
+      }
+      found = true;
+      const n = typeName(p.elementType) || typeName(p.type);
+      if (n && oneRoot(p)) name = n;
+    }
+    if (!name && e.localName.includes("-") && window.customElements && customElements.get(e.localName)) name = e.localName;
+    components.set(e, name);
+    return name;
+  }
+  // A component's instances on the page, found once per selection (the selection clears this).
+  const instanceCache = new Map();
+  function instancesOf(name) {
+    if (!instanceCache.has(name)) instanceCache.set(name, Array.from(document.querySelectorAll("*")).filter((e) => !isUi(e) && componentOf(e) === name));
+    return instanceCache.get(name);
+  }
+  // Where an edit to a component instance goes, as in Figma: to every instance (the component's own look), unless
+  // she overrode this one, or it places this one (a move, a turn, a flip), which is always this one's. Design only.
+  const PLACEMENT = ["translate", "rotate", "scale", "transform-box", "transform-origin"];
+  function sharedComponent(t, prop) {
+    if (document.documentElement.classList.contains("ft-motion") || PLACEMENT.includes(prop)) return "";
+    const name = componentOf(t);
+    return name && !edits.overrides.includes(selectorFor(t)) ? name : "";
+  }
 
   // Figma's layout guide, columns: bands stretched between margins, or packed to a side (or the middle)
   // at a set width, an offset from that side.
@@ -1278,14 +1563,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Figma's new effect: a drop shadow, 0 4, blur 4, black at 25%.
   const newEffect = () => ({ type: "drop", visible: true, x: 0, y: 4, blur: 4, spread: 0, hex: "000000", opacity: 25 });
   const EDITS_KEY = "finetune:edits:" + location.pathname;
+  // Reset's Undo (see resetEdits): what it threw away, and what to load once instead of what Save stored.
+  const RESET_KEY = "finetune:reset-undo:" + location.pathname;
+  const RESTORE_KEY = "finetune:restore:" + location.pathname;
+  let restored = false;
   let edits = loadEdits();
 
   // Anything stored in a shape this file no longer writes is dropped, not trusted.
   function loadEdits() {
-    const out = { page: null, elements: {}, guides: [], groups: [] };
+    const out = { page: null, elements: {}, guides: [], groups: [], keyframes: {}, waapi: {}, newKeyframes: {}, components: {}, overrides: [] };
     let raw = null;
     try {
-      raw = JSON.parse(localStorage.getItem(EDITS_KEY));
+      // Reset's Undo loads what showed before it, once; otherwise what Save stored.
+      let undone = null;
+      try {
+        undone = sessionStorage.getItem(RESTORE_KEY);
+        if (undone != null) sessionStorage.removeItem(RESTORE_KEY);
+      } catch (e) {
+        undone = null;
+      }
+      restored = undone != null;
+      raw = JSON.parse(undone != null ? undone : localStorage.getItem(EDITS_KEY));
     } catch (e) {
       return out;
     }
@@ -1296,9 +1594,55 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     // One horizontal layout at a time.
     if (Array.isArray(raw.guides)) out.guides = raw.guides.filter(validGuide).slice(0, 1);
+    // The @keyframes she added from Motion's generic list: name, then the preset and its rule's body.
+    if (raw.newKeyframes && typeof raw.newKeyframes === "object") {
+      Object.keys(raw.newKeyframes).forEach((name) => {
+        const k = raw.newKeyframes[name];
+        if (k && typeof k.body === "string" && /^[\w-]+$/.test(name)) out.newKeyframes[name] = { preset: String(k.preset || ""), body: k.body };
+      });
+    }
+    // JavaScript animation edits, each with what the code said (see waapiEdit).
+    if (raw.waapi && typeof raw.waapi === "object") {
+      const obj = (o) => (o && typeof o === "object" ? o : {});
+      Object.keys(raw.waapi).forEach((key) => {
+        const w = raw.waapi[key];
+        if (!w || typeof w !== "object" || typeof w.label !== "string") return;
+        out.waapi[key] = {
+          label: w.label, hint: typeof w.hint === "string" ? w.hint : "", sels: Array.isArray(w.sels) ? w.sels.filter((x) => typeof x === "string") : [],
+          code: obj(w.code), timing: obj(w.timing), delays: obj(w.delays), frames: obj(w.frames),
+        };
+      });
+    }
+    // Keyframe edits: name, then keyframe, then declarations, all strings.
+    if (raw.keyframes && typeof raw.keyframes === "object") {
+      Object.keys(raw.keyframes).forEach((name) => {
+        const frames = raw.keyframes[name];
+        if (!frames || typeof frames !== "object") return;
+        const keep = {};
+        Object.keys(frames).forEach((key) => {
+          const decl = frames[key];
+          if (!decl || typeof decl !== "object") return;
+          const d = {};
+          Object.keys(decl).forEach((p) => { if (typeof decl[p] === "string" && decl[p]) d[p] = decl[p]; });
+          if (Object.keys(d).length) keep[key] = d;
+        });
+        if (Object.keys(keep).length) out.keyframes[name] = keep;
+      });
+    }
     if (Array.isArray(raw.groups)) {
       out.groups = raw.groups.filter((g) => Array.isArray(g) && g.length > 1 && g.every((sel) => typeof sel === "string"));
     }
+    // Component edits (every instance's), by the component's name, and the instances she overrode, by selector.
+    if (raw.components && typeof raw.components === "object") {
+      Object.keys(raw.components).forEach((name) => {
+        const c = raw.components[name];
+        if (!c || typeof c.styles !== "object" || !c.styles) return;
+        const styles = {};
+        Object.keys(c.styles).forEach((p) => { if (typeof c.styles[p] === "string" && c.styles[p]) styles[p] = c.styles[p]; });
+        if (Object.keys(styles).length) out.components[name] = { styles };
+      });
+    }
+    if (Array.isArray(raw.overrides)) out.overrides = raw.overrides.filter((sel) => typeof sel === "string");
     if (raw.elements && typeof raw.elements === "object") {
       Object.keys(raw.elements).forEach((sel) => {
         const e = raw.elements[sel];
@@ -1332,16 +1676,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return out;
   }
 
-  // Nothing is saved until she presses Save; a reload before that drops the unsaved edits.
+  // An action that can be undone says so in a toast with Undo, for 10 seconds.
+  const undoToast = (text, run) => toast(text, { label: "Undo", run }, 10000);
+
+  // Nothing is saved until she presses Save; a reload before that drops the unsaved edits. Its Undo puts back what
+  // the browser had stored before (nothing, or the last save); the edits on the page stay as they are.
   function saveNow() {
+    let before = null;
     try {
+      before = localStorage.getItem(EDITS_KEY);
       localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
-      const n = editCount();
-      toast(n ? "Saved " + n + (n === 1 ? " change" : " changes") : "Saved");
     } catch (e) {
       // Storage blocked or full (a large swapped-in image): edits still show, they just won't survive a reload.
-      toast("Couldn't save: storage is blocked or full");
+      return toast("Couldn't save: storage is blocked or full");
     }
+    const n = editCount();
+    historyChanged();
+    undoToast(n ? "Saved " + n + (n === 1 ? " change" : " changes") : "Saved", () => {
+      try {
+        if (before == null) localStorage.removeItem(EDITS_KEY);
+        else localStorage.setItem(EDITS_KEY, before);
+      } catch (e) {
+        // Storage blocked: the save stands.
+      }
+      historyChanged();
+      toast("Save undone");
+    });
   }
 
   function copyChanges() {
@@ -1354,8 +1714,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // Forget every saved edit and reload the page as written. A page with state of its own (its own
   // controls, its own storage) hears "finetune:reset" on window first, so one Reset clears everything.
+  // Reset keeps what it throws away (what Save stored, and what showed, saved or not) for the next load in this
+  // tab, so the toast after the reload can offer Undo. Undo hands it back: what Save stored goes back in storage,
+  // and what showed loads once more (RESTORE_KEY), so unsaved edits come back unsaved.
   function resetEdits() {
     window.dispatchEvent(new CustomEvent("finetune:reset"));
+    try {
+      // Anything to bring back: an edit (a layout grid included) or something Save stored.
+      const saved = localStorage.getItem(EDITS_KEY);
+      const had = saved != null || editCount() > 0 || edits.guides.length > 0;
+      sessionStorage.setItem(RESET_KEY, JSON.stringify({ saved, live: snapshot(), had }));
+    } catch (e) {
+      // No session storage: Reset still works, just without Undo.
+    }
     try {
       localStorage.removeItem(EDITS_KEY);
     } catch (e) {
@@ -1363,8 +1734,50 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     location.reload();
   }
+  // Whether Reset has anything to put back: an edit on the page now, or something Save stored.
+  function canReset() {
+    if (editCount() > 0) return true;
+    try {
+      return localStorage.getItem(EDITS_KEY) != null;
+    } catch (e) {
+      return false;
+    }
+  }
+  // After the load: Reset's toast, with Undo for 10 seconds; or, after Undo, that the edits are back.
+  function afterReset() {
+    if (restored) return toast("Your edits are back");
+    let stash = null;
+    try {
+      stash = JSON.parse(sessionStorage.getItem(RESET_KEY));
+      sessionStorage.removeItem(RESET_KEY);
+    } catch (e) {
+      return;
+    }
+    if (!stash) return;
+    // With nothing changed there's nothing to undo, and the toast says so.
+    if (!stash.had) return toast("No edits to reset: the page already matches the code", null, 4000);
+    const undo = {
+      label: "Undo",
+      run() {
+        try {
+          if (stash.saved != null) localStorage.setItem(EDITS_KEY, stash.saved);
+          sessionStorage.setItem(RESTORE_KEY, stash.live);
+        } catch (e) {
+          return toast("Couldn't undo: storage is blocked");
+        }
+        location.reload();
+      },
+    };
+    toast("Your edits were reset to what's in the code", undo, 10000);
+    undoReset = undo.run;
+    historyChanged();
+    setTimeout(() => {
+      undoReset = null;
+      historyChanged();
+    }, 10400);
+  }
 
-  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0) + edits.groups.length;
+  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0) + edits.groups.length + Object.keys(edits.keyframes).length + Object.keys(edits.waapi).length + Object.keys(edits.components).length;
 
   // A short selector that finds the element again after a reload: as few steps as stay
   // unique, each a tag, its first class, and a position when siblings share both.
@@ -1433,7 +1846,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     history.quiet--;
     historyChanged();
   }
-  const undo = () => step(history.past, history.future);
+  // Right after a Reset (while its toast shows), Undo, ⌘Z included, undoes the Reset: there's nothing before it in
+  // this visit's history.
+  let undoReset = null;
+  const undo = () => (undoReset && !history.past.length ? undoReset() : step(history.past, history.future));
   const redo = () => step(history.future, history.past);
 
   function record(target, change) {
@@ -1443,6 +1859,58 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects) edits.elements[sel] = entry;
     else delete edits.elements[sel];
     noteChange();
+  }
+
+  // A layer with data-ft-still (and what's inside it) runs no transitions, so an edit made while reading or
+  // dragging lands at once. Counted, so a read inside a drag doesn't switch it off early.
+  const stills = new Map();
+  function still(t, on) {
+    const n = (stills.get(t) || 0) + (on ? 1 : -1);
+    if (n > 0) {
+      stills.set(t, n);
+      t.setAttribute("data-ft-still", "");
+    } else {
+      stills.delete(t);
+      t.removeAttribute("data-ft-still");
+    }
+  }
+  // Resolves styles now, so a change made while still lands without starting a transition.
+  const flush = () => void document.documentElement.offsetWidth;
+
+  // Whether a layer's code gives it motion: a CSS animation, or a JavaScript one (element.animate()). Its key is its
+  // animations as the code gives them (CSS names, JavaScript keyframes); its label, their names.
+  const cssNames = (e) => splitTop(getComputedStyle(e).animationName).filter((n) => n !== "none");
+  const motionKey = (e) => cssNames(e).concat(waapiOf(e).map((en) => en.key)).join(" | ");
+  const motionLabel = (e) => cssNames(e).concat(waapiOf(e).map((en) => en.label)).join(", ");
+  const hasMotion = (e) => !!motionKey(e);
+  // Motion's groups, read from the code: layers that run the same animations ("the intro rises in" over three
+  // lines) are one group, outlined, picked and tuned as one; a layer with an animation of its own is a group of
+  // one. Read again at most every second unless asked fresh.
+  let motionCache = null;
+  let motionAt = -Infinity;
+  function motionGroups(fresh) {
+    const now = performance.now();
+    if (motionCache && !fresh && now - motionAt < 1000) return motionCache;
+    discoverWaapi();
+    const byKey = new Map();
+    for (const e of document.body.querySelectorAll("*")) {
+      if (e === pageEl || isUi(e) || e.closest(".ft-guides, .ft-panel, .ft-marks")) continue;
+      const key = motionKey(e);
+      if (!key) continue;
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push(e);
+    }
+    motionAt = now;
+    return (motionCache = Array.from(byKey.values()));
+  }
+  const motionGroupOf = (t) => motionGroups().find((g) => g.includes(t)) || motionGroups(true).find((g) => g.includes(t)) || [t];
+
+  // A CSS time as ms ("0.3s", ".3s", "300ms"); a bare number is ms, as the panel shows times.
+  function toMs(v) {
+    const s = String(v).trim().toLowerCase();
+    const n = parseFloat(s);
+    if (!isNum(n)) return NaN;
+    return s.endsWith("ms") ? n : s.endsWith("s") ? n * 1000 : n;
   }
 
   // Exposure, Contrast and Saturation are CSS
@@ -1517,17 +1985,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // What the page itself gives a property: the value under any edit (its own inline value, if it had one).
   // read is the property to read back, when the one written is a shorthand.
+  // It's read with transitions off, or it would read where a transition starts, not where it lands (a transition
+  // property itself is read as it is: switching transitions off would change it).
   function ownValue(t, prop, read) {
+    const get = () => getComputedStyle(t).getPropertyValue(read || prop).trim();
+    const hold = !/^(transition|animation)/.test(read || prop);
     const o = originalOf(t);
     const now = t.style.getPropertyValue(prop);
     const orig = prop in o.styles ? o.styles[prop] : now;
-    const get = () => getComputedStyle(t).getPropertyValue(read || prop).trim();
     if (orig === now) return get();
+    if (hold) still(t, true);
     if (orig) t.style.setProperty(prop, orig);
     else t.style.removeProperty(prop);
     const v = get();
     if (now) t.style.setProperty(prop, now);
     else t.style.removeProperty(prop);
+    flush();
+    if (hold) still(t, false);
     return v;
   }
 
@@ -1819,6 +2293,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   function setStyle(target, prop, value) {
+    const shared = sharedComponent(target, prop);
+    if (shared) return setComponentStyle(shared, prop, value);
     const o = originalOf(target);
     if (!(prop in o.styles)) o.styles[prop] = target.style.getPropertyValue(prop);
     if (value) target.style.setProperty(prop, value);
@@ -1829,7 +2305,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
   }
 
+  // An edit to a component: on every instance of it (but one that overrides that property), recorded once.
+  function setComponentStyle(name, prop, value) {
+    instancesOf(name).forEach((t) => {
+      if ((edits.elements[selectorFor(t)] || { styles: {} }).styles[prop] != null) return;
+      const o = originalOf(t);
+      if (!(prop in o.styles)) o.styles[prop] = t.style.getPropertyValue(prop);
+      if (value) t.style.setProperty(prop, value);
+      else t.style.removeProperty(prop);
+    });
+    const entry = edits.components[name] || { styles: {} };
+    if (value) entry.styles[prop] = value;
+    else delete entry.styles[prop];
+    if (Object.keys(entry.styles).length) edits.components[name] = entry;
+    else delete edits.components[name];
+    noteChange();
+  }
+
   function restoreEdits() {
+    const added = edits.newKeyframes;
+    edits.newKeyframes = {};
+    paintNewKeyframes(added);
+    edits.newKeyframes = added;
     Object.keys(edits.elements).forEach((sel) => {
       let t = null;
       try {
@@ -1851,6 +2348,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (entry.adjust) setToneFilter(toneId(sel), entry.adjust);
       Object.keys(entry.styles).forEach((p) => t.style.setProperty(p, entry.styles[p]));
     });
+    // Saved component edits, on every instance but where one overrides that property.
+    Object.keys(edits.components).forEach((name) => {
+      const styles = edits.components[name].styles;
+      instancesOf(name).forEach((t) => {
+        const own = (edits.elements[selectorFor(t)] || { styles: {} }).styles;
+        const o = originalOf(t);
+        Object.keys(styles).forEach((p) => {
+          if (own[p] != null) return;
+          if (!(p in o.styles)) o.styles[p] = t.style.getPropertyValue(p);
+          t.style.setProperty(p, styles[p]);
+        });
+      });
+    });
+    // Saved keyframe edits, written over what the code had (kept first).
+    const saved = edits.keyframes;
+    edits.keyframes = {};
+    paintKeyframes(saved);
+    edits.keyframes = saved;
   }
 
   // The page's fill is what paints behind everything: the body, unless a wrapper with a background
@@ -1881,17 +2396,64 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // A wrapper that paints the page is named, so the bake writes its background, not the body's.
     const pageName = pageEl && pageEl !== document.body ? "page (" + selectorFor(pageEl) + ")" : "page";
     if (edits.page) lines.push([pageName, "background: " + pageBackground(edits.page)]);
+    // A component's own look, changed on every instance of it: named, with the element it renders and how many.
+    Object.keys(edits.components).forEach((name) => {
+      const styles = edits.components[name].styles;
+      const all = instancesOf(name);
+      const root = all[0] ? " (" + all[0].localName + (all[0].classList.length ? "." + all[0].classList[0] : "") + ", " + all.length + " on the page)" : "";
+      lines.push(["component " + name + root, Object.keys(styles).map((p) => p + ": " + styles[p]).join("; ")]);
+    });
     Object.keys(edits.elements).forEach((sel) => {
       const e = edits.elements[sel];
       const parts = Object.keys(e.styles).map((p) => p + ": " + e.styles[p]);
       if (e.html != null) parts.push("text: " + e.html);
       if (e.src) parts.push('src: new image "' + e.src.name + '", chosen from her computer');
-      if (parts.length) lines.push([sel, parts.join("; ")]);
+      // On a component instance, the layer's own edits are this instance's only (an override, a move, its words).
+      let t = null;
+      try {
+        t = document.querySelector(sel);
+      } catch (e) {
+        t = null;
+      }
+      const comp = t ? componentOf(t) : "";
+      if (parts.length) lines.push([comp ? sel + " (this " + comp + " only)" : sel, parts.join("; ")]);
       // The SVG filter its url() points at, for the bake to put in the page.
       if (e.adjust && hasTone(e.adjust)) lines.push([sel + " svg", toneMarkup(toneId(sel), e.adjust)]);
     });
     // A group: the layers the bake wraps in one new layer in the code.
     edits.groups.forEach((g, i) => lines.push(["group " + (i + 1), g.join(", ")]));
+    // A keyframe she changed, in the page's @keyframes: every animation using them changes with it.
+    // A @keyframes she added from the generic list: new to the code, so it's listed whole (her edits included).
+    Object.keys(edits.newKeyframes).forEach((name) => {
+      const rule = pageKeyframes().get(name);
+      const body = rule ? Array.from(rule.cssRules).map((k) => k.cssText).join(" ") : edits.newKeyframes[name].body;
+      lines.push(["@keyframes " + name + " (new)", body]);
+    });
+    Object.keys(edits.keyframes).filter((name) => !edits.newKeyframes[name]).forEach((name) => Object.keys(edits.keyframes[name]).forEach((key) => {
+      const decl = edits.keyframes[name][key];
+      lines.push(["@keyframes " + name + " " + key, Object.keys(decl).map((p) => p + ": " + decl[p]).join("; ")]);
+    }));
+    // A JavaScript animation: its element.animate() call, the layers it runs on (and the function that calls it,
+    // when the browser names it), then each change from what the code says, as "was → now".
+    Object.keys(edits.waapi).forEach((key) => {
+      const w = edits.waapi[key];
+      const code = w.code || {};
+      const ct = code.timing || {};
+      const cd = code.delays || {};
+      const fmt = (f, v) => (v == null ? "?" : f === "duration" || f === "delay" ? v + "ms" : String(v));
+      const parts = Object.keys(w.timing).map((f) => f + " " + fmt(f, ct[f]) + " → " + fmt(f, w.timing[f]));
+      if (Object.keys(w.delays).length) {
+        const was = w.sels.map((x) => fmt("delay", cd[x]));
+        const now = w.sels.map((x) => fmt("delay", x in w.delays ? w.delays[x] : cd[x]));
+        parts.push("delay per layer " + was.join(", ") + " → " + now.join(", "));
+      }
+      Object.keys(w.frames).forEach((i) => Object.keys(w.frames[i]).forEach((p) => {
+        parts.push("keyframe " + i + " " + p + " " + fmt(p, ((code.frames || [])[i] || {})[p]) + " → " + fmt(p, w.frames[i][p]));
+      }));
+      if (!parts.length) return;
+      const where = (w.sels.length > 1 ? w.sels[0] + " and " + (w.sels.length - 1) + " more" : w.sels[0] || "?") + (w.hint ? ", called from " + w.hint + "()" : "");
+      lines.push(["animate() " + w.label, "on " + where + ": " + parts.join("; ")]);
+    });
     const width = Math.max.apply(null, lines.map((l) => l[0].length)) + 2;
     return "finetune changes · " + decodeURIComponent(location.pathname) + "\n"
       + lines.map(([sel, decl]) => sel.padEnd(width) + decl).join("\n");
@@ -1899,15 +2461,37 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   let toastEl = null;
   let toastTimer = 0;
-  function toast(text) {
+  // action: a button on the toast ({ label, run }); ms: how long it stays (1.8 seconds unless said). It fades out.
+  function toast(text, action, ms) {
     if (!toastEl) {
       toastEl = el("div", "ft-toast");
       document.body.appendChild(toastEl);
     }
     toastEl.textContent = text;
+    toastEl.classList.toggle("has-action", !!action);
+    toastEl.classList.remove("is-fading");
+    if (action) {
+      const actions = el("div", "ft-toast-actions");
+      const close = button("ft-toast-close", null, () => {
+        clearTimeout(toastTimer);
+        toastEl.hidden = true;
+      });
+      close.innerHTML = ICON.x;
+      close.setAttribute("aria-label", "Close");
+      close.setAttribute("data-ft-tip", "Close");
+      withTip(close);
+      actions.append(button("ft-toast-btn", action.label, () => {
+        toastEl.hidden = true;
+        action.run();
+      }), close);
+      toastEl.appendChild(actions);
+    }
     toastEl.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toastEl.hidden = true; }, 1800);
+    toastTimer = setTimeout(() => {
+      toastEl.classList.add("is-fading");
+      toastTimer = setTimeout(() => { toastEl.hidden = true; }, 400);
+    }, ms || 1800);
   }
 
   // The clipboard API, or the older copy command when it's blocked (some file:// setups).
@@ -1938,6 +2522,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Figma's size label under the selection.
     const sizeLabel = el("span", "ft-size-label");
     selBox.appendChild(sizeLabel);
+    // A component's name over its top left (componentOf).
+    const compLabel = el("span", "ft-comp-label");
+    const compName = el("span");
+    compLabel.innerHTML = ICON.component;
+    compLabel.appendChild(compName);
+    compLabel.hidden = true;
+    selBox.appendChild(compLabel);
     const marquee = el("div", "ft-marquee");
     hoverBox.hidden = true;
     selBox.hidden = true;
@@ -2019,7 +2610,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
 
     function place() {
-      selBox.classList.toggle("no-resize", !(selected && resizable(selected)));
+      selBox.classList.toggle("no-resize", motion() || !(selected && resizable(selected)));
       if (selected) {
         frameRect(selBox, selected.getBoundingClientRect());
         // offsetWidth is the size before any rotation, as Figma shows it; SVG elements have none.
@@ -2032,6 +2623,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         frameRect(selBox, u);
         sizeLabel.textContent = Math.round(u.width) + " × " + Math.round(u.height);
       }
+      // Motion's selection has no label: the size is Design's.
+      sizeLabel.hidden = motion();
+      const comp = !motion() && selected ? componentOf(selected) : "";
+      selBox.classList.toggle("is-comp", !!comp);
+      compLabel.hidden = !comp;
+      if (comp) compName.textContent = comp;
     }
     function moved() {
       place();
@@ -2039,7 +2636,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     const sizes = new ResizeObserver(moved);
 
+    // A layer moving on its own (a transition, an animation, a replay): the selection follows it each frame, and
+    // the panel's numbers catch up when it lands.
+    let following = 0;
+    const busy = () => current().some((t) => t.getAnimations({ subtree: true }).some((a) => a.playState === "running"));
+    function follow() {
+      if (following) return;
+      const tick = () => {
+        place();
+        if (busy()) following = requestAnimationFrame(tick);
+        else {
+          following = 0;
+          moved();
+        }
+      };
+      following = requestAnimationFrame(tick);
+    }
+    ["transitionrun", "animationstart"].forEach((type) => document.addEventListener(type, (e) => {
+      if (current().some((t) => t === e.target || t.contains(e.target))) follow();
+    }, true));
+
     function show(one, list, g) {
+      instanceCache.clear();
       stopEditing();
       current().forEach((t) => sizes.unobserve(t));
       selected = one;
@@ -2050,6 +2668,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       hoverBox.hidden = true;
       now.forEach((t) => sizes.observe(t));
       if (now.length) place();
+      if (busy()) follow();
       showInPanel(selected || (many.length ? many : null), group ? "group" : "selected");
     }
     // After an undo or redo: the same layers, redrawn, as a group if they still are one.
@@ -2131,6 +2750,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           hoverBox.hidden = true;
           history.quiet++;
           list.forEach(boxed);
+          // A layer with a transition would trail the pointer; it follows it instead.
+          list.forEach((t) => still(t, true));
           starts = list.map((t) => String(t.style.translate || "").trim().split(/\s+/).map(parseFloat));
         }
         const dx = ev.clientX - x0;
@@ -2148,6 +2769,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         document.removeEventListener("mouseup", up, true);
         if (!list) return onClick && onClick();
         moving = false;
+        flush();
+        list.forEach((t) => still(t, false));
         history.quiet--;
         noteChange();
       };
@@ -2176,6 +2799,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           started = moving = true;
           hoverBox.hidden = true;
           history.quiet++;
+          still(t, true);
         }
         let w = Math.max(1, start.w + (west ? -1 : 1) * (ev.clientX - x0));
         let h = Math.max(1, start.h + (north ? -1 : 1) * (ev.clientY - y0));
@@ -2196,6 +2820,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         document.removeEventListener("mouseup", up, true);
         if (!started) return;
         moving = false;
+        flush();
+        still(t, false);
         history.quiet--;
         noteChange();
       };
@@ -2214,7 +2840,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       inside = null;
       show(null, list, sels);
       noteChange();
-      toast("Grouped " + list.length + " layers");
+      undoToast("Grouped " + list.length + " layers", undo);
     }
     function ungroup() {
       if (!group) return toast("Select a group to ungroup");
@@ -2222,7 +2848,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const list = many.slice();
       show(null, list, null);
       noteChange();
-      toast("Ungrouped " + list.length + " layers");
+      undoToast("Ungrouped " + list.length + " layers", undo);
     }
 
     // Double-click puts the caret where you clicked; Enter selects all the text.
@@ -2258,14 +2884,78 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       record(t, (entry) => { entry.html = t.innerHTML; });
     }
 
+    // In Motion a click finds the nearest layer with motion under the pointer (its whole group); anything else is
+    // picked as in Design, so an animation can be added to it. A press only selects (no moves, marquee, resizing or
+    // text editing: those are Design's).
+    const motion = () => inspector.getAttribute("data-tab") === "motion";
+    function motionPick(target) {
+      for (let e = pickable(target); e && e !== document.body; e = e.parentElement) {
+        if (e !== pageEl && !isUi(e) && hasMotion(e)) return e;
+      }
+      return null;
+    }
+    // A set of layers as the selection: one, several, or none.
+    function selectLayers(list) {
+      inside = scope = null;
+      if (list.length > 1) pick(list);
+      else select(list[0] || null);
+    }
+    // Back in Motion, a selection with motion becomes its whole group; one without stays, ready for one to be added.
+    function tabChanged() {
+      const now = current();
+      if (motion() && now.length && now.every(hasMotion)) selectLayers(motionGroupOf(now[0]));
+      place();
+      drawMarks();
+    }
+
+    // Motion's outlines: one box per group (around all its layers) on screen, following them each frame while
+    // Motion shows. The groups are read again every second, so one the page starts later (a class set on click)
+    // gets its box too.
+    const marks = el("div", "ft-marks");
+    marks.hidden = true;
+    document.body.appendChild(marks);
+    let marked = [];
+    let markedAt = -Infinity;
+    let markLoop = 0;
+    function drawMarks() {
+      const on = active() && motion();
+      marks.hidden = !on;
+      if (!on) {
+        cancelAnimationFrame(markLoop);
+        markLoop = 0;
+        markedAt = -Infinity;
+        return;
+      }
+      if (markLoop) return;
+      const tick = (now) => {
+        if (!active() || !motion()) return drawMarks();
+        if (now - markedAt > 1000) {
+          markedAt = now;
+          marked = motionGroups(true);
+          while (marks.children.length < marked.length) marks.appendChild(el("div", "ft-mark"));
+          while (marks.children.length > marked.length) marks.lastChild.remove();
+        }
+        marked.forEach((g, i) => {
+          const r = unionRect(g);
+          marks.children[i].hidden = !r.width && !r.height;
+          frameRect(marks.children[i], r);
+        });
+        markLoop = requestAnimationFrame(tick);
+      };
+      markLoop = requestAnimationFrame(tick);
+    }
+
     // Hover outlines what a click would pick: a group as one box.
     document.addEventListener("pointermove", (e) => {
-      const t = active() && !editing && !moving && marquee.hidden ? levelPick(e.target, e.metaKey || e.ctrlKey).pick : null;
-      const unit = unitOf(t);
+      const live = active() && !editing && !moving && marquee.hidden;
+      const moving_ = live && motion() ? motionPick(e.target) : null;
+      const t = !live ? null : moving_ || levelPick(e.target, e.metaKey || e.ctrlKey).pick;
+      const unit = moving_ ? { list: motionGroupOf(moving_) } : unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
       const now = current();
       hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
       if (!hoverBox.hidden) frameRect(hoverBox, unionRect(over));
+      hoverBox.classList.toggle("is-comp", !motion() && over.length === 1 && !!componentOf(over[0]));
     }, { passive: true });
 
     // mousedown, not pointerdown: preventing it is what stops the page starting a text selection.
@@ -2279,6 +2969,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!active() || e.button !== 0 || isUi(e.target)) return;
       if (editing && editing.contains(e.target)) return;
       e.preventDefault();
+      if (motion()) {
+        // Something with motion picks its group; anything else is picked as in Design (the outermost layer below
+        // the level she's in, a group as one), so an animation can be added to it.
+        const m = motionPick(e.target);
+        if (m) return selectLayers(motionGroupOf(m));
+        const lp = levelPick(e.target, e.metaKey || e.ctrlKey);
+        if (!lp.pick) return selectLayers([]);
+        const unit = unitOf(lp.pick);
+        if (unit) return show(null, unit.list, unit.g);
+        return select(lp.pick);
+      }
       const lp = levelPick(e.target, e.metaKey || e.ctrlKey);
       const t = lp.pick;
       scope = lp.scope;
@@ -2309,7 +3010,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }, true);
 
     document.addEventListener("dblclick", (e) => {
-      if (!active() || editing || isUi(e.target)) return;
+      if (!active() || editing || isUi(e.target) || motion()) return;
       const deepest = pickable(e.target);
       if (!deepest) return;
       const t = levelPick(e.target).pick;
@@ -2370,7 +3071,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           return select(up);
         }
         select(null);
-      } else if (e.key === "Enter" && selected && hasText(selected)) {
+      } else if (e.key === "Enter" && selected && hasText(selected) && !motion()) {
         e.preventDefault();
         startEditing(selected);
       }
@@ -2390,10 +3091,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         inside = scope = null;
         select(null);
       }
+      drawMarks();
     }
     sync();
 
-    return { sync, refresh: place, reshow };
+    return { sync, refresh: place, reshow, selectLayers, tabChanged };
   }
 
   const WEIGHT_NAMES = {
@@ -2434,6 +3136,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     function close() {
       menu.hidden = true;
+      if (anchor) anchor.classList.remove("is-open");
       anchor = null;
       if (hover) hover(null);
       hover = null;
@@ -2453,15 +3156,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       toggle(btn, items, current, onPick, onHover) {
         if (anchor === btn) return close();
         if (hover) hover(null);
+        if (anchor) anchor.classList.remove("is-open");
         anchor = btn;
+        btn.classList.add("is-open");
         hover = onHover || null;
         // Read at leave time: a pick may have closed the menu (and dropped the preview) first.
         menu.onpointerleave = () => { if (hover) hover(null); };
         menu.textContent = "";
         items.forEach((it) => {
-          // A heading names the items under it; it isn't one.
+          // A heading names the items under it; it isn't one. A divider is a line between parts.
           if (it.heading) {
             menu.appendChild(el("div", "ft-menu-heading", it.label));
+            return;
+          }
+          if (it.divider) {
+            menu.appendChild(el("div", "ft-menu-divider"));
             return;
           }
           const item = button("ft-menu-item", null, () => {
@@ -2491,7 +3200,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         // Kept on screen: a button near the right edge opens its menu leftward. With no current item it
         // opens below the button, so nothing starts under the pointer (and a preview menu stays still).
         menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)) + "px";
-        const top = i < 0 ? r.bottom + 4 : r.top - 8 - i * 24;
+        // The current item sits over the button (measured, so headings and dividers above it count).
+        const checked = i < 0 ? null : menu.querySelectorAll(".ft-menu-item")[items.slice(0, i).filter((it) => !it.heading && !it.divider).length];
+        const top = !checked ? r.bottom + 4 : r.top - checked.offsetTop;
         menu.style.top = Math.max(8, Math.min(top, window.innerHeight - menu.offsetHeight - 8)) + "px";
       },
     };
@@ -2635,6 +3346,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function open(t, row, thumb) {
       target = t;
       anchor = thumb;
+      thumb.classList.add("is-open");
       adjust = adjustOf(t);
       // For a box it's just the sliders, applied to the whole element.
       const img = t.tagName === "IMG";
@@ -2653,6 +3365,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!target) return;
       menu.close();
       pop.hidden = true;
+      anchor.classList.remove("is-open");
       target = anchor = null;
     }
 
@@ -2800,7 +3513,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           : W / 2 - (r.left + r.width / 2);
       if (Math.abs(dx) >= 0.05) unit.forEach((t) => nudge(t, dx, 0));
     });
-    toast("Align all items " + ALIGN_WORD[how]);
+    undoToast("Align all items " + ALIGN_WORD[how], undo);
   }
 
   // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box.
@@ -2949,6 +3662,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function open(guide, rowEl, icon) {
       g = guide;
       anchor = icon;
+      icon.classList.add("is-open");
       pop.hidden = false;
       build();
       // Just left of the panel, level with the row, kept on screen.
@@ -2964,6 +3678,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       picker.closeFor(g.color);
       menu.close();
       pop.hidden = true;
+      anchor.classList.remove("is-open");
       g = anchor = null;
     }
 
@@ -3037,6 +3752,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function open(effect, rowEl, icon, change, vector) {
       fx = effect;
       anchor = icon;
+      icon.classList.add("is-open");
       onChange = change;
       noSpread = !!vector;
       pop.hidden = false;
@@ -3054,6 +3770,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       picker.closeFor(fx);
       menu.close();
       pop.hidden = true;
+      anchor.classList.remove("is-open");
       fx = anchor = onChange = null;
     }
 
@@ -3078,6 +3795,621 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     };
   }
 
+  // Figma's easings, as the CSS each is: the keywords, then its back curves as cubic-beziers.
+  const EASINGS = [
+    ["linear", "Linear"], ["ease", "Ease"], ["ease-in", "Ease in"], ["ease-out", "Ease out"], ["ease-in-out", "Ease in and out"],
+    ["cubic-bezier(0.3, -0.05, 0.7, -0.5)", "Ease in back"], ["cubic-bezier(0.45, 1.45, 0.8, 1)", "Ease out back"],
+    ["cubic-bezier(0.7, -0.4, 0.4, 1.4)", "Ease in and out back"],
+  ];
+  const KEYWORD_BEZIER = { linear: [0, 0, 1, 1], ease: [0.25, 0.1, 0.25, 1], "ease-in": [0.42, 0, 1, 1], "ease-out": [0, 0, 0.58, 1], "ease-in-out": [0.42, 0, 0.58, 1] };
+  // An easing as its four cubic-bezier numbers, or null for one that isn't a curve (steps(), linear()).
+  function bezierOf(v) {
+    const s = String(v || "").trim().toLowerCase();
+    if (KEYWORD_BEZIER[s]) return KEYWORD_BEZIER[s].slice();
+    const m = /^cubic-bezier\(([^)]*)\)$/.exec(s);
+    const n = m ? m[1].split(",").map(parseFloat) : [];
+    return n.length === 4 && n.every(isNum) ? n : null;
+  }
+  const sameEase = (a, b) => {
+    const x = bezierOf(a);
+    const y = bezierOf(b);
+    return x && y ? x.every((n, i) => Math.abs(n - y[i]) < 1e-3) : String(a).trim() === String(b).trim();
+  };
+  // A preset's name, Custom for any other curve, or the value itself (steps(4)).
+  const easeName = (v) => (EASINGS.find(([e]) => sameEase(e, v)) || [null, bezierOf(v) ? "Custom" : String(v)])[1];
+
+  // An easing's own curve as a 12px glyph, as Figma draws one in front of the easing's name. A curve that
+  // overshoots is drawn squeezed into the box; one that isn't a curve (steps(), linear()) is a straight line.
+  function curveGlyph(v) {
+    const b = bezierOf(v) || [0, 0, 1, 1];
+    const X = (x) => 2 + x * 12;
+    const Y = (y) => 14 - (Math.min(1.5, Math.max(-0.5, y)) + 0.5) / 2 * 12;
+    return '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true"><path d="M'
+      + X(0) + " " + Y(0) + "C" + X(b[0]) + " " + Y(b[1]) + " " + X(b[2]) + " " + Y(b[3]) + " " + X(1) + " " + Y(1) + '"/></svg>';
+  }
+
+  // Figma's curve editor: the unit square with room above and below for curves that overshoot, and its two
+  // handles to drag (x from 0 to 1, as CSS requires; y from -0.5 to 1.5). set() shows a value (a value that
+  // isn't a curve hides it); a drag hands the new cubic-bezier to onDrag.
+  function curveEditor(onDrag) {
+    let value = null;
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 208 208");
+    svg.setAttribute("class", "ft-curve");
+    const part = (tag, cls) => {
+      const e = document.createElementNS(NS, tag);
+      e.setAttribute("class", cls);
+      svg.appendChild(e);
+      return e;
+    };
+    // The unit square sits in the middle, 192 by 96, with room for y from -0.5 to 1.5.
+    const X = (x) => 8 + x * 192;
+    const Y = (y) => 8 + (1.5 - y) * 96;
+    const box = part("rect", "ft-curve-box");
+    [["x", 8], ["y", 56], ["width", 192], ["height", 96]].forEach(([k, v]) => box.setAttribute(k, v));
+    const arms = [part("line", "ft-curve-arm"), part("line", "ft-curve-arm")];
+    const curve = part("path", "ft-curve-line");
+    const knobs = [part("circle", "ft-curve-knob"), part("circle", "ft-curve-knob")];
+    knobs.forEach((k) => k.setAttribute("r", "5"));
+
+    function set(v) {
+      value = v;
+      const b = bezierOf(v);
+      svg.style.display = b ? "" : "none";
+      if (!b) return;
+      const ends = [[0, 0], [1, 1]];
+      curve.setAttribute("d", "M" + X(0) + " " + Y(0) + "C" + X(b[0]) + " " + Y(b[1]) + " " + X(b[2]) + " " + Y(b[3]) + " " + X(1) + " " + Y(1));
+      [0, 1].forEach((i) => {
+        arms[i].setAttribute("x1", X(ends[i][0]));
+        arms[i].setAttribute("y1", Y(ends[i][1]));
+        arms[i].setAttribute("x2", X(b[i * 2]));
+        arms[i].setAttribute("y2", Y(b[i * 2 + 1]));
+        knobs[i].setAttribute("cx", X(b[i * 2]));
+        knobs[i].setAttribute("cy", Y(b[i * 2 + 1]));
+      });
+    }
+
+    knobs.forEach((k, i) => k.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      k.setPointerCapture(e.pointerId);
+      const move = (ev) => {
+        const r = svg.getBoundingClientRect();
+        const px = ((ev.clientX - r.left) / r.width) * 208;
+        const py = ((ev.clientY - r.top) / r.height) * 208;
+        const b = bezierOf(value) || KEYWORD_BEZIER.ease.slice();
+        b[i * 2] = Math.round(clamp01((px - 8) / 192) * 100) / 100;
+        b[i * 2 + 1] = Math.round(Math.min(1.5, Math.max(-0.5, 1.5 - (py - 8) / 96)) * 100) / 100;
+        set("cubic-bezier(" + b.join(", ") + ")");
+        onDrag(value);
+      };
+      const end = () => {
+        k.removeEventListener("pointermove", move);
+        k.removeEventListener("pointerup", end);
+        k.removeEventListener("pointercancel", end);
+      };
+      k.addEventListener("pointermove", move);
+      k.addEventListener("pointerup", end);
+      k.addEventListener("pointercancel", end);
+    }));
+    return { el: svg, set };
+  }
+
+  // The page's @keyframes by name (and the ones she added from Motion's generic list, in finetune-keyframes). When
+  // two sheets define one, the last wins, as in CSS.
+  function pageKeyframes() {
+    const found = new Map();
+    const walk = (rules) => {
+      for (const r of rules) {
+        if (r instanceof CSSKeyframesRule) found.set(r.name, r);
+        else if (r.cssRules && !(r instanceof CSSStyleRule)) walk(r.cssRules);
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      if (sheet.ownerNode && sheet.ownerNode.id === STYLE_ID) continue;
+      try {
+        walk(sheet.cssRules);
+      } catch (e) {
+        // Another origin's sheet can't be read.
+      }
+    }
+    return found;
+  }
+
+  // Motion's generic animations, as Figma lists them (Instant and Smart animate have no CSS of their own). Each
+  // moves up or fades; Direction and Distance turn it afterwards. Picking one adds a new @keyframes to the page
+  // (finetune-keyframes), named for it ("slide-in", or "slide-in-2" when taken), kept in edits.newKeyframes; Copy
+  // lists it whole, for the bake to add to the code.
+  const PRESETS = [
+    ["dissolve", "Dissolve", "from { opacity: 0; }"],
+    ["move-in", "Move in", "from { transform: translateY(100%); }"],
+    ["move-out", "Move out", "to { transform: translateY(-100%); }"],
+    ["push", "Push", "from { opacity: 0; transform: translateY(100%); }"],
+    ["slide-in", "Slide in", "from { opacity: 0; transform: translateY(24px); }"],
+    ["slide-out", "Slide out", "to { opacity: 0; transform: translateY(-24px); }"],
+  ];
+  let newSheet = null;
+  function putNewKeyframes(name, body) {
+    if (!newSheet) {
+      newSheet = el("style");
+      newSheet.id = "finetune-keyframes";
+      document.head.appendChild(newSheet);
+    }
+    const rules = newSheet.sheet.cssRules;
+    for (let i = rules.length - 1; i >= 0; i--) if (rules[i].name === name) newSheet.sheet.deleteRule(i);
+    if (body != null) newSheet.sheet.insertRule("@keyframes " + name + " { " + body + " }", rules.length);
+  }
+  // Adds a generic animation to the page as a @keyframes of its own, and gives back its name.
+  function addPreset(id) {
+    const preset = PRESETS.find(([p]) => p === id);
+    const taken = pageKeyframes();
+    let name = id;
+    for (let n = 2; taken.has(name); n++) name = id + "-" + n;
+    putNewKeyframes(name, preset[2]);
+    edits.newKeyframes[name] = { preset: id, body: preset[2] };
+    noteChange();
+    return name;
+  }
+  // Puts finetune's added @keyframes where next says (undo, redo, a reload).
+  function paintNewKeyframes(next) {
+    Object.keys(edits.newKeyframes).forEach((name) => { if (!next[name]) putNewKeyframes(name, null); });
+    Object.keys(next).forEach((name) => { if (!edits.newKeyframes[name]) putNewKeyframes(name, next[name].body); });
+  }
+
+  // Keyframe edits are written into the page's own @keyframes (so every animation using them follows, as the
+  // code would) and kept as edits: edits.keyframes[name][keyText][prop]. What the code had is kept the first
+  // time a declaration is touched, for undo and for typing the code's value back.
+  const keyframeOriginals = {};
+  function keyframeOriginal(name, key, prop) {
+    const kf = pageKeyframes().get(name);
+    const one = kf && kf.findRule(key);
+    const at = (keyframeOriginals[name] = keyframeOriginals[name] || {});
+    const props = (at[key] = at[key] || {});
+    if (!(prop in props)) props[prop] = one ? one.style.getPropertyValue(prop) : "";
+    return props[prop];
+  }
+  function writeKeyframe(name, key, prop, value) {
+    const kf = pageKeyframes().get(name);
+    const one = kf && kf.findRule(key);
+    if (!one) return;
+    if (value) one.style.setProperty(prop, value);
+    else one.style.removeProperty(prop);
+  }
+  function setKeyframe(name, key, prop, value) {
+    const orig = keyframeOriginal(name, key, prop);
+    writeKeyframe(name, key, prop, value || orig);
+    const frames = edits.keyframes[name] || {};
+    const decl = frames[key] || {};
+    if (value && value !== orig) decl[prop] = value;
+    else delete decl[prop];
+    if (Object.keys(decl).length) frames[key] = decl;
+    else delete frames[key];
+    if (Object.keys(frames).length) edits.keyframes[name] = frames;
+    else delete edits.keyframes[name];
+    noteChange();
+  }
+  // Puts the page's @keyframes where next says (what the code had for anything next leaves out).
+  function paintKeyframes(next) {
+    const names = new Set(Object.keys(edits.keyframes).concat(Object.keys(next)));
+    names.forEach((name) => {
+      const a = edits.keyframes[name] || {};
+      const b = next[name] || {};
+      new Set(Object.keys(a).concat(Object.keys(b))).forEach((key) => {
+        const pa = a[key] || {};
+        const pb = b[key] || {};
+        new Set(Object.keys(pa).concat(Object.keys(pb))).forEach((prop) => {
+          const orig = keyframeOriginal(name, key, prop);
+          writeKeyframe(name, key, prop, pb[prop] || orig);
+        });
+      });
+    });
+  }
+
+  // What a keyframe does, read from its translate, scale and rotate (the properties, or the transform's
+  // functions) and its opacity. An aspect it sets in a way the panel can't turn (a var(), a calc(), a skewed or
+  // uneven scale) reads null and isn't offered.
+  const FN = /([a-z0-9-]+)\(([^()]*(?:\([^()]*\)[^()]*)*)\)/gi;
+  const fnsOf = (v) => [...String(v || "").matchAll(FN)].map((m) => ({ fn: m[1].toLowerCase(), args: m[2].split(/\s*,\s*|\s+/).filter(Boolean) }));
+  const fnText = (f) => f.fn + "(" + f.args.join(", ") + ")";
+  function lengthOf(v) {
+    const m = /^(-?(?:\d+\.?\d*|\.\d+))([a-z%]*)$/i.exec(String(v).trim());
+    return m ? { n: parseFloat(m[1]), u: m[2] || "px" } : null;
+  }
+  const lengthText = (l) => (l.n ? +l.n.toFixed(3) + l.u : "0");
+  // Two lengths along one axis add up only in one unit (a zero takes the other's).
+  const addLength = (a, b) => (!a || !b ? null : !a.n ? b : !b.n ? a : a.u === b.u ? { n: a.n + b.n, u: a.u } : null);
+  function degreesOf(v) {
+    const m = /^(-?(?:\d+\.?\d*|\.\d+))(deg|turn|rad|grad)?$/i.exec(String(v).trim());
+    if (!m) return null;
+    const n = parseFloat(m[1]);
+    const u = (m[2] || "deg").toLowerCase();
+    return u === "turn" ? n * 360 : u === "rad" ? (n * 180) / Math.PI : u === "grad" ? n * 0.9 : n;
+  }
+  function keyframeParts(style) {
+    const out = {};
+    const tf = style.getPropertyValue("transform").trim();
+    const fns = tf && tf !== "none" ? fnsOf(tf) : [];
+    const tp = style.getPropertyValue("translate").trim();
+    if (tp && tp !== "none") {
+      const a = tp.split(/\s+/);
+      const x = lengthOf(a[0]);
+      const y = a[1] ? lengthOf(a[1]) : { n: 0, u: "px" };
+      out.move = x && y ? { x, y } : null;
+      out.moveBy = "translate";
+    } else {
+      const ts = fns.filter((f) => /^translate(x|y|3d)?$/.test(f.fn));
+      if (ts.length) {
+        let x = { n: 0, u: "px" };
+        let y = { n: 0, u: "px" };
+        ts.forEach((f) => {
+          const a = f.args.map(lengthOf);
+          if (f.fn === "translatex") x = addLength(x, a[0]);
+          else if (f.fn === "translatey") y = addLength(y, a[0]);
+          else {
+            x = addLength(x, a[0]);
+            if (f.args[1]) y = addLength(y, a[1]);
+          }
+        });
+        out.move = x && y ? { x, y } : null;
+        out.moveBy = "transform";
+      }
+    }
+    const sp = style.getPropertyValue("scale").trim();
+    if (sp && sp !== "none") {
+      const a = sp.split(/\s+/).map(parseFloat);
+      out.scale = a.every(isNum) && (a.length < 2 || a[0] === a[1]) ? a[0] : null;
+      out.scaleBy = "scale";
+    } else {
+      const ss = fns.filter((f) => /^scale(x|y|3d)?$/.test(f.fn));
+      if (ss.length) {
+        const a = ss[0].args.map(parseFloat);
+        out.scale = ss.length === 1 && ss[0].fn === "scale" && a.every(isNum) && (a.length < 2 || a[0] === a[1]) ? a[0] : null;
+        out.scaleBy = "transform";
+      }
+    }
+    const rp = style.getPropertyValue("rotate").trim();
+    if (rp && rp !== "none") {
+      out.rotate = rp.split(/\s+/).length === 1 ? degreesOf(rp) : null;
+      out.rotateBy = "rotate";
+    } else {
+      const rs = fns.filter((f) => /^rotate(z)?$/.test(f.fn));
+      if (rs.length) {
+        out.rotate = rs.length === 1 ? degreesOf(rs[0].args[0]) : null;
+        out.rotateBy = "transform";
+      }
+    }
+    const op = style.getPropertyValue("opacity").trim();
+    if (op) {
+      const n = parseFloat(op);
+      out.opacity = isNum(n) ? (op.endsWith("%") ? n / 100 : n) : null;
+    }
+    return out;
+  }
+  // Writes one aspect of one keyframe back the way the code wrote it: its own property, or its transform function.
+  // A frame reads and writes its own declarations (read(prop), write(prop, value)): a CSS keyframe in the page's
+  // @keyframes, or a JavaScript animation's keyframe.
+  function writePart(f, aspect, value) {
+    const by = f.parts[aspect + "By"];
+    if (aspect === "opacity") return f.write("opacity", String(+value.toFixed(3)));
+    if (by !== "transform") {
+      const css = aspect === "move" ? lengthText(value.x) + " " + lengthText(value.y)
+        : aspect === "rotate" ? +value.toFixed(2) + "deg" : String(+value.toFixed(3));
+      return f.write(by, css);
+    }
+    const fns = fnsOf(f.read("transform"));
+    const mine = aspect === "move" ? /^translate(x|y|3d)?$/ : aspect === "scale" ? /^scale(x|y|3d)?$/ : /^rotate(z)?$/;
+    const at = fns.findIndex((fn) => mine.test(fn.fn));
+    const next = aspect === "move" ? { fn: "translate", args: [lengthText(value.x), lengthText(value.y)] }
+      : aspect === "scale" ? { fn: "scale", args: [String(+value.toFixed(3))] } : { fn: "rotate", args: [+value.toFixed(2) + "deg"] };
+    const kept = fns.filter((fn) => !mine.test(fn.fn));
+    kept.splice(at < 0 ? kept.length : at, 0, next);
+    f.write("transform", kept.map(fnText).join(" "));
+  }
+
+  // A @keyframes as frames: each keyframe's offset, and its declarations read from and written into the page's rule.
+  function cssFrames(name) {
+    const rule = pageKeyframes().get(name);
+    if (!rule) return null;
+    return [...rule.cssRules].map((kf) => ({
+      at: offsetOf(kf.keyText),
+      read: (p) => kf.style.getPropertyValue(p),
+      write: (p, v) => setKeyframe(name, kf.keyText, p, v),
+    }));
+  }
+
+  // What a set of keyframes does as a whole, for the panel to offer only what applies (a fade has no direction; a roll
+  // left has one): which way it moves and how far, and its biggest scale, turn and fade. A move goes from its
+  // first keyframe to its last (a missing end is where the layer sits), or out to its farthest keyframe and back.
+  const DIRS = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
+  const offsetOf = (key) => {
+    const k = String(key).split(",")[0].trim().toLowerCase();
+    return k === "from" ? 0 : k === "to" ? 100 : parseFloat(k);
+  };
+  function keyframesInfo(list) {
+    if (!list) return null;
+    const frames = list.map((f) => Object.assign({}, f, { parts: keyframeParts({ getPropertyValue: f.read }) }))
+      .sort((a, b) => a.at - b.at);
+    const info = { frames };
+    const has = (aspect) => frames.filter((f) => aspect in f.parts);
+    const zero = { x: { n: 0, u: "px" }, y: { n: 0, u: "px" } };
+    const moving = has("move");
+    if (moving.length && moving.every((f) => f.parts.move)) {
+      const at = (o) => { const f = frames.find((g) => g.at === o && g.parts.move); return f ? f.parts.move : zero; };
+      const sub = (a, b) => ({ x: addLength(a.x, { n: -b.x.n, u: b.x.u }), y: addLength(a.y, { n: -b.y.n, u: b.y.u }) });
+      const start = at(0);
+      let v = sub(at(100), start);
+      if (v.x && v.y && !v.x.n && !v.y.n) {
+        const far = moving.reduce((a, b) => (Math.max(Math.abs(b.parts.move.x.n), Math.abs(b.parts.move.y.n)) > Math.max(Math.abs(a.parts.move.x.n), Math.abs(a.parts.move.y.n)) ? b : a));
+        v = sub(far.parts.move, start);
+      }
+      if (v.x && v.y && (v.x.n || v.y.n)) {
+        const across = Math.abs(v.x.n) >= Math.abs(v.y.n);
+        const d = across ? v.x : v.y;
+        info.direction = across ? (d.n < 0 ? "left" : "right") : d.n < 0 ? "up" : "down";
+        info.distance = { n: Math.abs(d.n), u: d.u };
+      }
+    }
+    // The keyframe(s) farthest from rest (scale 1, no turn, opacity 1), which a field edits together.
+    const farthest = (aspect, rest) => {
+      const list = has(aspect);
+      if (!list.length || list.some((f) => f.parts[aspect] == null)) return;
+      const far = list.reduce((a, b) => (Math.abs(b.parts[aspect] - rest) > Math.abs(a.parts[aspect] - rest) ? b : a));
+      if (Math.abs(far.parts[aspect] - rest) < 1e-6) return;
+      info[aspect] = { value: far.parts[aspect], frames: list.filter((f) => Math.abs(f.parts[aspect] - far.parts[aspect]) < 1e-6) };
+    };
+    farthest("scale", 1);
+    farthest("rotate", 0);
+    farthest("opacity", 1);
+    return info;
+  }
+  // Turns every keyframe's move from one direction to another, keeping its distance: along the same axis it
+  // flips, across it swaps the axes.
+  function turnMoves(info, to) {
+    const [fx, fy] = DIRS[info.direction];
+    const [tx, ty] = DIRS[to];
+    info.frames.forEach((f) => {
+      const m = f.parts.move;
+      if (!m || (!m.x.n && !m.y.n)) return;
+      const s = (l, k) => ({ n: l.n * k, u: l.u });
+      const next = fx && tx ? { x: s(m.x, fx * tx), y: m.y } : fy && ty ? { x: m.x, y: s(m.y, fy * ty) }
+        : fy ? { x: s(m.y, fy * tx), y: s(m.x, fy * tx) } : { x: s(m.y, fx * ty), y: s(m.x, fx * ty) };
+      writePart(f, "move", next);
+    });
+  }
+  // Scales every keyframe's move so the whole move covers this distance, in its unit.
+  function scaleMoves(info, n) {
+    const k = info.distance.n ? n / info.distance.n : 0;
+    info.frames.forEach((f) => {
+      const m = f.parts.move;
+      if (!m || (!m.x.n && !m.y.n)) return;
+      writePart(f, "move", { x: { n: m.x.n * k, u: m.x.u }, y: { n: m.y.n * k, u: m.y.u } });
+    });
+  }
+
+  // JavaScript animations: element.animate(), the browser's own animation call (and libraries built on it).
+  // finetune wraps animate() to see every call, so the animation is listed, outlined, replayed, slowed down and
+  // tuned as a CSS one is, and her edits apply to every later call too: tuning survives the page running it
+  // again. One running from before finetune loaded is found through getAnimations(). Libraries that move things
+  // frame by frame themselves (GSAP, most of Motion for React) leave no animation to read, so they aren't here.
+  // An animation is known by its keyframes as the code gives them (or its id): the same keyframes on several layers
+  // (a staggered list) are one animation, a group.
+  const waapi = new Map();
+  const knownAnims = new WeakSet();
+  // Set by the inspector: gives a new call the playback speed while its layer is being watched.
+  let afterAnimate = () => {};
+  const camel = (p) => p.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
+  function cleanFrame(k) {
+    const f = { offset: k.computedOffset };
+    if (k.easing && k.easing !== "linear") f.easing = k.easing;
+    if (k.composite && k.composite !== "auto") f.composite = k.composite;
+    Object.keys(k).forEach((p) => {
+      if (!["offset", "computedOffset", "easing", "composite"].includes(p)) f[p] = k[p];
+    });
+    return f;
+  }
+  const codeTiming = (t) => ({
+    duration: isNum(t.duration) ? t.duration : 0, delay: t.delay || 0, easing: t.easing || "linear",
+    iterations: t.iterations === Infinity ? "infinite" : t.iterations, direction: t.direction || "normal",
+    fill: !t.fill || t.fill === "auto" ? "none" : t.fill,
+  });
+  const propsOf = (frames) => [...new Set(frames.flatMap((f) => Object.keys(f).filter((p) => !["offset", "easing", "composite"].includes(p))))];
+  // The nearest named function that made the call (past finetune, anonymous callbacks and the browser's own
+  // forEach and the like): a hint for the bake to find the call.
+  function callerOf(stack) {
+    for (const line of String(stack || "").split("\n").slice(1, 12)) {
+      if (/finetune/.test(line)) continue;
+      const m = /at (?:async )?([\w$.]+) \(/.exec(line);
+      if (!m || /^(Array|NodeList|HTMLCollection|Map|Set|Promise|Function|HTML\w*Element|Element)\./.test(m[1])) continue;
+      return m[1].replace(/^Object\./, "");
+    }
+    return null;
+  }
+  // Her edits over what the code gave: timing (a staggered layer's delay is its own), and keyframe values by index.
+  function editedTiming(code, ed, sel) {
+    const t = Object.assign({}, code, ed && ed.timing);
+    if (ed && ed.delays && sel in ed.delays) t.delay = ed.delays[sel];
+    if (t.iterations === "infinite") t.iterations = Infinity;
+    return t;
+  }
+  const editedFrames = (frames, ed) => frames.map((f, i) => Object.assign({}, f, ed && ed.frames && ed.frames[i]));
+  function noteAnim(el, anim, frames, timing, id, stack) {
+    const key = id ? "id:" + id : JSON.stringify(frames);
+    let entry = waapi.get(key);
+    if (!entry) {
+      entry = { key, label: id || propsOf(frames).join(", "), hint: callerOf(stack), frames, targets: new Map() };
+      waapi.set(key, entry);
+    }
+    entry.targets.set(el, { anim, timing });
+    knownAnims.add(anim);
+    return entry;
+  }
+  if (window.Element && Element.prototype.animate && !Element.prototype.animate.finetune) {
+    const native = Element.prototype.animate;
+    const animate = function (keyframes, options) {
+      let plan = null;
+      try {
+        if (!isUi(this)) {
+          const effect = new KeyframeEffect(null, keyframes, options);
+          const id = options && typeof options === "object" && options.id ? String(options.id) : "";
+          plan = { frames: effect.getKeyframes().map(cleanFrame), timing: codeTiming(effect.getTiming()), id, stack: new Error().stack };
+        }
+      } catch (e) {
+        plan = null;
+      }
+      let kf = keyframes;
+      let opts = options;
+      const ed = plan && edits.waapi[plan.id ? "id:" + plan.id : JSON.stringify(plan.frames)];
+      if (ed) {
+        kf = editedFrames(plan.frames, ed);
+        opts = Object.assign(typeof options === "number" ? {} : Object.assign({}, options), editedTiming(plan.timing, ed, selectorFor(this)));
+      }
+      const anim = native.call(this, kf, opts);
+      if (plan) {
+        try {
+          noteAnim(this, anim, plan.frames, plan.timing, plan.id, plan.stack);
+          afterAnimate();
+        } catch (e) {
+          // Listing it is a nicety; the page's animation runs regardless.
+        }
+      }
+      return anim;
+    };
+    animate.finetune = true;
+    Element.prototype.animate = animate;
+  }
+  // Puts a JavaScript animation's edits (or, with none, what the code said) on its running copies.
+  function applyWaapi(entry) {
+    const ed = edits.waapi[entry.key];
+    entry.targets.forEach((tg, el) => {
+      try {
+        tg.anim.effect.updateTiming(editedTiming(tg.timing, ed, selectorFor(el)));
+        tg.anim.effect.setKeyframes(editedFrames(entry.frames, ed));
+      } catch (e) {
+        // A value the browser won't take; the animation keeps what it had.
+      }
+    });
+  }
+  // Finds JavaScript animations running from before finetune loaded, and drops layers the page took away.
+  function discoverWaapi() {
+    document.getAnimations().forEach((a) => {
+      if (knownAnims.has(a) || a instanceof CSSAnimation || a instanceof CSSTransition) return;
+      const el = a.effect && a.effect.target;
+      if (!(el instanceof Element) || isUi(el)) return;
+      const entry = noteAnim(el, a, a.effect.getKeyframes().map(cleanFrame), codeTiming(a.effect.getTiming()), a.id || "", "");
+      if (edits.waapi[entry.key]) applyWaapi(entry);
+    });
+    waapi.forEach((entry) => entry.targets.forEach((tg, el) => {
+      if (!el.isConnected) entry.targets.delete(el);
+    }));
+  }
+  // The JavaScript animations a layer runs.
+  const waapiOf = (e) => Array.from(waapi.values()).filter((en) => en.targets.has(e));
+  // Her edit record for a JavaScript animation, made on its first edit with what the code said, so Copy can name
+  // the call and the bake can find it: edits.waapi[key] = { label, hint, sels, code: { timing, delays, frames },
+  // timing, delays, frames }.
+  function waapiEdit(entry) {
+    let ed = edits.waapi[entry.key];
+    if (!ed) {
+      const delays = {};
+      let timing = {};
+      entry.targets.forEach((tg, el) => {
+        delays[selectorFor(el)] = tg.timing.delay;
+        timing = tg.timing;
+      });
+      ed = edits.waapi[entry.key] = { label: entry.label, hint: entry.hint || "", sels: Object.keys(delays), code: { timing, delays, frames: entry.frames }, timing: {}, delays: {}, frames: {} };
+    }
+    return ed;
+  }
+
+  // CSS animations the page's stylesheets give layers that aren't running them yet: the rule needs a class the
+  // page adds later (on scroll, on a click). A rule counts when its selector, less one of its classes, matches
+  // layers on this page; that class is what starts it, on the layers that hold it in the selector. Rules for other
+  // pages, or started by a state finetune can't set (a hover, an attribute), aren't listed.
+  const allOf = (sel) => {
+    try {
+      return Array.from(document.querySelectorAll(sel));
+    } catch (e) {
+      return [];
+    }
+  };
+  // A selector's compounds and the combinators between them, at its top level.
+  function compoundsOf(sel) {
+    const parts = [];
+    const joins = [];
+    let cur = "";
+    let depth = 0;
+    for (let i = 0; i < sel.length; i++) {
+      const ch = sel[i];
+      if (ch === "(" || ch === "[") depth++;
+      else if (ch === ")" || ch === "]") depth--;
+      if (!depth && /[\s>+~]/.test(ch)) {
+        let comb = " ";
+        while (i < sel.length && /[\s>+~]/.test(sel[i])) {
+          if (!/\s/.test(sel[i])) comb = sel[i];
+          i++;
+        }
+        i--;
+        if (cur) {
+          parts.push(cur);
+          joins.push(comb);
+          cur = "";
+        }
+        continue;
+      }
+      cur += ch;
+    }
+    if (cur) parts.push(cur);
+    return { parts, joins };
+  }
+  const joinCompounds = (parts, joins, upTo) => parts.slice(0, upTo + 1)
+    .map((p, i) => (!i ? "" : joins[i - 1] === " " ? " " : " " + joins[i - 1] + " ") + p).join("");
+  function waitingAnimations() {
+    const out = [];
+    const seen = new Set();
+    const consider = (r, names) => splitTop(r.selectorText).forEach((sel) => {
+      if (/:(hover|active|focus|focus-visible|focus-within|checked|target)(?![\w-])/.test(sel)) return;
+      const plain = sel.replace(/::?(before|after|marker|placeholder|selection|backdrop)(?![\w-])/g, "");
+      if (allOf(plain).length) return;
+      const { parts, joins } = compoundsOf(plain);
+      for (let c = parts.length - 1; c >= 0; c--) {
+        for (const m of parts[c].matchAll(/\.((?:\\.|[\w-])+)/g)) {
+          const relaxedPart = parts[c].replace(m[0], "");
+          if (!relaxedPart) continue;
+          const relaxed = parts.slice();
+          relaxed[c] = relaxedPart;
+          const animated = allOf(joinCompounds(relaxed, joins, relaxed.length - 1)).filter((e) => !isUi(e));
+          if (!animated.length) continue;
+          const holder = joinCompounds(relaxed, joins, c);
+          const cls = m[1].replace(/\\(.)/g, "$1");
+          const id = names.join(", ") + "|" + cls + "|" + holder;
+          if (!seen.has(id)) {
+            seen.add(id);
+            out.push({ names, cls, on: allOf(holder).filter((e) => !isUi(e)), animated });
+          }
+          return;
+        }
+      }
+    });
+    const walk = (rules) => {
+      for (const r of rules) {
+        if (r instanceof CSSStyleRule) {
+          const names = splitTop(r.style.getPropertyValue("animation-name")).filter((n) => n && n !== "none");
+          if (names.length) consider(r, names);
+        } else if (r.cssRules && !(r instanceof CSSKeyframesRule)) walk(r.cssRules);
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      if (sheet.ownerNode && /^finetune-/.test(sheet.ownerNode.id || "")) continue;
+      try {
+        walk(sheet.cssRules);
+      } catch (e) {
+        // Another origin's sheet can't be read.
+      }
+    }
+    return out;
+  }
+
   function makeInspector() {
     // Shown on load, like Figma's panel.
     const root = el("div", "ft-inspector");
@@ -3086,22 +4418,43 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // at the left of the panel's top row; Hide UI is at its right.
     const undoBtn = iconButton(ICON.undo, "Undo", undo);
     const redoBtn = iconButton(ICON.redo, "Redo", redo);
+    undoBtn.setAttribute("data-ft-tip-key", KEYS.mod + "Z");
+    redoBtn.setAttribute("data-ft-tip-key", KEYS.shift + KEYS.mod + "Z");
     const actions = el("div", "ft-actions");
-    actions.append(undoBtn, redoBtn, iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits));
+    // Reset is off with nothing to reset: no edit on the page and nothing Save stored.
+    const resetBtn = iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits);
+    actions.append(undoBtn, redoBtn, resetBtn);
     const top = el("div", "ft-top");
     top.appendChild(actions);
     // Design and Motion, as Figma's Design and Prototype, in a bar at the bottom of the window. It lives in the
-    // panel, so it hides with it. Motion is empty for now.
+    // panel, so it hides with it.
     const designPane = el("div", "ft-pane");
+    const motionPane = el("div", "ft-pane");
+    motionPane.hidden = true;
     const modes = el("div", "ft-modes");
     const modeBtns = [["design", "Design", "pencilRuler"], ["motion", "Motion", "play"]].map(([name, label, icon]) => {
       const b = button("ft-modes-btn", null, () => {
         modeBtns.forEach((m) => m.setAttribute("aria-selected", String(m === b)));
         root.setAttribute("data-tab", name);
+        menu.close();
+        picker.close();
+        imagePop.close();
+        guidePop.close();
+        effectPop.close();
         designPane.hidden = name !== "design";
+        motionPane.hidden = name !== "motion";
+        document.documentElement.classList.toggle("ft-motion", name === "motion");
+        drawMotion();
+        applySpeed();
+        if (selection) selection.tabChanged();
       });
       b.innerHTML = ICON[icon];
       b.appendChild(el("span", null, label));
+      // Figma's ⌥8 and ⌥9 for its Design and Prototype panels.
+      b.setAttribute("data-ft-tip", label);
+      b.setAttribute("data-ft-tip-key", KEYS.alt + (name === "design" ? "8" : "9"));
+      b.setAttribute("data-ft-tip-side", "top");
+      withTip(b);
       b.setAttribute("aria-selected", String(name === "design"));
       return b;
     });
@@ -3122,8 +4475,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     [document.documentElement, document.body].forEach((e) => themeWatch.observe(e, { attributes: true, attributeFilter: ["class", "data-theme", "style"] }));
     if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeModes);
     historyChanged = () => {
-      undoBtn.disabled = !history.past.length && !history.timer;
+      undoBtn.disabled = !history.past.length && !history.timer && !undoReset;
       redoBtn.disabled = !history.future.length;
+      resetBtn.disabled = !canReset();
     };
 
     // A page fill saved from an earlier visit comes back; the bottom layer is the base.
@@ -3198,69 +4552,136 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const guideHead = el("div", "ft-section-head");
     const guideList = el("div", "ft-guide-list");
 
-    // Styles: the page's own grid first ("From the page", so a tweak can always go back to it), then hers,
-    // under "This page" and "All pages". Hovering one shows it on the page, a click applies it, leaving
-    // the menu puts hers back; a saved style's trash can deletes it.
-    function openStyles() {
-      guidePop.close();
-      const entries = [[STYLES_PAGE, "This page"], [STYLES_ALL, "All pages"]]
-        .map(([key, heading]) => ({ key, heading, list: loadStyles(key) }));
-      const flat = [];
-      const items = [];
-      const own = pageGrid();
-      if (own) {
-        items.push({ heading: true, label: "From the page" }, { label: "Page grid · " + styleName(own), value: 0 });
-        flat.push({ name: "Page grid", guide: own });
+    // Styles, as Figma's Layout guide styles (titled "Active layout guides", her name): a popover just left of the
+    // panel, with a close, no search. The page's own grid first ("From the page", so a tweak can always go back to it), then hers, under "This page"
+    // and "All pages". Hovering a row shows it on the page, a click applies it, leaving the list puts hers back; a
+    // saved style's row shows Delete on hover, where Figma's shows Edit style.
+    const stylesPop = el("div", "ft-pop ft-styles-pop");
+    stylesPop.hidden = true;
+    const stylesHead = el("div", "ft-pop-head");
+    stylesHead.append(el("span", null, "Active layout guides"), iconButton(ICON.x, "Close", () => closeStyles()));
+    const stylesList = el("div", "ft-styles-list");
+    stylesPop.append(stylesHead, stylesList);
+    root.appendChild(stylesPop);
+    let before = null;
+    const use = (list) => {
+      guides.splice(0, guides.length, ...copyGuides(list));
+      drawGuides();
+    };
+    // A preview isn't an edit: it puts the guides back (null) or shows one, outside the undo history.
+    function preview(guide) {
+      history.quiet++;
+      if (!guide) {
+        if (before) use(before);
+        before = null;
+      } else {
+        if (!before) before = copyGuides(guides);
+        use([guide]);
       }
-      entries.forEach(({ key, heading, list }) => {
-        if (!list.length) return;
-        items.push({ heading: true, label: heading });
-        list.forEach((st, i) => {
-          items.push({ label: st.name, value: flat.length, remove: () => {
-            const now = loadStyles(key);
-            now.splice(i, 1);
-            storeStyles(key, now);
-            toast("Deleted style: " + st.name);
-            menu.close();
-            openStyles();
-          } });
-          flat.push(st);
-        });
-      });
-      if (!flat.length) items.push({ heading: true, label: "No saved styles yet" });
-      let before = null;
-      const use = (list) => {
-        guides.splice(0, guides.length, ...copyGuides(list));
-        drawGuides();
-      };
-      menu.toggle(styleBtn, items, null, (v) => use([flat[v].guide]), (v) => {
-        history.quiet++;
-        if (v == null) {
-          if (before) use(before);
-          before = null;
-        } else {
-          if (!before) before = copyGuides(guides);
-          use([flat[v].guide]);
-        }
-        history.quiet--;
-      });
+      history.quiet--;
     }
+    stylesList.addEventListener("pointerleave", () => preview(null));
+    function closeStyles() {
+      if (stylesPop.hidden) return;
+      preview(null);
+      stylesPop.hidden = true;
+      styleBtn.classList.remove("is-open");
+    }
+    function styleRow(name, guide, remove) {
+      const row = el("div", "ft-style-row");
+      row.setAttribute("role", "button");
+      row.tabIndex = 0;
+      const pick = () => {
+        preview(null);
+        use([guide]);
+        closeStyles();
+      };
+      row.addEventListener("click", pick);
+      row.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        pick();
+      });
+      row.addEventListener("pointerenter", () => preview(guide));
+      row.insertAdjacentHTML("beforeend", ICON.columns);
+      row.appendChild(el("span", "ft-style-name", name));
+      if (remove) {
+        const trash = iconButton(ICON.trash, "Delete style", remove);
+        trash.classList.add("ft-style-trash");
+        trash.addEventListener("click", (e) => e.stopPropagation());
+        row.appendChild(trash);
+      }
+      return row;
+    }
+    function drawStyles() {
+      const rows = [];
+      const own = pageGrid();
+      if (own) rows.push(el("div", "ft-styles-heading", "From the page"), styleRow("Page grid · " + styleName(own), own));
+      [[STYLES_PAGE, "This page"], [STYLES_ALL, "All pages"]].forEach(([key, heading]) => {
+        const list = loadStyles(key);
+        if (!list.length) return;
+        rows.push(el("div", "ft-styles-heading", heading));
+        list.forEach((st, i) => rows.push(styleRow(st.name, st.guide, () => {
+          const now = loadStyles(key);
+          now.splice(i, 1);
+          storeStyles(key, now);
+          undoToast("Deleted style", () => {
+            const back = loadStyles(key);
+            back.splice(i, 0, st);
+            storeStyles(key, back);
+            if (!stylesPop.hidden) drawStyles();
+          });
+          preview(null);
+          drawStyles();
+        })));
+      });
+      if (!rows.length) rows.push(el("div", "ft-styles-empty", "No saved styles yet"));
+      stylesList.replaceChildren(...rows);
+    }
+    function openStyles() {
+      if (!stylesPop.hidden) return closeStyles();
+      guidePop.close();
+      menu.close();
+      closeSave();
+      drawStyles();
+      stylesPop.hidden = false;
+      styleBtn.classList.add("is-open");
+      // Just left of the panel, level with the button, kept on screen (as the other popovers).
+      const r = styleBtn.getBoundingClientRect();
+      const panel = root.getBoundingClientRect();
+      stylesPop.style.left = Math.max(8, panel.left - 8 - stylesPop.offsetWidth) + "px";
+      stylesPop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - stylesPop.offsetHeight - 8)) + "px";
+    }
+    // Closes on a click anywhere else, or Escape; the button toggles it.
+    document.addEventListener("pointerdown", (e) => {
+      if (stylesPop.hidden || stylesPop.contains(e.target) || styleBtn.contains(e.target)) return;
+      closeStyles();
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || stylesPop.hidden || e.defaultPrevented || typing(e.target)) return;
+      e.preventDefault();
+      closeStyles();
+    });
     const styleBtn = iconButton(ICON.guideStyles, "Styles", openStyles);
 
     // Save as style: two buttons in place, for every page or just this one. Named from its numbers;
     // the same numbers aren't saved twice.
     const savePop = el("div", "ft-pop ft-save-pop");
     savePop.hidden = true;
-    const closeSave = () => { savePop.hidden = true; };
+    const closeSave = () => {
+      savePop.hidden = true;
+      saveBtn.classList.remove("is-open");
+    };
     function saveStyle(key) {
       closeSave();
       const g = guides[0];
       if (!g) return;
       const name = styleName(g);
       const list = loadStyles(key);
-      if (list.some((st) => st.name === name)) return toast("Already saved: " + name);
+      if (list.some((st) => st.name === name)) return toast("Already saved");
       list.push({ name, guide: copyGuides([g])[0] });
-      toast(storeStyles(key, list) ? "Saved style: " + name : "Couldn't save: storage is blocked or full");
+      if (!storeStyles(key, list)) return toast("Couldn't save: storage is blocked or full");
+      undoToast("Saved style", () => storeStyles(key, loadStyles(key).filter((st) => st.name !== name)));
     }
     const saveBody = el("div", "ft-save-body");
     saveBody.append(
@@ -3272,6 +4693,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!savePop.hidden) return closeSave();
       menu.close();
       savePop.hidden = false;
+      saveBtn.classList.add("is-open");
       // Under the button, its right edge on the button's, kept on screen.
       const r = saveBtn.getBoundingClientRect();
       savePop.style.left = Math.max(8, r.right - savePop.offsetWidth) + "px";
@@ -3317,19 +4739,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const alignRow = (act) => {
       const row = el("div", "ft-type-pair");
       row.append(
-        actionSeg([["left", "alignLeft", "Align left"], ["hcenter", "alignHCenter", "Align horizontal centers"], ["right", "alignRight", "Align right"]], act),
-        actionSeg([["top", "alignTop", "Align top"], ["vcenter", "alignVCenter", "Align vertical centers"], ["bottom", "alignBottom", "Align bottom"]], act),
+        actionSeg([["left", "alignLeft", "Align left", KEYS.alt + "A"], ["hcenter", "alignHCenter", "Align horizontal centers", KEYS.alt + "H"], ["right", "alignRight", "Align right", KEYS.alt + "D"]], act),
+        actionSeg([["top", "alignTop", "Align top", KEYS.alt + "W"], ["vcenter", "alignVCenter", "Align vertical centers", KEYS.alt + "V"], ["bottom", "alignBottom", "Align bottom", KEYS.alt + "S"]], act),
       );
       return row;
     };
     // A row of one-shot buttons that spring back, each with a Figma-style tooltip.
     function actionSeg(items, act) {
       const seg = el("div", "ft-seg ft-seg-act");
-      items.forEach(([how, icon, tip]) => {
+      items.forEach(([how, icon, tip, keys]) => {
         const b = button("ft-seg-btn", null, () => act(how));
         b.innerHTML = ICON[icon];
         b.setAttribute("data-ft-tip", tip);
         b.setAttribute("aria-label", tip);
+        if (keys) b.setAttribute("data-ft-tip-key", keys);
         withTip(b);
         seg.appendChild(b);
       });
@@ -3352,8 +4775,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         auto.input.disabled = true;
         width = auto.wrap;
       }
-      // Rows: Count across both columns; Type | Width; Margin (or Offset) | Gutter.
-      const items = [labeled("Count", guideNum(g, "count", 1, true, onChange), true), labeled("Type", align.btn), labeled("Width", width)];
+      // Rows: Count in one column, alone on its row; Type | Width; Margin (or Offset) | Gutter.
+      const items = [labeled("Count", guideNum(g, "count", 1, true, onChange)), el("div"), labeled("Type", align.btn), labeled("Width", width)];
       if (g.align === "stretch") items.push(labeled("Margin", guideNum(g, "offset", 0, false, onChange)));
       else if (g.align !== "center") items.push(labeled("Offset", guideNum(g, "offset", 0, false, onChange)));
       items.push(labeled("Gutter", guideNum(g, "gutter", 0, false, onChange)));
@@ -3402,6 +4825,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         swatch.style.setProperty("--ft-ca", rgba(g.color));
         const tip = g.visible ? "Hide grid" : "Show grid";
         eye.innerHTML = g.visible ? ICON.eye : ICON.eyeClosed;
+        eye.setAttribute("aria-pressed", String(!g.visible));
         eye.setAttribute("data-ft-tip", tip);
         eye.setAttribute("aria-label", tip);
         rowEl.classList.toggle("is-hidden", !g.visible);
@@ -3503,7 +4927,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const n = parseFloat(v);
         if (isNum(n)) setRot(n);
       });
-      const turns = actionSeg([["rotate", "rotateSquare", "Rotate 90° right"], ["flipH", "flipHorizontal", "Flip horizontal"], ["flipV", "flipVertical", "Flip vertical"]], (how) => {
+      const turns = actionSeg([["rotate", "rotateSquare", "Rotate 90° right"], ["flipH", "flipHorizontal", "Flip horizontal", KEYS.shift + "H"], ["flipV", "flipVertical", "Flip vertical", KEYS.shift + "V"]], (how) => {
         const now = read();
         if (how === "rotate") setRot(now.rot + 90);
         else if (how === "flipH") setScale(-now.sx, now.sy);
@@ -3608,68 +5032,273 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       ["luminosity", "Luminosity"],
     ];
 
-    // Appearance, as in Figma: show or hide, blend mode, opacity, corner radius.
+    // Figma's corner smoothing as CSS, fitted against Figma's own curve (her notes, 2026-09-27): at smoothing s the
+    // radius is written R × m and corner-shape superellipse(k); the fields show R. Straight lines in between.
+    const SMOOTH = [[0, 1, 1], [0.6, 1.195, 1.32], [0.8, 1.56, 1.75], [1, 2, 2]];
+    function smoothMap(x, from, to) {
+      for (let i = 1; i < SMOOTH.length; i++) {
+        const a = SMOOTH[i - 1];
+        const b = SMOOTH[i];
+        if (x <= b[from] || i === SMOOTH.length - 1) return a[to] + clamp01((x - a[from]) / (b[from] - a[from])) * (b[to] - a[to]);
+      }
+      return SMOOTH[0][to];
+    }
+    const CORNERS = [["top-left", "cornerTL", "Top left"], ["top-right", "cornerTR", "Top right"], ["bottom-left", "cornerBL", "Bottom left"], ["bottom-right", "cornerBR", "Bottom right"]];
+
+    // Figma's inline slider in a number field: drag it to set the value between min and max(); draw() follows it.
+    function slideIn(f, min, max, get, set) {
+      f.wrap.classList.add("ft-slider-field");
+      const box = el("div", "ft-slide-box");
+      const line = el("div", "ft-slide");
+      line.append(el("div", "ft-slide-fill"), el("div", "ft-slide-knob"));
+      box.appendChild(line);
+      f.wrap.appendChild(box);
+      dragArea(box, 10, (x) => {
+        set(Math.round(min + x * (max() - min)));
+        changed(false);
+      });
+      return () => {
+        const m = max();
+        line.style.setProperty("--ft-x", clamp01((get() - min) / ((m - min) || 1)));
+      };
+    }
+
+    // Figma's Corner smoothing popover: a slider from 0 to 100% with iOS's 60% marked, and the % field.
+    const smoothPop = (() => {
+      let get = null;
+      let set = null;
+      let anchor = null;
+      const pop = el("div", "ft-pop");
+      pop.hidden = true;
+      const head = el("div", "ft-pop-head");
+      head.append(el("span", null, "Corner smoothing"), iconButton(ICON.x, "Close", close));
+      const box = el("div", "ft-slide-box");
+      const line = el("div", "ft-slide");
+      line.append(el("div", "ft-slide-fill"), el("div", "ft-slide-mark"), el("div", "ft-slide-note", "iOS"), el("div", "ft-slide-knob"));
+      box.appendChild(line);
+      const field = numField(null);
+      const row = el("div", "ft-smooth-row");
+      row.append(box, field.wrap);
+      const body = el("div", "ft-pop-body");
+      body.appendChild(row);
+      pop.append(head, body);
+      root.appendChild(pop);
+      const draw = (force) => {
+        const s = get();
+        line.style.setProperty("--ft-x", s);
+        field.set(Math.round(s * 100) + "%", force);
+      };
+      dragArea(box, 8, (x) => {
+        set(Math.round(x * 100) / 100);
+        draw();
+      });
+      editable(field.input, (force) => draw(force), (v) => {
+        const n = parseFloat(v);
+        if (isNum(n)) set(Math.min(100, Math.max(0, n)) / 100);
+      });
+      function open(btn, rowEl, g, s) {
+        get = g;
+        set = (v) => {
+          s(v);
+          changed(false);
+        };
+        anchor = btn;
+        btn.classList.add("is-open");
+        pop.hidden = false;
+        draw(true);
+        // Just left of the panel, level with the row, kept on screen.
+        const r = rowEl.getBoundingClientRect();
+        const panel = root.getBoundingClientRect();
+        pop.style.left = Math.max(8, panel.left - 8 - pop.offsetWidth) + "px";
+        pop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - pop.offsetHeight - 8)) + "px";
+      }
+      function close() {
+        if (!anchor) return;
+        if (pop.contains(document.activeElement)) document.activeElement.blur();
+        anchor.classList.remove("is-open");
+        pop.hidden = true;
+        anchor = get = set = null;
+      }
+      document.addEventListener("pointerdown", (e) => {
+        if (!anchor || pop.contains(e.target) || anchor.contains(e.target)) return;
+        close();
+      }, true);
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || !anchor || e.defaultPrevented || typing(e.target)) return;
+        e.preventDefault();
+        close();
+      });
+      return {
+        close,
+        toggle(btn, rowEl, g, s) {
+          if (anchor === btn) close();
+          else {
+            close();
+            open(btn, rowEl, g, s);
+          }
+        },
+      };
+    })();
+
+    // Appearance, as Figma's: Opacity (the number and a slider, the eye at its end), Corner radius (the number and a
+    // slider; the button at its end opens each corner, then Corner smoothing), and Blend mode. Adjustments sit in its
+    // header.
     function appearance(target) {
       const s = section("Appearance");
-      // Inside an SVG only a rect has corners (its rx and ry), in its own units.
+      // Inside an SVG only a rect has corners (its rx and ry, one radius), in its own units.
       const rect = inSvg(target) && target.tagName.toLowerCase() === "rect";
       const corners = (!inSvg(target) && !isSvgRoot(target)) || rect;
-      const read = () => {
-        const cs = getComputedStyle(target);
-        return {
-          hidden: cs.visibility === "hidden",
-          blend: cs.mixBlendMode,
-          opacity: Math.round(parseFloat(cs.opacity) * 100),
-          radius: rect ? Math.round((parseFloat(cs.rx) || parseFloat(cs.ry) || 0) * vectorSize(target).sx) : Math.round(parseFloat(cs.borderTopLeftRadius) || 0),
-        };
+      const hidden = () => getComputedStyle(target).visibility === "hidden";
+      const opacityOf = () => Math.round(parseFloat(getComputedStyle(target).opacity) * 100);
+      // Smoothing, read back from corner-shape; the four radii as she typed them (the code's ÷ m).
+      const smoothing = () => {
+        const v = getComputedStyle(target).getPropertyValue("corner-shape").trim();
+        const m = /superellipse\(([\d.]+)\)/.exec(v);
+        return clamp01(smoothMap(v === "squircle" ? 2 : m ? parseFloat(m[1]) : 1, 2, 0));
       };
-      const eye = iconButton(ICON.eye, "Hide", () => {
-        toggleHidden(target);
-        changed(true);
-      });
-      const blend = iconButton(ICON.drop, "Blend mode", () => {
-        menu.toggle(blend, BLENDS.map(([value, label]) => ({ label, value })), read().blend, (v) => {
+      const radii = () => {
+        if (rect) {
+          const cs = getComputedStyle(target);
+          const r = Math.round((parseFloat(cs.rx) || parseFloat(cs.ry) || 0) * vectorSize(target).sx * 10) / 10;
+          return [r, r, r, r];
+        }
+        const cs = getComputedStyle(target);
+        const m = smoothMap(smoothing(), 0, 1);
+        return CORNERS.map(([c]) => Math.round(((parseFloat(cs.getPropertyValue("border-" + c + "-radius")) || 0) / m) * 10) / 10);
+      };
+      // Writes the four radii and the smoothing as the code would: one border-radius when they match, else each
+      // corner's; each radius × m, and corner-shape superellipse(k) (none at 0%).
+      function writeCorners(rs, sm) {
+        if (rect) {
+          const u = round1(rs[0] / vectorSize(target).sx) + "px";
+          setStyle(target, "rx", u);
+          setStyle(target, "ry", u);
+          return;
+        }
+        const m = smoothMap(sm, 0, 1);
+        const px = rs.map((r) => round1(Math.max(0, r) * m) + "px");
+        if (px.every((x) => x === px[0])) {
+          CORNERS.forEach(([c]) => setStyle(target, "border-" + c + "-radius", ""));
+          setStyle(target, "border-radius", px[0]);
+        } else {
+          setStyle(target, "border-radius", "");
+          CORNERS.forEach(([c], i) => setStyle(target, "border-" + c + "-radius", px[i]));
+        }
+        const shape = sm > 0.005 ? "superellipse(" + +smoothMap(sm, 0, 2).toFixed(2) + ")" : "";
+        // Chrome reads round back as superellipse(1).
+        setStyle(target, "corner-shape", shape || (/^(round|superellipse\(1\)|)$/.test(ownValue(target, "corner-shape")) ? "" : "round"));
+      }
+
+      const blend = dropdown((btn) => {
+        // In Figma's groups, a line between them: normal, darken, lighten, contrast, difference, color.
+        const breaks = ["darken", "lighten", "overlay", "difference", "hue"];
+        menu.toggle(btn, BLENDS.flatMap(([value, label]) => (breaks.includes(value) ? [{ divider: true }] : []).concat({ label, value })), getComputedStyle(target).mixBlendMode, (v) => {
           setStyle(target, "mix-blend-mode", v === "normal" ? "" : v);
           changed(true);
         });
       });
-      const actions = el("div", "ft-head-actions");
-      actions.append(eye, blend);
+      const blendIcon = el("span", "ft-dd-icon");
+      blendIcon.innerHTML = ICON.drop;
+      blend.btn.prepend(blendIcon);
       // Adjustments, the image's seven sliders, on any layer but text: a box's apply to the whole element, an
-      // image's open its image popover (where Figma keeps them). Like Blend mode, it opens something and never
-      // stays pressed (her call).
-      let adjustBtn = null;
+      // image's open its image popover (where Figma keeps them).
       if (!hasText(target)) {
-        adjustBtn = iconButton(ICON.slidersHorizontal, "Adjustments", () => imagePop.toggle(target, s, adjustBtn));
+        const actions = el("div", "ft-head-actions");
+        const adjustBtn = iconButton(ICON.slidersHorizontal, "Adjustments", () => imagePop.toggle(target, s, adjustBtn));
         actions.appendChild(adjustBtn);
+        s.firstChild.appendChild(actions);
       }
-      s.firstChild.appendChild(actions);
 
+      const eye = iconButton(ICON.eye, "Hide", () => {
+        toggleHidden(target);
+        changed(true);
+      });
+      eye.setAttribute("data-ft-tip-key", KEYS.shift + KEYS.mod + "H");
       const opacity = numField(ICON.checkerboard, "Opacity");
-      const radius = numField(ICON.frameCorners, "Corner radius");
+      opacity.wrap.querySelector(".ft-field-icon").setAttribute("data-ft-tip-key", "1–0");
       editable(opacity.input, changed, (v) => {
         const n = parseFloat(v);
         if (isNum(n)) setOpacity(target, n);
       });
-      editable(radius.input, changed, (v) => {
-        const n = parseFloat(v);
-        if (!isNum(n) || n < 0) return;
-        if (!rect) return setStyle(target, "border-radius", n + "px");
-        const u = round1(n / vectorSize(target).sx) + "px";
-        setStyle(target, "rx", u);
-        setStyle(target, "ry", u);
-      });
+      const drawOpacity = slideIn(opacity, 0, () => 100, opacityOf, (n) => setOpacity(target, n));
+      const opacityRow = el("div", "ft-with-action");
+      opacityRow.append(opacity.wrap, eye);
       const grid = el("div", "ft-type");
-      grid.appendChild(labeled("Opacity", opacity.wrap));
-      if (corners) grid.appendChild(labeled("Corner radius", radius.wrap));
+      grid.appendChild(labeled("Opacity", opacityRow, true));
+
+      let split = false;
+      const draws2 = [];
+      if (corners) {
+        const radius = numField(ICON.frameCorners, "Corner radius");
+        const all = (n) => writeCorners([n, n, n, n], smoothing());
+        editable(radius.input, changed, (v) => {
+          const n = parseFloat(v);
+          if (isNum(n) && n >= 0) all(n);
+        });
+        const shortSide = () => {
+          const sz = sizeOf(target);
+          return Math.max(1, Math.round(Math.min(sz.w, sz.h) / 2));
+        };
+        const drawRadius = slideIn(radius, 0, shortSide, () => Math.max(...radii()), all);
+        const radiusRow = el("div", "ft-with-action");
+        radiusRow.appendChild(radius.wrap);
+        // Each corner, then Corner smoothing: open when the corners differ, as Figma opens them.
+        const each = el("div", "ft-span2 ft-corners");
+        if (!rect) {
+          split = new Set(radii()).size > 1;
+          const toggle = iconButton(ICON.frameCorners, "Independent corners", () => {
+            split = !split;
+            each.hidden = !split;
+            toggle.setAttribute("aria-pressed", String(split));
+          });
+          toggle.setAttribute("aria-pressed", String(split));
+          radiusRow.appendChild(toggle);
+          const fields = CORNERS.map(([c, icon, tip], i) => {
+            const f = numField(ICON[icon], tip);
+            editable(f.input, changed, (v) => {
+              const n = parseFloat(v);
+              if (!isNum(n) || n < 0) return;
+              const rs = radii();
+              rs[i] = n;
+              writeCorners(rs, smoothing());
+            });
+            draws2.push((force) => f.set(radii()[i], force));
+            return f;
+          });
+          const top = el("div", "ft-with-action");
+          const topPair = el("div", "ft-type-pair");
+          topPair.append(fields[0].wrap, fields[1].wrap);
+          top.append(topPair, el("span", "ft-action-gap"));
+          const bottom = el("div", "ft-with-action");
+          const bottomPair = el("div", "ft-type-pair");
+          bottomPair.append(fields[2].wrap, fields[3].wrap);
+          const smooth = iconButton(ICON.sliders, "Corner smoothing", () => smoothPop.toggle(smooth, bottom, smoothing, (v) => writeCorners(radii(), v)));
+          bottom.append(bottomPair, smooth);
+          each.append(top, bottom);
+          each.hidden = !split;
+        } else radiusRow.appendChild(el("span", "ft-action-gap"));
+        grid.appendChild(labeled("Corner radius", radiusRow, true));
+        if (!rect) grid.appendChild(each);
+        draws2.push((force) => {
+          const rs = radii();
+          radius.set(rs.every((r) => r === rs[0]) ? rs[0] : "Mixed", force);
+          drawRadius();
+        });
+      }
+      grid.appendChild(labeled("Blend mode", blend.btn, true));
       s.appendChild(grid);
       draws.push((force) => {
-        const now = read();
-        eye.innerHTML = now.hidden ? ICON.eyeClosed : ICON.eye;
-        eye.setAttribute("data-ft-tip", now.hidden ? "Show" : "Hide");
-        eye.setAttribute("aria-label", now.hidden ? "Show" : "Hide");
-        opacity.set(now.opacity + "%", force);
-        radius.set(now.radius, force);
+        const off = hidden();
+        eye.innerHTML = off ? ICON.eyeClosed : ICON.eye;
+        eye.setAttribute("data-ft-tip", off ? "Show" : "Hide");
+        eye.setAttribute("aria-label", off ? "Show" : "Hide");
+        // A hidden layer's eye stays highlighted, as any toggle that's on.
+        eye.setAttribute("aria-pressed", String(off));
+        opacity.set(opacityOf() + "%", force);
+        drawOpacity();
+        const mode = getComputedStyle(target).mixBlendMode;
+        blend.label.textContent = (BLENDS.find(([v]) => v === mode) || [mode, mode])[1];
+        draws2.forEach((d) => d(force));
       });
       return s;
     }
@@ -3712,6 +5341,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (force || document.activeElement !== alpha) alpha.value = String(Math.round(parseFloat(cs.opacity) * 100));
         row.classList.toggle("is-hidden", hidden);
         eye.innerHTML = hidden ? ICON.eyeClosed : ICON.eye;
+        eye.setAttribute("aria-pressed", String(hidden));
         eye.setAttribute("data-ft-tip", hidden ? "Show fill" : "Hide fill");
       });
       return s;
@@ -3894,6 +5524,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           put();
           build();
         });
+        eye.setAttribute("aria-pressed", String(!fx.visible));
         const minus = iconButton(ICON.minus, "Remove effect", () => {
           fxs.splice(fxs.indexOf(fx), 1);
           put();
@@ -3960,7 +5591,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         resize(vector ? (nw != null ? nw : now.w) : nw, n);
       });
       w.input.disabled = h.input.disabled = fixed;
-      const lock = iconButton(ICON.linkSimple, "Constrain proportions", () => {
+      const lock = iconButton(ICON.lockRatio, "Constrain proportions", () => {
         locked = !locked;
         changed(true);
       });
@@ -3974,8 +5605,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
       // A group (a container in the code) shows its Flow and its Spacing, read from its CSS and written back
       // as CSS: Vertical and Horizontal are flex in a column or a row, Freeform is no flex. Grid shows only on a
-      // grid, which isn't made here. Spacing is the gap on a flex or grid; on anything else, when the children
-      // sit in one column or row, it moves the ones after the first, so the ones below move too.
+      // grid, which isn't made here. Spacing is the gap on a flex or grid (a grid's two gaps side by side, across
+      // then down); on anything else, when the children sit in one column or row, it moves the ones after the first,
+      // so the ones below move too.
       const container = !(target instanceof SVGElement) && !hasText(target) && target.children.length > 0;
       const flowOf = () => {
         const cs = getComputedStyle(target);
@@ -3993,17 +5625,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const flow = flowOf();
         if (flow === "vertical") return { css: "row-gap", axis: "y", n: px(cs.rowGap) };
         if (flow === "horizontal") return { css: "column-gap", axis: "x", n: px(cs.columnGap) };
-        if (flow === "grid") return { css: "gap", axis: "y", n: px(cs.rowGap) === px(cs.columnGap) ? px(cs.rowGap) : null };
+        if (flow === "grid") return { grid: true, x: px(cs.columnGap), y: px(cs.rowGap) };
         const st = stackOf(items());
         if (!st) return null;
         return { stack: st, axis: st.axis, n: st.gaps.every((g) => Math.abs(g - st.gaps[0]) < 0.5) ? Math.round(st.gaps[0]) : null };
       };
       let flow = null;
       let spacing = null;
+      let spacingY = null;
       if (container) {
         const now = flowOf();
-        const opts = [["free", "shapes", "Freeform"], ["vertical", "rows", "Vertical layout"], ["horizontal", "columns", "Horizontal layout"]];
-        if (now === "grid") opts.push(["grid", "gridFour", "Grid"]);
+        const opts = [["free", "flowFree", "Freeform"], ["vertical", "flowVertical", "Vertical layout"], ["horizontal", "flowHorizontal", "Horizontal layout"]];
+        if (now === "grid") opts.push(["grid", "flowGrid", "Grid"]);
         flow = segmented(opts, (v) => {
           if (v === "grid" || v === flowOf()) return;
           const own = ownValue(target, "display");
@@ -4019,7 +5652,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         });
         grid.appendChild(labeled("Flow", flow.seg, true));
         const g = gapOf();
-        if (g) {
+        if (g && g.grid) {
+          spacing = numField(ICON.arrowsHorizontal, "Horizontal spacing");
+          spacingY = numField(ICON.arrowsVertical, "Vertical spacing");
+          [[spacing, "column-gap"], [spacingY, "row-gap"]].forEach(([f, css]) => editable(f.input, changed, (v) => {
+            const n = parseFloat(v);
+            if (isNum(n)) setStyle(target, css, Math.max(0, n) + "px");
+          }));
+        } else if (g) {
           spacing = numField(g.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
           editable(spacing.input, changed, (v) => {
             const n = parseFloat(v);
@@ -4031,7 +5671,35 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         }
       }
       grid.appendChild(labeled("Dimensions", dimsRow, true));
-      if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
+      // Clip content, as Figma's frames have it, on a container: its overflow, hidden (clipped) or visible. Checking
+      // writes hidden, unchecking visible; landing back on what the code says takes the edit off.
+      let clip = null;
+      const clipped = () => {
+        const cs = getComputedStyle(target);
+        return cs.overflowX !== "visible" || cs.overflowY !== "visible";
+      };
+      if (container) {
+        const box = el("span", "ft-check");
+        clip = button("ft-check-row ft-span2", null, () => {
+          const next = clipped() ? "visible" : "hidden";
+          setStyle(target, "overflow", ownValue(target, "overflow", "overflow-x") === next ? "" : next);
+          changed(true);
+        });
+        clip.setAttribute("role", "checkbox");
+        clip.append(box, el("span", null, "Clip content"));
+        draws.push(() => {
+          const on = clipped();
+          clip.setAttribute("aria-checked", String(on));
+          box.innerHTML = on ? ICON.tick : "";
+        });
+      }
+      if (spacingY) {
+        const gaps = el("div", "ft-type-pair");
+        gaps.append(spacing.wrap, spacingY.wrap);
+        grid.appendChild(labeled("Spacing", gaps, true));
+      } else if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
+      // Clip content ends the section, as in Figma.
+      if (clip) grid.appendChild(clip);
       s.appendChild(grid);
       draws.push((force) => {
         const now = read();
@@ -4042,7 +5710,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (flow) flow.set(flowOf());
         if (spacing) {
           const g = gapOf();
-          spacing.set(!g ? "" : g.n == null ? "Mixed" : Math.round(g.n), force);
+          if (g && g.grid) {
+            spacing.set(Math.round(g.x), force);
+            spacingY.set(Math.round(g.y), force);
+          } else spacing.set(!g ? "" : g.n == null ? "Mixed" : Math.round(g.n), force);
         }
       });
       return s;
@@ -4203,11 +5874,47 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // The layer's kind, read from the code, and the element it is (its tag and first class or id).
     function kindLine(t) {
+      const comp = document.documentElement.classList.contains("ft-motion") ? "" : componentOf(t);
+      if (comp) return componentLine(t, comp);
       const tag = t.tagName.toLowerCase();
       const kind = hasText(t) ? "Text" : tag === "img" ? "Image" : t instanceof SVGSVGElement ? "SVG"
         : isVector(t) ? (tag === "g" ? "Group" : "Vector") : t.children.length ? "Group" : "Box";
       const row = el("div", "ft-kind");
       row.append(el("span", "ft-kind-name", kind), el("span", "ft-kind-el", tag + (t.id ? "#" + t.id : t.classList.length ? "." + t.classList[0] : "")));
+      if (kind === "Group") row.appendChild(itemCount(Array.from(t.children).filter((c) => !isUi(c)).length));
+      return row;
+    }
+
+    // A component, as Figma's instance: its name, what an edit reaches, and Override, which makes this one's edits
+    // its own (Figma's override) instead of every instance's. Pressed again, edits reach every instance again.
+    function componentLine(t, name) {
+      const sel = selectorFor(t);
+      const on = edits.overrides.includes(sel);
+      const row = el("div", "ft-kind ft-kind-comp");
+      const override = button("ft-choice ft-choice-icon ft-add-anim ft-override", null, () => {
+        const i = edits.overrides.indexOf(sel);
+        if (i < 0) edits.overrides.push(sel);
+        else edits.overrides.splice(i, 1);
+        noteChange();
+        showInPanel(shown, shownKind);
+      });
+      override.setAttribute("aria-pressed", String(on));
+      const mark = el("span");
+      mark.innerHTML = ICON.instance;
+      override.append(mark, el("span", null, "Override"));
+      row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", on ? "Editing only this " + name + "." : "Editing every " + name + "."), override);
+      return row;
+    }
+
+    // How many items a group holds, on the right of its kind line, in the kind's own type.
+    function itemCount(n) {
+      return el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " item" : " items"));
+    }
+
+    // A motion group's line: Group and how many layers run its animation (they aren't one element in the code).
+    function motionGroupLine(list) {
+      const row = el("div", "ft-kind");
+      row.append(el("span", "ft-kind-name", "Group"), el("span", "ft-kind-el", list.length + " layers · " + motionLabel(list[0])));
       return row;
     }
 
@@ -4216,7 +5923,523 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function kindLineMany(list, isGroup) {
       const row = el("div", "ft-kind");
       row.appendChild(el("span", "ft-kind-name", isGroup ? "Group" : list.length + " selected"));
+      if (isGroup) row.appendChild(itemCount(list.length));
       return row;
+    }
+
+    // Motion, as Figma's Prototype tab, true to the code: for one layer its Animation; with nothing selected, the
+    // page's Animations. Several layers show their kind line only: motion is set one layer at a time. Drawn while
+    // the tab shows.
+    const motionChosen = el("div", "ft-chosen");
+    let shown = null;
+    let shownKind = null;
+    function drawMotion() {
+      motionChosen.textContent = "";
+      animsSec.hidden = !!shown;
+      waitSec.hidden = true;
+      speedSec.hidden = true;
+      applySpeed();
+      if (motionPane.hidden) return;
+      const t = shown;
+      if (!t) return drawPageAnims();
+      const layers = Array.isArray(t) ? t : [t];
+      // Layers that run the same animations (or none yet: a ⌘G group, or one picked to add one to) are tuned as one
+      // unit; several that run different ones show their kind line only.
+      const key = motionKey(layers[0]);
+      if (layers.length > 1 && !layers.every((e) => motionKey(e) === key)) return motionChosen.appendChild(kindLineMany(layers, shownKind === "group"));
+      // The kind line first, then Playback speed (while there's an animation to watch), then Animation.
+      motionChosen.appendChild(layers.length === 1 ? kindLine(layers[0]) : key ? motionGroupLine(layers) : kindLineMany(layers, shownKind === "group"));
+      speedSec.hidden = !key;
+      motionChosen.append(speedSec, animationSection(layers));
+    }
+
+    // A time in ms, as Figma shows it; "0.3s" and "300ms" both type in.
+    function msField(get, set, icon, tip) {
+      const f = numField(icon || null, tip);
+      // A group whose layers differ reads Mixed.
+      const show = (force) => {
+        const v = get();
+        f.set(isNum(v) ? Math.round(v) + "ms" : "Mixed", force);
+      };
+      editable(f.input, show, (v) => {
+        const n = toMs(v);
+        if (isNum(n) && n >= 0) set(Math.round(n));
+      });
+      show(true);
+      return f.wrap;
+    }
+
+    const PLAYBACKS = [["normal", "Normal"], ["reverse", "Reverse"], ["alternate", "Alternate"], ["alternate-reverse", "Alternate reverse"]];
+    const FILLS = [["none", "None"], ["forwards", "Forwards"], ["backwards", "Backwards"], ["both", "Both"]];
+    const MOVES = [["left", "arrowLeft", "Left"], ["right", "arrowRight", "Right"], ["down", "arrowDown", "Down"], ["up", "arrowUp", "Up"]];
+    const labelOf = (opts, v) => (opts.find(([x]) => x === v) || [v, v])[1];
+
+    // One animation's settings, in the panel under its row, laid out as Figma's Interaction popover: which
+    // @keyframes play; what they do, only where it applies (Direction and Distance when they move, Scale, Rotation,
+    // Opacity when they scale, turn or fade); its easing (with the curve editor for a custom curve), duration and
+    // delay (and a group's stagger); its iterations, playback and fill mode. The layers themselves are the preview:
+    // every edit replays them. Timing edits are the layers' animation-* properties; what the keyframes do is written
+    // into the page's @keyframes, so every layer using them follows, as the code would.
+    function animSettings(a) {
+      let custom = false;
+      const body = el("div", "ft-anim-settings");
+      const label = (text) => el("span", "ft-anim-label", text);
+      const group = (...kids) => {
+        const g = el("div", "ft-anim-group");
+        g.append(...kids);
+        return g;
+      };
+      // Keyframe edits change the page; then the fields redraw and the layers play again, so the change shows.
+      const after = () => {
+        changed(false);
+        a.replay();
+        build();
+      };
+    // A value the layers of a group don't share reads Mixed; picking one sets it on them all.
+      const pick = (p, opts) => {
+        const d = dropdown((btn) => menu.toggle(btn, opts.map(([value, l]) => ({ label: l, value })), a.get(p), (v) => {
+          a.put(p, v);
+          build();
+        }));
+        d.label.textContent = a.get(p) == null ? "Mixed" : labelOf(opts, a.get(p));
+        return d.btn;
+      };
+      // A number field that commits a parsed value; show gives what it reads.
+      const num = (icon, tip, show, commit) => {
+        const f = numField(icon, tip);
+        editable(f.input, (force) => f.set(show(), force), (v) => {
+          const n = parseFloat(v);
+          if (isNum(n)) commit(n, String(v));
+        });
+        f.set(show(), true);
+        return f.wrap;
+      };
+
+      function build() {
+        const name = a.first("animation-name");
+        // A CSS animation can play other @keyframes of the page's; a JavaScript one's keyframes are in its call,
+        // so its name is a label.
+        let which = null;
+        if (a.swap) {
+          which = dropdown((btn) => menu.toggle(btn, keyframeChoices(), name, (v) => {
+            a.put("animation-name", keyframesFrom(v));
+            build();
+          }));
+        } else {
+          which = { btn: el("div", "ft-dd ft-dd-static"), label: el("span", "ft-dd-label") };
+          which.btn.appendChild(which.label);
+        }
+        which.label.textContent = name;
+        const what = [label("Keyframes"), which.btn];
+        const info = a.info();
+        if (info && info.direction) {
+          const dir = segmented(MOVES, (v) => {
+            if (v !== info.direction) turnMoves(info, v);
+            after();
+          });
+          dir.set(info.direction);
+          what.push(label("Direction"), dir.seg, label("Distance"), num(ICON.ruler, "Distance",
+            () => lengthText(info.distance), (n) => {
+              if (n >= 0) scaleMoves(info, n);
+              after();
+            }));
+        }
+        if (info && info.scale) {
+          what.push(label("Scale"), num(null, null, () => +info.scale.value.toFixed(3), (n) => {
+            info.scale.frames.forEach((f) => writePart(f, "scale", n));
+            after();
+          }));
+        }
+        if (info && info.rotate) {
+          what.push(label("Rotation"), num(ICON.angle, "Rotation", () => +info.rotate.value.toFixed(1) + "°", (n) => {
+            info.rotate.frames.forEach((f) => writePart(f, "rotate", n));
+            after();
+          }));
+        }
+        if (info && info.opacity) {
+          what.push(label("Opacity"), num(ICON.checkerboard, "Opacity", () => Math.round(info.opacity.value * 100) + "%", (n) => {
+            info.opacity.frames.forEach((f) => writePart(f, "opacity", Math.min(100, Math.max(0, n)) / 100));
+            after();
+          }));
+        }
+
+        // Easing: Figma's presets and Custom bezier, the curve in front of the name. A custom curve shows its
+        // editor; dragging it redraws the name, the curve and the preview, not the whole popover.
+        const ease = a.get("animation-timing-function") || a.first("animation-timing-function");
+        const easeDd = dropdown((btn) => menu.toggle(btn, EASINGS.map(([v, l]) => ({ label: l, value: v })).concat([{ label: "Custom bezier", value: "custom" }]),
+          easeName(ease) === "Custom" ? "custom" : (EASINGS.find(([e]) => sameEase(e, ease)) || [])[0], (v) => {
+            custom = v === "custom";
+            const b = bezierOf(ease) || KEYWORD_BEZIER.ease;
+            a.put("animation-timing-function", custom ? "cubic-bezier(" + b.join(", ") + ")" : v);
+            build();
+          }));
+        const glyph = el("span", "ft-dd-icon");
+        easeDd.btn.prepend(glyph);
+        const drawEase = (v, mixed) => {
+          glyph.innerHTML = curveGlyph(v);
+          easeDd.label.textContent = mixed ? "Mixed" : custom ? "Custom" : easeName(v);
+        };
+        drawEase(ease, a.get("animation-timing-function") == null);
+        const curve = curveEditor((v) => {
+          a.put("animation-timing-function", v);
+          drawEase(v);
+        });
+        curve.el.classList.add("ft-span2");
+        curve.set(ease);
+        if (!(custom || easeName(ease) === "Custom")) curve.el.style.display = "none";
+        const timing = [label("Easing"), easeDd.btn, curve.el,
+          label("Duration"), msField(() => toMs(a.get("animation-duration")), (n) => { a.put("animation-duration", n + "ms"); build(); }, ICON.timer, "Duration")];
+        // One layer has its Delay. A group has when it starts (its first layer's delay; typing shifts them all) and
+        // its Stagger, the step from one layer to the next in the order they start (typing spaces them evenly;
+        // Mixed when the code's steps aren't even).
+        const delays = a.delays();
+        if (delays.length < 2) {
+          timing.push(label("Delay"), msField(() => a.delays()[0], (n) => { a.setDelays([n]); build(); }, ICON.hourglass, "Delay"));
+        } else {
+          const step = () => {
+            const ds = a.delays();
+            const steps = ds.slice(1).map((d, k) => d - ds[k]);
+            return steps.every((x) => Math.abs(x - steps[0]) < 0.5) ? steps[0] : NaN;
+          };
+          timing.push(
+            label("Delay"), msField(() => a.delays()[0], (n) => {
+              const ds = a.delays();
+              a.setDelays(ds.map((d) => Math.max(0, d + n - ds[0])));
+              build();
+            }, ICON.hourglass, "Delay"),
+            label("Stagger"), msField(step, (n) => {
+              const ds = a.delays();
+              a.setDelays(ds.map((d, k) => ds[0] + k * n));
+              build();
+            }, ICON.arrowsHorizontal, "Stagger")
+          );
+        }
+
+        // Iterations: a number, or ∞ ("infinite" types in too).
+        const iter = numField(ICON.repeat, "Iterations");
+        const showIter = (force) => {
+          const v = a.get("animation-iteration-count");
+          iter.set(v == null ? "Mixed" : v === "infinite" ? "∞" : v, force);
+        };
+        editable(iter.input, showIter, (v) => {
+          const typed = String(v).trim().toLowerCase();
+          const n = parseFloat(typed);
+          if (typed === "∞" || typed === "infinite") a.put("animation-iteration-count", "infinite");
+          else if (isNum(n) && n >= 0) a.put("animation-iteration-count", String(n));
+          else return;
+          build();
+        });
+        showIter(true);
+        const runs = [label("Iterations"), iter.wrap, label("Playback"), pick("animation-direction", PLAYBACKS), label("Fill mode"), pick("animation-fill-mode", FILLS)];
+        body.replaceChildren(group(...what), group(...timing), group(...runs));
+      }
+
+      build();
+      return body;
+    }
+
+    // Animation: the keyframe animations (CSS animation) of one layer, or of a group of layers that run the same
+    // ones (as the code has them: "the intro rises in" over three lines is one group), one row each, as Figma lists
+    // a layer's interactions: its @keyframes name and duration. A row opens its settings under it (animSettings),
+    // one at a time, and closes them again; with one animation they start open. An edit goes to
+    // every layer of the group. Play, Pause and Replay in the header drive the page's animations only (a group's
+    // together, so its stagger plays); they're not edits.
+    // The animations to pick from: the page's own @keyframes first, then, under a line, Figma's generic ones.
+    function keyframeChoices() {
+      const own = Array.from(pageKeyframes().keys()).filter((n) => !edits.newKeyframes[n]).map((n) => ({ label: n, value: n }));
+      // Headed as she named them: the page's own under "Your tokens", the generic ones under "Presets".
+      const presets = [{ heading: true, label: "Presets" }].concat(PRESETS.map(([id, label]) => ({ label, value: "preset:" + id })));
+      return own.length ? [{ heading: true, label: "Your tokens" }].concat(own, [{ divider: true }], presets) : presets;
+    }
+    // A pick's @keyframes name: the page's own, or a generic one added to the page for it.
+    const keyframesFrom = (v) => (String(v).slice(0, 7) === "preset:" ? addPreset(v.slice(7)) : v);
+    // Adds a CSS animation to the layers (a group's all at once, so they move as one unit) with Figma's default
+    // timing, ease out over 300ms, filling both ends so it holds its start and its end. Each layer's animation-*
+    // lists get one more entry, after any it runs.
+    function addAnimation(layers, choice) {
+      const name = keyframesFrom(choice);
+      const ADD = [["animation-name", name], ["animation-duration", "300ms"], ["animation-timing-function", "ease-out"], ["animation-delay", "0ms"],
+        ["animation-iteration-count", "1"], ["animation-direction", "normal"], ["animation-fill-mode", "both"]];
+      layers.forEach((t) => {
+        const cs = getComputedStyle(t);
+        const names = splitTop(cs.animationName);
+        const has = names.some((n) => n !== "none");
+        const lists = ADD.map(([p, v]) => {
+          if (!has) return [p, v];
+          const cur = splitTop(cs.getPropertyValue(p));
+          return [p, names.map((n, j) => cur[j % cur.length]).concat(v).join(", ")];
+        });
+        lists.forEach(([p, v]) => setStyle(t, p, v));
+      });
+      motionGroups(true);
+      showInPanel(shown, shownKind);
+    }
+
+    function animationSection(layers) {
+      const names = splitTop(getComputedStyle(layers[0]).animationName);
+      const css = names.some((n) => n !== "none");
+      // The JavaScript animations every layer of the group runs.
+      const js = waapiOf(layers[0]).filter((en) => layers.every((t) => en.targets.has(t)));
+      const s = section("Animation");
+      // Nothing yet: one button to add a CSS animation, picked from the page's own and Figma's generic ones.
+      if (!css && !js.length) {
+        const add = button("ft-choice ft-choice-icon ft-add-anim", null, () => menu.toggle(add, keyframeChoices(), null, (v) => addAnimation(layers, v)));
+        const plus = el("span");
+        plus.innerHTML = ICON.plus;
+        add.append(plus, el("span", null, "Add CSS animation"));
+        s.appendChild(add);
+        return s;
+      }
+      const jsAnims = () => js.flatMap((en) => layers.map((t) => en.targets.get(t)).filter(Boolean).map((tg) => tg.anim));
+      const anims = () => layers.flatMap((t) => t.getAnimations().filter((x) => x.animationName)).concat(jsAnims());
+      // Plays the animations again from the start, together, so a group's stagger plays. A CSS one-shot that has
+      // finished is no longer in getAnimations(), so each layer's name is switched off, then all are put back at
+      // once (each inline value goes back as it was, so nothing is edited); a JavaScript one plays its own again.
+      function restart() {
+        if (css) {
+          const was = layers.map((t) => t.style.getPropertyValue("animation-name"));
+          layers.forEach((t) => t.style.setProperty("animation-name", "none"));
+          void document.documentElement.offsetWidth;
+          layers.forEach((t, k) => {
+            if (was[k]) t.style.setProperty("animation-name", was[k]);
+            else t.style.removeProperty("animation-name");
+          });
+        }
+        jsAnims().forEach((x) => {
+          x.cancel();
+          x.play();
+        });
+        // A restarted CSS animation is a new one, at 1×: it takes the playback speed again.
+        applySpeed();
+        drawPlay();
+      }
+      // An edit replays the animation, so a one-shot that already ran shows the change; a burst of edits (a
+      // curve being dragged) replays once it settles.
+      let soon = 0;
+      const replaySoon = () => {
+        clearTimeout(soon);
+        soon = setTimeout(restart, 250);
+      };
+      // Play resumes a paused animation, or plays a finished one again.
+      const playBtn = iconButton(ICON.pause, "Pause", () => {
+        const as = anims();
+        const running = as.some((x) => x.playState === "running");
+        if (running) as.forEach((x) => x.pause());
+        else if (as.some((x) => x.playState === "paused")) as.forEach((x) => x.play());
+        else restart();
+        drawPlay();
+      });
+      function drawPlay() {
+        const running = anims().some((x) => x.playState === "running");
+        const tip = running ? "Pause" : "Play";
+        playBtn.innerHTML = running ? ICON.pause : ICON.play;
+        playBtn.setAttribute("data-ft-tip", tip);
+        playBtn.setAttribute("aria-label", tip);
+      }
+      const replayBtn = iconButton(ICON.replay, "Replay", restart);
+      const actions = el("div", "ft-head-actions");
+      actions.append(playBtn, replayBtn);
+      s.firstChild.appendChild(actions);
+      const list = el("div", "ft-anim-rows");
+      // One row per animation, as Figma lists a layer's interactions: its name and duration. A row opens its
+      // settings under it, one at a time, and closes them again. adapter() makes what animSettings reads.
+      function addRow(draw, adapter) {
+        const name = el("span", "ft-anim-name");
+        const meta = el("span", "ft-anim-meta");
+        let open = null;
+        const row = button("ft-anim-row", null, () => {
+          const was = open;
+          list.querySelectorAll(".ft-anim-settings").forEach((x) => x.remove());
+          list.querySelectorAll(".ft-anim-row").forEach((x) => x.setAttribute("aria-pressed", "false"));
+          open = null;
+          if (was) return;
+          row.setAttribute("aria-pressed", "true");
+          open = animSettings(adapter(() => {
+            changed(false);
+            draw(name, meta);
+            replaySoon();
+          }));
+          row.after(open);
+        });
+        row.append(name, meta);
+        draw(name, meta);
+        list.appendChild(row);
+      }
+
+      // A CSS animation: one value per animation in each layer's animation-* lists, repeated to the number of names
+      // as CSS does. Edits are those longhands; what it does is its @keyframes in the page.
+      const listOf = (t, p) => {
+        const v = splitTop(getComputedStyle(t).getPropertyValue(p));
+        return names.map((n, j) => v[j % v.length]);
+      };
+      names.forEach((n, i) => {
+        if (n === "none") return;
+        const valueAt = (t, p) => listOf(t, p)[i];
+        // What the group's layers share for p, or null when they differ.
+        const agreed = (p) => {
+          const vs = layers.map((t) => valueAt(t, p));
+          return vs.every((v) => v === vs[0]) ? vs[0] : null;
+        };
+        // The layers in the order they start: by delay, then by where they sit in the code.
+        const order = () => layers.map((t, k) => ({ t, k, d: toMs(valueAt(t, "animation-delay")) || 0 })).sort((x, y) => x.d - y.d || x.k - y.k);
+        addRow((name, meta) => {
+          name.textContent = valueAt(layers[0], "animation-name");
+          const dur = agreed("animation-duration");
+          meta.textContent = dur == null ? "Mixed" : Math.round(toMs(dur)) + "ms";
+        }, (edited) => ({
+          swap: true,
+          get: agreed,
+          first: (p) => valueAt(layers[0], p),
+          put: (p, v) => {
+            layers.forEach((t) => {
+              const now = listOf(t, p);
+              now[i] = v;
+              setStyle(t, p, now.join(", "));
+            });
+            if (p === "animation-name") names[i] = v;
+            edited();
+          },
+          delays: () => order().map((o) => o.d),
+          setDelays: (ds) => {
+            order().forEach((o, k) => {
+              const now = listOf(o.t, "animation-delay");
+              now[i] = Math.round(ds[k]) + "ms";
+              setStyle(o.t, "animation-delay", now.join(", "));
+            });
+            edited();
+          },
+          info: () => keyframesInfo(cssFrames(valueAt(layers[0], "animation-name"))),
+          replay: replaySoon,
+        }));
+      });
+
+      // A JavaScript animation: its timing read off each layer's running copy, written as edits finetune puts on
+      // those copies and on every later call; what it does is its keyframes as the call gave them.
+      const READ = {
+        "animation-duration": (tm) => (isNum(tm.duration) ? tm.duration : 0) + "ms",
+        "animation-delay": (tm) => (tm.delay || 0) + "ms",
+        "animation-timing-function": (tm) => tm.easing,
+        "animation-iteration-count": (tm) => (tm.iterations === Infinity ? "infinite" : String(tm.iterations)),
+        "animation-direction": (tm) => tm.direction,
+        "animation-fill-mode": (tm) => (tm.fill === "auto" ? "none" : tm.fill),
+      };
+      const FIELD = {
+        "animation-duration": ["duration", toMs], "animation-delay": ["delay", toMs], "animation-timing-function": ["easing", String],
+        "animation-iteration-count": ["iterations", (v) => (v === "infinite" ? "infinite" : parseFloat(v))],
+        "animation-direction": ["direction", String], "animation-fill-mode": ["fill", String],
+      };
+      js.forEach((en) => {
+        const copies = () => layers.map((t) => ({ t, tg: en.targets.get(t) })).filter((x) => x.tg);
+        const valueAt = (x, p) => (p === "animation-name" ? en.label : READ[p](x.tg.anim.effect.getTiming()));
+        const agreed = (p) => {
+          const vs = copies().map((x) => valueAt(x, p));
+          return vs.length && vs.every((v) => v === vs[0]) ? vs[0] : null;
+        };
+        const order = () => copies().map((x, k) => ({ x, k, d: x.tg.anim.effect.getTiming().delay || 0 })).sort((p, q) => p.d - q.d || p.k - q.k);
+        const changedJs = (edited) => {
+          applyWaapi(en);
+          noteChange();
+          edited();
+        };
+        addRow((name, meta) => {
+          name.textContent = en.label;
+          const dur = agreed("animation-duration");
+          meta.textContent = "JS · " + (dur == null ? "Mixed" : Math.round(toMs(dur)) + "ms");
+        }, (edited) => ({
+          get: agreed,
+          first: (p) => (copies()[0] ? valueAt(copies()[0], p) : null),
+          put: (p, v) => {
+            if (!FIELD[p]) return;
+            waapiEdit(en).timing[FIELD[p][0]] = FIELD[p][1](v);
+            changedJs(edited);
+          },
+          delays: () => order().map((o) => o.d),
+          setDelays: (ds) => {
+            const ed = waapiEdit(en);
+            order().forEach((o, k) => { ed.delays[selectorFor(o.x.t)] = Math.round(ds[k]); });
+            changedJs(edited);
+          },
+          info: () => keyframesInfo(editedFrames(en.frames, edits.waapi[en.key]).map((k, i) => ({
+            at: (k.offset || 0) * 100,
+            read: (p) => (k[camel(p)] == null ? "" : String(k[camel(p)])),
+            write: (p, v) => {
+              const ed = waapiEdit(en);
+              (ed.frames[i] = ed.frames[i] || {})[camel(p)] = v;
+              applyWaapi(en);
+              noteChange();
+            },
+          }))),
+          replay: replaySoon,
+        }));
+      });
+
+      // With one animation there's nothing to choose between: its settings start open.
+      const rows = list.querySelectorAll(".ft-anim-row");
+      if (rows.length === 1) rows[0].click();
+      s.appendChild(list);
+      drawPlay();
+      // Play and Pause follow the animations as they start and end; the listeners go with the section.
+      const follow = () => {
+        if (!s.isConnected) {
+          layers.forEach((t) => {
+            t.removeEventListener("animationstart", follow);
+            t.removeEventListener("animationend", follow);
+          });
+          return;
+        }
+        drawPlay();
+      };
+      layers.forEach((t) => {
+        t.addEventListener("animationstart", follow);
+        t.addEventListener("animationend", follow);
+      });
+      return s;
+    }
+
+    // With nothing selected: every animation on the page as the code has them now (CSS, and JavaScript ones it has
+    // seen run), so the ones she described (to Claude Code, say) are easy to find, and under it the CSS ones that
+    // haven't started yet. Each row leads with what's animating (the component: its class, or its layers'), then
+    // the animation it runs. A click selects it.
+    const animsSec = section("Animations");
+    const animList = el("div", "ft-anim-rows");
+    animsSec.appendChild(animList);
+    const waitSec = section("Not started yet");
+    const waitList = el("div", "ft-anim-rows");
+    waitSec.appendChild(waitList);
+    // A layer by its class (the one its group's layers don't all share, so three lines read apart), its id, or tag.
+    function layerNames(list) {
+      const shared = list.length > 1 ? Array.from(list[0].classList).filter((c) => list.every((e) => e.classList.contains(c))) : [];
+      return list.map((e) => {
+        const own = Array.from(e.classList).find((c) => !shared.includes(c)) || e.classList[0];
+        return e.id ? "#" + e.id : own ? "." + own : e.tagName.toLowerCase();
+      }).filter((n, i, all) => all.indexOf(n) === i).join(", ");
+    }
+    function drawPageAnims() {
+      const rows = motionGroups(true).map((g) => {
+        const row = button("ft-anim-row", null, () => { if (selection) selection.selectLayers(g); });
+        row.append(el("span", "ft-anim-name", layerNames(g)), el("span", "ft-anim-meta", motionLabel(g[0])));
+        return row;
+      });
+      animList.replaceChildren(...rows);
+      if (!rows.length) {
+        const warn = el("div", "ft-guide-warn");
+        warn.innerHTML = ICON.warning;
+        warn.appendChild(el("span", null, "No animations running on this page."));
+        animList.appendChild(warn);
+      }
+      // Waiting: Play adds the class that starts it, where the page would, then selects what it animates, ready to
+      // tune. That's the page's own state from then on (a reload puts it back); it isn't an edit.
+      const waiting = waitingAnimations();
+      waitSec.hidden = !waiting.length;
+      waitList.replaceChildren(...waiting.map((w) => {
+        const row = el("div", "ft-anim-row");
+        const play = iconButton(ICON.play, "Play: adds ." + w.cls + " to " + layerNames(w.on) + ", as the page would", () => {
+          w.on.forEach((e) => e.classList.add(w.cls));
+          requestAnimationFrame(() => { if (selection) selection.selectLayers(w.animated); });
+        });
+        row.append(el("span", "ft-anim-name", layerNames(w.animated)), el("span", "ft-anim-meta", w.names.join(", ")), play);
+        return row;
+      }));
     }
 
     // Figma's order: Position, Layout, Appearance, then Typography and the text's Fill for
@@ -4232,6 +6455,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       chosen.textContent = "";
       guidePop.close();
       effectPop.close();
+      shown = target;
+      shownKind = kind;
+      drawMotion();
       page.hidden = guideSec.hidden = !!target;
       if (!target) return;
       if (Array.isArray(target)) {
@@ -4287,7 +6513,33 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (JSON.stringify(a.adjust) !== JSON.stringify(b.adjust)) setToneFilter(toneId(sel), b.adjust || NO_ADJUST);
       });
       edits.elements = next.elements;
+      // Components after the layers' own edits, so an override taken off falls back to the component's value.
+      instanceCache.clear();
+      const nextComps = next.components || {};
+      new Set(Object.keys(edits.components).concat(Object.keys(nextComps))).forEach((name) => {
+        const a = (edits.components[name] || { styles: {} }).styles;
+        const b = (nextComps[name] || { styles: {} }).styles;
+        instancesOf(name).forEach((t) => {
+          const sel = selectorFor(t);
+          const own = (next.elements[sel] || { styles: {} }).styles;
+          const o = originals[sel] || { styles: {} };
+          new Set(Object.keys(a).concat(Object.keys(b))).forEach((prop) => {
+            if (own[prop] != null) return;
+            const v = prop in b ? b[prop] : o.styles[prop] || "";
+            if (v) t.style.setProperty(prop, v);
+            else t.style.removeProperty(prop);
+          });
+        });
+      });
+      edits.components = nextComps;
+      edits.overrides = next.overrides || [];
       edits.groups = next.groups;
+      paintNewKeyframes(next.newKeyframes || {});
+      edits.newKeyframes = next.newKeyframes || {};
+      paintKeyframes(next.keyframes);
+      edits.waapi = next.waapi || {};
+      waapi.forEach(applyWaapi);
+      edits.keyframes = next.keyframes;
 
       layers.forEach((l) => picker.closeFor(l));
       edits.page = next.page;
@@ -4309,8 +6561,142 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // Chosen first: it's empty while the page's sections show, and they hide while it's full, so either way
     // the last shown section is a last child (see the double-line rule in PANEL LOOK).
+    // Figma's shortcuts for what finetune does too (same key, same action), shown in their buttons' tooltips: ⌥8 and
+    // ⌥9 Design and Motion, ⌥⌘S Save, ⇧⌘E Copy changes, and in Design ⌥A ⌥H ⌥D ⌥W ⌥V ⌥S the alignments, ⇧H and ⇧V the flips, ⇧⌘H
+    // show or hide, 1 to 0 opacity (10% to 100%), and the arrows a nudge (Shift for 10). Undo, Redo, ⌘G, ⇧⌘G and ⌘\
+    // are handled where those live. None fires while typing in a field or in words being edited.
+    function flipLayer(t, across) {
+      const cs = getComputedStyle(t);
+      const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
+      const sx = across ? -sc[0] : sc[0];
+      const sy = across ? (sc.length > 1 ? sc[1] : sc[0]) : -(sc.length > 1 ? sc[1] : sc[0]);
+      boxed(t);
+      turnInPlace(t);
+      setStyle(t, "scale", sx === 1 && sy === 1 ? "" : sx + " " + sy);
+    }
+    const ALIGN_KEYS = { KeyA: "left", KeyH: "hcenter", KeyD: "right", KeyW: "top", KeyV: "vcenter", KeyS: "bottom" };
+    document.addEventListener("keydown", (e) => {
+      if (root.hidden || e.defaultPrevented || e.repeat && !/^Arrow/.test(e.key) || typing(e.target)) return;
+      const mod = MAC ? e.metaKey : e.ctrlKey;
+      const only = (m, a, sh) => mod === m && e.altKey === a && e.shiftKey === sh;
+      if (only(false, true, false) && (e.code === "Digit8" || e.code === "Digit9")) {
+        e.preventDefault();
+        return modeBtns[e.code === "Digit8" ? 0 : 1].click();
+      }
+      if (only(true, true, false) && e.code === "KeyS") {
+        e.preventDefault();
+        return saveNow();
+      }
+      // Copy changes on Figma's Export key (⇧⌘C is Chrome's Inspect element).
+      if (only(true, false, true) && e.code === "KeyE") {
+        e.preventDefault();
+        return copyChanges();
+      }
+      if (root.getAttribute("data-tab") !== "design" || !shown) return;
+      const list = Array.isArray(shown) ? shown : [shown];
+      const one = Array.isArray(shown) ? null : shown;
+      const act = (fn) => {
+        e.preventDefault();
+        fn();
+        changed(true);
+      };
+      if (only(false, true, false) && ALIGN_KEYS[e.code]) return act(() => (one ? alignToParent(one, ALIGN_KEYS[e.code]) : alignSelection(list, ALIGN_KEYS[e.code])));
+      if (one && only(false, false, true) && (e.code === "KeyH" || e.code === "KeyV")) return act(() => flipLayer(one, e.code === "KeyH"));
+      if (one && only(true, false, true) && e.code === "KeyH") return act(() => toggleHidden(one));
+      if (one && only(false, false, false) && /^Digit\d$/.test(e.code)) return act(() => setOpacity(one, (+e.code.slice(5) || 10) * 10));
+      if (!mod && !e.altKey && /^Arrow(Left|Right|Up|Down)$/.test(e.key)) {
+        const n = e.shiftKey ? 10 : 1;
+        const dx = e.key === "ArrowLeft" ? -n : e.key === "ArrowRight" ? n : 0;
+        const dy = e.key === "ArrowUp" ? -n : e.key === "ArrowDown" ? n : 0;
+        return act(() => list.filter((t) => !list.some((o) => o !== t && o.contains(t))).forEach((t) => nudge(t, dx, dy)));
+      }
+    });
+
     designPane.append(chosen, page, guideSec);
-    root.append(top, designPane, modes);
+    // Playback speed, for debugging, shown while an animation is selected: its layers play slower (or faster)
+    // while she watches them, from 0.25× to 1.5×; the rest of the page stays at 1×. It's only a way of viewing:
+    // nothing is edited, saved or copied, and leaving Motion (or the selection) puts them back to 1×. A replay,
+    // or an animation the page starts later, takes it too.
+    const SPEEDS = [0.25, 0.5, 1, 1.5];
+    let speed = 1;
+    const speedSec = el("div", "ft-section ft-speed");
+    const speedSeg = el("div", "ft-seg");
+    const speedBtns = SPEEDS.map((v) => {
+      const b = button("ft-seg-btn", v + "×", () => {
+        speed = v;
+        drawSpeed();
+        applySpeed();
+      });
+      const tip = "Test in " + v + "×";
+      b.setAttribute("data-ft-tip", tip);
+      b.setAttribute("aria-label", tip);
+      withTip(b);
+      speedSeg.appendChild(b);
+      return b;
+    });
+    const drawSpeed = () => speedBtns.forEach((b, i) => b.setAttribute("aria-pressed", String(SPEEDS[i] === speed)));
+    // Only the animations it slowed go back to 1×, so a page's own playback rates are left alone.
+    const sped = new WeakSet();
+    function applySpeed() {
+      const on = motionPane.hidden || !shown ? [] : Array.isArray(shown) ? shown : [shown];
+      const all = new Set(document.getAnimations().filter((x) => !(x instanceof CSSTransition)));
+      waapi.forEach((en) => en.targets.forEach((tg) => all.add(tg.anim)));
+      all.forEach((x) => {
+        if (on.includes(x.effect && x.effect.target)) {
+          if (x.playbackRate !== speed) x.playbackRate = speed;
+          sped.add(x);
+        } else if (sped.has(x)) {
+          x.playbackRate = 1;
+          sped.delete(x);
+        }
+      });
+    }
+    document.addEventListener("animationstart", applySpeed, true);
+    afterAnimate = applySpeed;
+    const speedLabel = el("div", "ft-speed-label", "Playback speed for debugging only");
+    const speedRow = el("div", "ft-labeled");
+    speedRow.append(speedLabel, speedSeg);
+    speedSec.appendChild(speedRow);
+    drawSpeed();
+    speedSec.hidden = true;
+    motionPane.append(motionChosen, animsSec, waitSec);
+    root.append(top, designPane, motionPane, modes);
+    // The floating scrollbar: drawn from the panel's scroll, kept in step with its size and its content's.
+    const rail = el("div", "ft-scroll-rail");
+    const thumb = el("div", "ft-scroll-thumb");
+    rail.appendChild(thumb);
+    root.prepend(rail);
+    function drawThumb() {
+      const h = root.clientHeight;
+      const sh = root.scrollHeight;
+      thumb.hidden = sh <= h + 1;
+      if (thumb.hidden) return;
+      const track = h - 4;
+      const th = Math.max(28, Math.round((track * h) / sh));
+      thumb.style.height = th + "px";
+      thumb.style.transform = "translateY(" + Math.round(2 + ((track - th) * root.scrollTop) / (sh - h)) + "px)";
+    }
+    root.addEventListener("scroll", drawThumb, { passive: true });
+    const sizes = new ResizeObserver(drawThumb);
+    [root, designPane, motionPane].forEach((e) => sizes.observe(e));
+    // Dragging the thumb scrolls the panel, as a scrollbar's does.
+    thumb.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const y0 = e.clientY;
+      const s0 = root.scrollTop;
+      const k = (root.scrollHeight - root.clientHeight) / Math.max(1, root.clientHeight - 4 - thumb.offsetHeight);
+      thumb.setPointerCapture(e.pointerId);
+      const move = (ev) => { root.scrollTop = s0 + (ev.clientY - y0) * k; };
+      const up = () => {
+        thumb.removeEventListener("pointermove", move);
+        thumb.removeEventListener("pointerup", up);
+        thumb.removeEventListener("pointercancel", up);
+      };
+      thumb.addEventListener("pointermove", move);
+      thumb.addEventListener("pointerup", up);
+      thumb.addEventListener("pointercancel", up);
+    });
     themeModes();
     // After the panel, so the overlay hides with it (.ft-inspector[hidden] ~ .ft-guides).
     document.body.append(root, overlay);
@@ -4593,6 +6979,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (first) {
         restoreEdits();
         startHistory();
+        afterReset();
       }
     }
     // Called from <head>, the body isn't there yet; wait for it.
