@@ -796,8 +796,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     angle: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 8.5C9 8.22386 8.77614 8 8.5 8C8.22386 8 8 8.22386 8 8.5V15.5C8 15.7761 8.22386 16 8.5 16H15.5C15.7761 16 16 15.7761 16 15.5C16 15.2239 15.7761 15 15.5 15H13C13 12.7909 11.2091 11 9 11V8.5ZM9 12V15H12C12 13.3431 10.6569 12 9 12Z" fill="currentColor"/></svg>',
     // rotate
     arrowClockwise: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.2322 6.47491C11.2085 5.4986 12.7915 5.4986 13.7678 6.47491L15.2929 8.00003H14C13.7239 8.00003 13.5 8.22389 13.5 8.50003C13.5 8.77618 13.7239 9.00003 14 9.00003H16.5C16.7761 9.00003 17 8.77618 17 8.50003V6.00003C17 5.72389 16.7761 5.50003 16.5 5.50003C16.2239 5.50003 16 5.72389 16 6.00003V7.29293L14.4749 5.7678C13.108 4.40097 10.892 4.40097 9.52513 5.7678L7.14645 8.14648C6.95118 8.34174 6.95118 8.65833 7.14645 8.85359C7.34171 9.04885 7.65829 9.04885 7.85355 8.85359L10.2322 6.47491ZM13.0607 9.64648C12.4749 9.0607 11.5251 9.06069 10.9393 9.64648L7.64645 12.9394C7.06066 13.5252 7.06066 14.4749 7.64645 15.0607L10.9393 18.3536C11.5251 18.9394 12.4749 18.9394 13.0607 18.3536L16.3536 15.0607C16.9393 14.4749 16.9393 13.5252 16.3536 12.9394L13.0607 9.64648ZM11.6464 10.3536C11.8417 10.1583 12.1583 10.1583 12.3536 10.3536L15.6464 13.6465C15.8417 13.8417 15.8417 14.1583 15.6464 14.3536L12.3536 17.6465C12.1583 17.8417 11.8417 17.8417 11.6464 17.6465L8.35355 14.3536C8.15829 14.1583 8.15829 13.8417 8.35355 13.6465L11.6464 10.3536Z" fill="currentColor"/></svg>',
-    // reset.instance
-    refresh: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.10267 10.1897C2.51688 10.7755 2.51688 11.7252 3.10267 12.311L7.14656 16.3549C7.15285 16.3612 7.15927 16.3673 7.1658 16.3732L9.45068 18.658C11.3526 20.5599 14.4981 20.3364 16.1119 18.1846C16.3283 17.8961 16.5084 17.5805 16.647 17.2479C17.8806 14.2871 15.7148 11.0003 12.5001 11.0003H10.2072L12.3536 8.8539C12.5489 8.65864 12.5489 8.34206 12.3536 8.1468C12.1584 7.95153 11.8418 7.95153 11.6465 8.1468L8.64654 11.1468C8.45128 11.3421 8.45128 11.6586 8.64654 11.8539L11.6465 14.8539C11.8418 15.0492 12.1584 15.0492 12.3536 14.8539C12.5489 14.6586 12.5489 14.3421 12.3536 14.1468L10.2072 12.0003H12.5001C14.994 12.0003 16.6858 14.5546 15.7239 16.8633C15.6171 17.1196 15.4783 17.3628 15.3119 17.5846C14.0632 19.2496 11.6294 19.4225 10.1578 17.9509L5.85365 13.6468C5.84736 13.6405 5.84095 13.6344 5.83442 13.6285L3.80978 11.6039C3.61451 11.4086 3.61451 11.0921 3.80978 10.8968L11.3961 3.31051C11.5913 3.11525 11.9079 3.11525 12.1032 3.31051L19.6895 10.8968C19.8847 11.0921 19.8847 11.4086 19.6895 11.6039L18.8379 12.4555C18.6426 12.6507 18.6426 12.9673 18.8379 13.1626C19.0331 13.3579 19.3497 13.3579 19.545 13.1626L20.3966 12.311C20.9823 11.7252 20.9823 10.7755 20.3966 10.1897L12.8103 2.6034C12.2245 2.01762 11.2747 2.01761 10.689 2.6034L3.10267 10.1897Z" fill="currentColor"/></svg>',
+    // restart (her pick for Reset)
+    refresh: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.85355 5.85355C9.04882 5.65829 9.04882 5.34171 8.85355 5.14645C8.65829 4.95118 8.34171 4.95118 8.14645 5.14645L5.14645 8.14645C4.95118 8.34171 4.95118 8.65829 5.14645 8.85355L8.14645 11.8536C8.34171 12.0488 8.65829 12.0488 8.85355 11.8536C9.04882 11.6583 9.04882 11.3417 8.85355 11.1464L6.70711 9H13.9999C16.2091 9 17.9999 10.7909 17.9999 13C17.9999 15.2091 16.2091 17 13.9999 17C12.2832 17 10.8191 15.9186 10.2517 14.3998C10.17 14.1812 9.96929 14.0226 9.73602 14.0226C9.41028 14.0226 9.1658 14.3231 9.27201 14.6311C9.94825 16.5916 11.8096 18 13.9999 18C16.7614 18 18.9999 15.7614 18.9999 13C18.9999 10.2391 16.7623 8.00091 14.0016 8C14.0011 8 14.0005 8 14 8H13.9999H6.70711L8.85355 5.85355Z" fill="currentColor"/></svg>',
     // blendmode.small
     drop: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 15.9999C13.6569 15.9999 15 14.6567 15 12.9999C15 12.1735 14.58 11.0112 13.9224 9.75417C13.3085 8.58051 12.5596 7.45671 12 6.67141C11.4404 7.45671 10.6915 8.58051 10.0776 9.75417C9.42004 11.0112 9 12.1735 9 12.9999C9 14.6567 10.3431 15.9999 12 15.9999ZM12 16.9999C14.2091 16.9999 16 15.209 16 12.9999C16 10.8296 13.9066 7.61254 12.7486 5.99911C12.375 5.47849 11.625 5.47849 11.2514 5.99911C10.0934 7.61254 8 10.8296 8 12.9999C8 15.209 9.79086 16.9999 12 16.9999Z" fill="currentColor"/></svg>',
     // opacity
@@ -3320,8 +3320,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         else undo();
         return;
       }
-      // Figma's ⌘G and ⌘⇧G (Ctrl on Windows).
-      if ((e.metaKey || e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === "g") {
+      // Figma's ⌘G and ⌘⇧G (Ctrl on Windows). ⌃G on a Mac is the layout grid's.
+      if ((MAC ? e.metaKey : e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === "g") {
         e.preventDefault();
         if (e.shiftKey) ungroup();
         else groupSelection();
@@ -5108,6 +5108,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return { g, group, rowEl, label, eye, swatch };
     }
 
+    // Figma's Show layout grids: ⌃G on a Mac, Ctrl+Shift+4 elsewhere. Turned on with nothing selected, the panel shows
+    // the layout (brought back if it was hidden, in Design if Motion was showing); with a layer selected, the panel stays
+    // as it is. With no layout yet, it adds the usual one (12 columns).
+    const GRID_KEY = MAC ? "⌃G" : "Ctrl+Shift+4";
+    document.addEventListener("keydown", (e) => {
+      const hit = MAC ? e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && e.code === "KeyG"
+        : e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey && e.code === "Digit4";
+      if (!hit || e.defaultPrevented || typing(e.target)) return;
+      e.preventDefault();
+      const on = !guides.some((g) => g.visible);
+      if (!guides.length) guides.push(newGuide());
+      else guides.forEach((g) => { g.visible = on; });
+      drawGuides();
+      if (!on || shown || shownColumn) return;
+      if (inspector.hidden) {
+        if (minimized) toggleUi();
+        else showPanel(true);
+      }
+      if (root.getAttribute("data-tab") !== "design") modeBtns[0].click();
+      guideSec.scrollIntoView({ block: "nearest" });
+    });
+
     // The row is kept while it's the same layout, so its open color stays anchored to it.
     function drawGuides() {
       if (!guides.length) {
@@ -5127,6 +5149,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         eye.innerHTML = g.visible ? ICON.eye : ICON.eyeClosed;
         eye.setAttribute("aria-pressed", String(!g.visible));
         eye.setAttribute("data-ft-tip", tip);
+        eye.setAttribute("data-ft-tip-key", GRID_KEY);
         eye.setAttribute("aria-label", tip);
         rowEl.classList.toggle("is-hidden", !g.visible);
       });
