@@ -38,6 +38,10 @@
   --ft-i-inverse: #2C2C2C;                 /* bg/inverse */
   --ft-i-on-inverse: rgba(255, 255, 255, 0.9); /* text/inverse/oninverse */
   --ft-i-scrollbar: rgba(179, 179, 179, 0.5); /* special/scrollbar */
+  --ft-i-surface-2: #F5F5F5;               /* bg-secondary */
+  --ft-i-disabled: #D9D9D9;                /* bg-disabled */
+  --ft-i-on-disabled: #FFFFFF;             /* icon-ondisabled */
+  --ft-on-brand: #FFFFFF;                  /* icon-onbrand: white in both themes */
   --ft-blue: #0D99FF;                      /* bg-brand, border-selected, fullscreen/selection/border */
   --ft-blue-soft: #E5F4FF;                 /* bg-selected */
   --ft-blue-text: #007BE5;                 /* icon/selected */
@@ -80,6 +84,9 @@ html[data-ft-theme="dark"] {
   --ft-i-text-3: rgba(255, 255, 255, 0.4);
   --ft-i-inverse: #FFFFFF;
   --ft-i-on-inverse: rgba(0, 0, 0, 0.9);
+  --ft-i-surface-2: #383838;
+  --ft-i-disabled: #757575;
+  --ft-i-on-disabled: #2C2C2C;
   --ft-blue: #0C8CE9;
   --ft-blue-soft: #4A5878;
   --ft-blue-text: #7CC4F8;
@@ -124,7 +131,7 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
   font: inherit; letter-spacing: inherit; color: inherit;
   margin: 0; padding: 0; border: 0; background: none; outline: none;
 }
-/* The panel's top row: Undo, Redo and Reset at the left, Hide UI over its right end. */
+/* The panel's top row: Undo and Redo at the left, Hide UI over its right end (Reset is in the left toolbar). */
 .ft-top {
   position: sticky; top: 0; z-index: 1; display: flex; padding: 12px 8px 8px;
   background: var(--ft-i-bg); border-bottom: 1px solid var(--ft-i-line);
@@ -137,9 +144,9 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
   border: 1px solid transparent; border-radius: 8px; color: var(--ft-i-text); cursor: default; user-select: none;
 }
 .ft-ui[hidden] { display: none; }
+.ft-actions { display: flex; }
 .ft-ui :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; font: inherit; }
 .ft-ui[data-min] { background: var(--ft-i-bg); border-color: var(--ft-i-border); }
-.ft-actions { display: flex; }
 /* Every floating box (the panel, the toolbar, this bar, popovers, menus, the toast) has the panel's 8px corners;
    a cell inside one sits 4px in, so its corners are 4px (the Design / Motion bar's sit 6px in, her call).
    Design and Motion, at the bottom of the window like Figma's toolbar: one bar of cells, each with its icon
@@ -158,6 +165,9 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-modes-btn:hover { background: var(--ft-i-hover); }
 .ft-modes-btn[aria-selected="true"] { background: var(--ft-accent); color: var(--ft-on-dark); }
 .ft-icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+/* Unavailable but still hoverable, so its tip can say why. */
+.ft-icon-btn[aria-disabled="true"] { opacity: 0.4; }
+.ft-icon-btn[aria-disabled="true"]:hover { background: none; }
 /* The toast sits above the Design / Motion bar, spaced as Figma's (40 tall, 16 in, 12 between the words and its
    buttons) in finetune's colors. One with an action (Reset's Undo) takes clicks, has Figma's close button after it,
    and fades out. */
@@ -170,6 +180,10 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
   transition: opacity 0.4s;
 }
 .ft-toast[hidden] { display: none; }
+/* The first-visit note sits in the middle of the window (her call, 2026-10-14). */
+.ft-toast.is-center { top: 50%; bottom: auto; transform: translate(-50%, -50%); }
+/* A key in a toast, in the tooltips' shortcut colour. */
+.ft-toast-key { color: var(--ft-on-dark-2); }
 .ft-toast.has-action { padding: 0 8px 0 16px; pointer-events: auto; }
 .ft-toast-actions { display: flex; align-items: center; gap: 8px; }
 .ft-toast.is-fading { opacity: 0; }
@@ -235,7 +249,16 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-kind { display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 13px 8px 13px 16px; border-bottom: 1px solid var(--ft-i-line); }
 .ft-kind-name { flex: none; font-weight: 550; font-size: 13px; line-height: 22px; letter-spacing: -0.0025em; }
 .ft-kind-el { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ft-i-text-2); }
-.ft-kind-count { margin-left: auto; color: var(--ft-i-text-2); }
+/* The columns' line opens the Page settings. */
+.ft-kind-link { cursor: pointer; }
+.ft-kind-link:hover { background: var(--ft-i-hover); }
+/* A group's count opens its items as a menu, to pick one she knows (her ask, 2026-10-14): after the element's
+   name, in its small grey type, "main.gv-pane · 6 items" with a caret after the count, as Figma's "Frame ⌄" header
+   opens its menu; hovering the count (or while its menu is open) greys it. */
+.ft-kind-dot { flex: none; margin: 0 -4px; color: var(--ft-i-text-2); }
+.ft-kind-count { display: inline-flex; align-items: center; flex: none; margin: 0 -2px 0 -4px; padding: 0 2px 0 4px; border-radius: 5px; color: var(--ft-i-text-2); cursor: default; }
+.ft-kind-count:hover, .ft-kind-count.is-open { background: var(--ft-i-hover); }
+.ft-kind-count .ft-caret { color: inherit; }
 /* A component's line: its name, what an edit reaches, then Override across the width (pressed while it's on). */
 .ft-kind-comp { flex-direction: column; align-items: stretch; gap: 4px; }
 .ft-kind-comp .ft-kind-el { white-space: normal; }
@@ -311,6 +334,9 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-menu-item:hover { background: var(--ft-blue); }
 .ft-menu-check { display: grid; place-items: center; width: 16px; height: 16px; }
 .ft-menu-check svg { display: block; width: 24px; height: 24px; margin: -4px; }
+/* The kit's menu glyph sits 20 in from the row (the 4px gap after the tick would put it at 24). */
+.ft-menu-icon { display: grid; place-items: center; flex: none; width: 24px; height: 24px; margin-left: -4px; }
+.ft-menu-icon svg { display: block; width: 24px; height: 24px; }
 .ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: var(--ft-on-dark-3); white-space: nowrap; }
 .ft-menu-heading:not(:first-child) { margin-top: 4px; }
 /* A line between a menu's parts, as Figma's: Motion's coded animations above, its generic ones below. */
@@ -354,7 +380,7 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 
 .ft-toolbar {
   position: fixed; top: 12px; left: 12px; z-index: 2147483646;
-  display: flex; flex-direction: column; gap: 12px; padding: 12px;
+  display: flex; flex-direction: column; gap: 4px; padding: 8px;
   background: var(--ft-i-bg); border: 1px solid var(--ft-i-border); border-radius: 8px;
   color: var(--ft-i-text); cursor: default; user-select: none;
   font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em;
@@ -363,14 +389,20 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-toolbar[hidden] { display: none; }
 .ft-toolbar, .ft-toolbar * { box-sizing: border-box; }
 .ft-toolbar :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; }
-/* Figma's left rail (measured off it): a 40 box with the icon, its name 4 under it (11px), 72 from one tool to the
-   next, 12 in from the rail's edges; hover greys the box, and nothing stays picked (they're actions). The icons show at
-   the rail's size, the 24 frame drawn at 32, so their 12px glyphs read at Figma's 16. */
-.ft-tool { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 40px; }
-.ft-tool-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; }
+/* The rail, slimmed (her call, 2026-10-14: no names, tighter): icons only, each a 32 box with its 24 icon at 1:1
+   (the panel's button size), 4 apart and 8 in from the rail's edges; the names are in the tooltips. Hover greys the
+   box and nothing stays picked (they're actions). It starts with finetune's mark, a link to the repo, over a short
+   grey line, as Figma's rail starts with its logo (her ask, 2026-10-15); the line keeps the tools' 4px rhythm. */
+.ft-tool { display: flex; color: inherit; text-decoration: none; cursor: default; }
+.ft-rail-line { flex: none; width: 16px; height: 1px; margin: 0 auto; background: var(--ft-i-line); }
+/* The mark at 20 (a touch over the tools' glyphs, as Figma's logo stands over its tools); hover fills it in. */
+.ft-logo .ft-tool-icon svg { width: 20px; height: 20px; }
+.ft-logo .ft-logo-fill, .ft-logo:hover .ft-logo-line { display: none; }
+.ft-logo:hover .ft-logo-fill { display: block; }
+.ft-tool-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; }
 .ft-tool:hover .ft-tool-icon { background: var(--ft-i-hover); }
-.ft-tool-icon svg { display: block; width: 32px; height: 32px; }
-.ft-tool-label { white-space: nowrap; }
+.ft-tool:disabled { opacity: 0.4; pointer-events: none; }
+.ft-tool-icon svg { display: block; width: 24px; height: 24px; }
 
 .ft-type { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-right: 32px; }
 .ft-span2 { grid-column: 1 / -1; }
@@ -389,6 +421,7 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-field-icon + .ft-num-input { padding-left: 0; }
 .ft-field-caret { display: grid; place-items: center; flex: none; width: 20px; height: 24px; color: var(--ft-i-text-2); }
 .ft-field-caret svg { display: block; width: 24px; height: 24px; margin: 0 -2px; }
+.ft-field-caret[hidden] { display: none; }
 .ft-labeled { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 /* Figma's rhythm (its own panel, measured): a label is 9px on a 14px line; two fields with a label between them sit
    24 apart (6 above the label, 14 for it, 4 below); a labeled first row's field sits 60 under the section's top. */
@@ -412,6 +445,41 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-seg-btn:hover { background: var(--ft-i-press); }
 .ft-seg-btn[aria-pressed="true"] { background: var(--ft-i-surface); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
 .ft-seg-btn svg { display: block; width: 24px; height: 24px; }
+/* UI3's segmented control, on Flow only: one grey track, the picked cell a surface with a 1px line. The other
+   segmented rows keep the separate cells above (her earlier call). */
+.ft-seg.ft-seg-track { gap: 0; background: var(--ft-i-field); border-radius: 5px; }
+.ft-seg-track > .ft-seg-btn,
+.ft-seg-track > .ft-seg-btn:first-child,
+.ft-seg-track > .ft-seg-btn:last-child { background: none; border-radius: 5px; color: var(--ft-i-text-2); }
+.ft-seg-track > .ft-seg-btn:hover { background: none; color: var(--ft-i-text); }
+.ft-seg-track > .ft-seg-btn[aria-pressed="true"] { background: var(--ft-i-surface); box-shadow: inset 0 0 0 1px var(--ft-i-line); color: var(--ft-i-text); }
+.ft-with-action > .ft-seg { flex: 1; min-width: 0; }
+/* Flow's Wrap and its empty slot take turns in the action column. */
+.ft-with-action > [hidden] { display: none; }
+/* Auto layout's Alignment: Figma's nine dots on one grey field, 64 tall in the left column, with Gap beside it at the
+   top. The glyphs are UI3's 16 frames at 1:1 (an ICON svg has no size of its own, so the cell gives it one). A cell
+   at rest shows its dot; picked (accent) or under the pointer (secondary) it shows the flow's glyph. Under Gap Auto
+   the box is three cells, each holding three glyphs spread along the flow, centred where the nine dots' rows (or
+   columns) are. */
+.ft-type > .ft-al-top { align-self: start; }
+.ft-al-box { display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); height: 64px; border-radius: 5px; background: var(--ft-i-field); }
+.ft-al-box.is-cols { grid-template: 1fr / repeat(3, 1fr); }
+.ft-al-box.is-rows { grid-template: repeat(3, 1fr) / 1fr; }
+.ft-al-cell { display: grid; place-items: center; min-width: 0; min-height: 0; color: var(--ft-i-text-3); }
+.ft-al-box.is-auto .ft-al-cell { place-items: stretch; }
+.ft-al-cell svg { display: block; flex: none; width: 16px; height: 16px; }
+.ft-al-cell > span { display: flex; justify-content: space-around; align-items: center; }
+.ft-al-box.is-cols .ft-al-cell > span { flex-direction: column; }
+.ft-al-box .ft-al-cell > .ft-al-on,
+.ft-al-box .ft-al-cell:hover > .ft-al-rest,
+.ft-al-box .ft-al-cell[aria-pressed="true"] > .ft-al-rest { display: none; }
+.ft-al-box .ft-al-cell:hover > .ft-al-on,
+.ft-al-box .ft-al-cell[aria-pressed="true"] > .ft-al-on { display: flex; }
+.ft-al-cell:hover { color: var(--ft-i-text-2); }
+.ft-al-cell[aria-pressed="true"] { color: var(--ft-accent-text); }
+/* A wrapped row's two gaps stack in Gap's column; Individual padding opens two rows, as the corners do. */
+.ft-al-gaps, .ft-pads { display: flex; flex-direction: column; gap: 8px; }
+.ft-pads[hidden] { display: none; }
 .ft-head-actions, .ft-btn-group { display: flex; }
 /* Figma's layout guides: drawn over the page, one layer each, never in the way of a click. */
 .ft-guides { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
@@ -562,12 +630,22 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-dd-icon svg { display: block; width: 12px; height: 12px; }
 .ft-dd-icon svg.ft-ico { width: 24px; height: 24px; margin: -4px; }
 .ft-dd-icon + .ft-dd-label { flex: 1; }
-/* Figma's checkbox row (Clip content): the box, then its label. Checked, the box takes the text's color. */
+/* Figma's checkbox row (Clip content): the box, then its label. The box is UI3's Checkbox (the kit's Light and Dark
+   frames). The line is an inset shadow, not a border, so the 16 glyph fills the box at 1:1. The kit draws no hover,
+   so an empty box only firms its line on hover (finetune's own). Focus puts a 2px ring of the panel's surface inside
+   the line, as the kit does. The glyph paints with currentColor, so each state just sets color. */
 .ft-check-row { display: flex; align-items: center; gap: 8px; height: 24px; text-align: left; }
-.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 2px; box-shadow: inset 0 0 0 1px var(--ft-i-stroke); }
-.ft-check-row:hover .ft-check { background: var(--ft-i-hover); }
-.ft-check-row[aria-checked="true"] .ft-check { box-shadow: inset 0 0 0 1px var(--ft-i-text); }
-.ft-check svg { display: block; width: 24px; height: 24px; margin: -4px; }
+.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 5px; color: var(--ft-on-brand); background: var(--ft-i-surface-2); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-check-row:hover .ft-check { box-shadow: inset 0 0 0 1px var(--ft-i-text-3); }
+.ft-check-row:is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { background: var(--ft-blue); box-shadow: inset 0 0 0 1px var(--ft-blue-text); }
+.ft-check-row[aria-checked="mixed"] .ft-check::after { content: ""; width: 8px; height: 1px; border-radius: 0.5px; background: currentColor; }
+.ft-check-row:focus-visible .ft-check { box-shadow: inset 0 0 0 1px var(--ft-blue-text); }
+.ft-check-row:focus-visible:is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { box-shadow: inset 0 0 0 1px var(--ft-blue-text), inset 0 0 0 3px var(--ft-i-surface); }
+.ft-check-row:is(:disabled, [aria-disabled="true"]) { pointer-events: none; }
+.ft-check-row:is(:disabled, [aria-disabled="true"]) .ft-check { background: none; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
+.ft-check-row:is(:disabled, [aria-disabled="true"]):is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { color: var(--ft-i-on-disabled); background: var(--ft-i-disabled); box-shadow: none; }
+.ft-check-row:is(:disabled, [aria-disabled="true"])[aria-checked="mixed"] .ft-check { color: var(--ft-i-text-3); }
+.ft-check svg { display: block; width: 16px; height: 16px; margin: 0; }
 /* Motion's accent: pink where Design uses its blue (the selection, focus, the bar's chosen cell, and Motion's
    own rows and curve above), so it's clear which mode is on. html.ft-motion is set while Motion shows. */
 html.ft-motion .ft-hover-box, html.ft-motion .ft-sel-box, html.ft-motion .ft-handle { border-color: var(--ft-pink); }
@@ -785,23 +863,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
   }
 
-  // Phosphor icons (MIT), regular weight, inlined so the file stays dependency-free. The toolbar's two
-  // (copy, floppyDisk) are Light, so at 20px their line (0.94px) weighs what Regular's does at the
-  // panel's 16px (1px). Undo and redo sit 8 units low (half a pixel at 16px): their ink spans 32 to 208,
-  // so drawn as is they ride above the middle of the button. The flips and the
-  // guide alignments are Lucide (ISC, lucide.dev, v1.56.0) at stroke 1.5, a weight under Lucide's default;
-  // the alignments' bars are filled with no stroke around them (her call), their alignment line stays a stroke.
-  // The selection's top / middle / bottom (alignTop, alignVCenter, alignBottom) are drawn the same way.
-  // Flow's four (flowFree, flowVertical, flowHorizontal, flowGrid) are drawn after Figma's: small rounded squares
-  // scattered, stacked with a down arrow, side by side over a right arrow, and two by two. They're drawn at 16, the
-  // size they show at, with a 1px line on half pixels, so every edge lands on a whole pixel; the squares are 5 across
-  // with 2 between.
-  // Lucide names a flip by its axis, so Flip horizontal is flip-vertical-2 and the other way round. Rotate 90°
-  // is Lucide's rotate-cw-square too, the nearest to Figma's turned square.
-  // Figma UI3's icons (the UI3 kit's Icons page): 24 frames drawn at 1:1, painted with currentColor. Each shows
-  // at 24 and is never scaled; a smaller slot centres it with negative margins (PANEL LOOK). The comment names
-  // the UI3 icon; mirrored ones are flipped across their middle.
+  // Icons are Figma UI3's (the UI3 kit's Icons page) unless a comment says otherwise: 24 frames drawn
+  // at 1:1, painted with currentColor, never scaled; a smaller slot centres them with negative margins
+  // (PANEL LOOK). The comment names the UI3 icon; mirrored ones are flipped across their middle.
+  // check16 is the kit's 16 frame, because the checkbox it sits in is 16.
+  // floppyDisk, undo and redo are Phosphor (MIT), nested at 16 inside the 24 frame. Undo and redo sit 8 units
+  // low (half a pixel at 16px): their ink spans 32 to 208, so drawn as is they ride above the button's middle.
+  // Flow's four (flowFree, flowVertical, flowHorizontal, flowGrid) are composed from UI3 pieces, since
+  // the kit has no symbol for Figma's 2025 Flow row: autolayout-wrap's rounded squares in its slots
+  // (6,6) (13,6) (6,13) (13,13), Freeform's top right one at (13,8), and a 1px arrow with a compact
+  // 2px chevron head, at the kit's 1px weight.
   const ICON = {
+    // finetune's own mark (the "ft" ligature, her final marks, 2026-10-15; the geometry is hers, untouched): the
+    // outline as a 1px line at any size (non-scaling), so it draws like the kit's 1px icons beside it, and the fill
+    // mark, which the rail shows on hover (.ft-logo-fill).
+    logo: '<svg class="ft-ico" viewBox="0 0 100 100" fill="none" aria-hidden="true"><path class="ft-logo-fill" d="M 26.00 24.08 A 19.20 19.20 0 0 1 45.20 4.88 L 48.88 4.88 A 4.00 4.00 0 0 1 52.88 8.88 L 52.88 12.40 A 4.00 4.00 0 0 0 56.88 16.40 L 60.40 16.40 A 4.00 4.00 0 0 1 64.40 20.40 L 64.40 40.24 A 4.00 4.00 0 0 0 68.40 44.24 L 81.52 44.24 A 4.00 4.00 0 0 1 85.52 48.24 L 85.52 51.76 A 4.00 4.00 0 0 1 81.52 55.76 L 68.40 55.76 A 4.00 4.00 0 0 0 64.40 59.76 L 64.40 75.92 A 7.68 7.68 0 0 0 72.08 83.60 L 75.76 83.60 A 4.00 4.00 0 0 1 79.76 87.60 L 79.76 91.12 A 4.00 4.00 0 0 1 75.76 95.12 L 72.08 95.12 A 19.20 19.20 0 0 1 52.88 75.92 L 52.88 59.76 A 4.00 4.00 0 0 0 48.88 55.76 L 41.52 55.76 A 4.00 4.00 0 0 0 37.52 59.76 L 37.52 79.60 A 4.00 4.00 0 0 1 33.52 83.60 L 30.00 83.60 A 4.00 4.00 0 0 1 26.00 79.60 L 26.00 59.76 A 4.00 4.00 0 0 0 22.00 55.76 L 18.48 55.76 A 4.00 4.00 0 0 1 14.48 51.76 L 14.48 48.24 A 4.00 4.00 0 0 1 18.48 44.24 L 22.00 44.24 A 4.00 4.00 0 0 0 26.00 40.24 L 26.00 24.08 Z M 37.52 40.24 L 37.52 24.08 A 7.68 7.68 0 0 1 45.20 16.40 L 48.88 16.40 A 4.00 4.00 0 0 1 52.88 20.40 L 52.88 40.24 A 4.00 4.00 0 0 1 48.88 44.24 L 41.52 44.24 A 4.00 4.00 0 0 1 37.52 40.24 Z" fill="currentColor" fill-rule="evenodd"/><path class="ft-logo-line" d="M 26.00 24.08 A 19.20 19.20 0 0 1 45.20 4.88 L 48.88 4.88 A 4.00 4.00 0 0 1 52.88 8.88 L 52.88 12.40 A 4.00 4.00 0 0 1 48.88 16.40 L 45.20 16.40 A 7.68 7.68 0 0 0 37.52 24.08 L 37.52 40.24 A 4.00 4.00 0 0 0 41.52 44.24 L 48.88 44.24 A 4.00 4.00 0 0 0 52.88 40.24 L 52.88 28.08 A 4.00 4.00 0 0 1 56.88 24.08 L 60.40 24.08 A 4.00 4.00 0 0 1 64.40 28.08 L 64.40 40.24 A 4.00 4.00 0 0 0 68.40 44.24 L 81.52 44.24 A 4.00 4.00 0 0 1 85.52 48.24 L 85.52 51.76 A 4.00 4.00 0 0 1 81.52 55.76 L 68.40 55.76 A 4.00 4.00 0 0 0 64.40 59.76 L 64.40 75.92 A 7.68 7.68 0 0 0 72.08 83.60 L 75.76 83.60 A 4.00 4.00 0 0 1 79.76 87.60 L 79.76 91.12 A 4.00 4.00 0 0 1 75.76 95.12 L 72.08 95.12 A 19.20 19.20 0 0 1 52.88 75.92 L 52.88 59.76 A 4.00 4.00 0 0 0 48.88 55.76 L 41.52 55.76 A 4.00 4.00 0 0 0 37.52 59.76 L 37.52 79.60 A 4.00 4.00 0 0 1 33.52 83.60 L 30.00 83.60 A 4.00 4.00 0 0 1 26.00 79.60 L 26.00 59.76 A 4.00 4.00 0 0 0 22.00 55.76 L 18.48 55.76 A 4.00 4.00 0 0 1 14.48 51.76 L 14.48 48.24 A 4.00 4.00 0 0 1 18.48 44.24 L 22.00 44.24 A 4.00 4.00 0 0 0 26.00 40.24 L 26.00 24.08 Z" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="miter" stroke-linecap="butt"/></svg>',
     // rotation
     angle: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 8.5C9 8.22386 8.77614 8 8.5 8C8.22386 8 8 8.22386 8 8.5V15.5C8 15.7761 8.22386 16 8.5 16H15.5C15.7761 16 16 15.7761 16 15.5C16 15.2239 15.7761 15 15.5 15H13C13 12.7909 11.2091 11 9 11V8.5ZM9 12V15H12C12 13.3431 10.6569 12 9 12Z" fill="currentColor"/></svg>',
     // rotate
@@ -894,14 +970,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     columns: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V19H5V5ZM11 5H14V19H11V5ZM20 5H17V19H20V5Z" fill="currentColor"/></svg>',
     // link-connected
     lockRatio: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V9.5C14 9.77614 14.2239 10 14.5 10C14.7761 10 15 9.77614 15 9.5V8C15 6.34314 13.6569 5 12 5C10.3431 5 9 6.34314 9 8V9.5C9 9.77614 9.22386 10 9.5 10C9.77614 10 10 9.77614 10 9.5V8ZM10 16C10 17.1046 10.8954 18 12 18C13.1046 18 14 17.1046 14 16V14.5C14 14.2239 14.2239 14 14.5 14C14.7761 14 15 14.2239 15 14.5V16C15 17.6569 13.6569 19 12 19C10.3431 19 9 17.6569 9 16V14.5C9 14.2239 9.22386 14 9.5 14C9.77614 14 10 14.2239 10 14.5V16ZM12.5 10C12.5 9.72386 12.2761 9.5 12 9.5C11.7239 9.5 11.5 9.72386 11.5 10V14C11.5 14.2761 11.7239 14.5 12 14.5C12.2761 14.5 12.5 14.2761 12.5 14V10Z" fill="currentColor"/></svg>',
+    // link-broken (Constrain proportions off; lockRatio is on)
+    linkBroken: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V9.5C14 9.77614 14.2239 10 14.5 10C14.7761 10 15 9.77614 15 9.5V8C15 6.34315 13.6569 5 12 5C10.3432 5 9.00001 6.34315 9.00001 8V9.5C9.00001 9.77614 9.22386 10 9.50001 10C9.77615 10 10 9.77614 10 9.5V8ZM10 16C10 17.1046 10.8954 18 12 18C13.1046 18 14 17.1046 14 16V14.5C14 14.2239 14.2239 14 14.5 14C14.7761 14 15 14.2239 15 14.5V16C15 17.6569 13.6569 19 12 19C10.3431 19 9 17.6569 9 16V14.5C9 14.2239 9.22386 14 9.5 14C9.77614 14 10 14.2239 10 14.5V16Z" fill="currentColor"/></svg>',
     // instance.small
     instance: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.8233 6.59105L6.59105 11.8233C6.49342 11.9209 6.49341 12.0792 6.59105 12.1768L11.8233 17.4091C11.9209 17.5067 12.0792 17.5067 12.1768 17.4091L17.4091 12.1768C17.5067 12.0792 17.5067 11.9209 17.4091 11.8233L12.1768 6.59105C12.0792 6.49342 11.9209 6.49341 11.8233 6.59105ZM11.1162 5.88394L5.88394 11.1162C5.39578 11.6043 5.39578 12.3958 5.88394 12.8839L11.1162 18.1162C11.6043 18.6043 12.3958 18.6043 12.8839 18.1162L18.1162 12.8839C18.6043 12.3958 18.6043 11.6043 18.1162 11.1162L12.8839 5.88394C12.3958 5.39578 11.6043 5.39578 11.1162 5.88394Z" fill="currentColor"/></svg>',
     // component.small
     component: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.96966 10.4444L6.59105 11.823C6.49341 11.9207 6.49341 12.079 6.59105 12.1766L7.96977 13.5553C8.06741 13.6529 8.2257 13.6529 8.32333 13.5553L9.70195 12.1767C9.79958 12.0791 9.79958 11.9208 9.70195 11.8231L8.32322 10.4444C8.22559 10.3468 8.0673 10.3468 7.96966 10.4444ZM9.02968 9.73666C8.54147 9.24915 7.7505 9.24937 7.26256 9.73731L5.88394 11.1159C5.39578 11.6041 5.39578 12.3955 5.88394 12.8837L7.26267 14.2624C7.75082 14.7506 8.54228 14.7506 9.03043 14.2624L10.4091 12.8838C10.4093 12.8836 10.4095 12.8833 10.4098 12.8831C10.8972 12.3948 10.897 11.6039 10.4091 11.116L9.03032 9.73731C9.03011 9.73709 9.0299 9.73688 9.02968 9.73666ZM11.1169 13.5902C11.1167 13.5904 11.1164 13.5907 11.1162 13.5909L9.73754 14.9695C9.24939 15.4577 9.24939 16.2491 9.73754 16.7373L11.1162 18.1159C11.6043 18.6041 12.3958 18.6041 12.8839 18.1159L14.2626 16.7373C14.7505 16.2494 14.7507 15.4585 14.2633 14.9703C14.2631 14.97 14.2628 14.9698 14.2626 14.9695L12.8839 13.5909C12.8838 13.5907 12.8836 13.5906 12.8834 13.5904C12.3955 13.103 11.6049 13.1029 11.1169 13.5902ZM9.73679 9.02956C9.737 9.02977 9.73722 9.02999 9.73743 9.0302L11.1162 10.4089C11.1163 10.4091 11.1165 10.4093 11.1167 10.4095C11.6049 10.8971 12.3959 10.8969 12.8839 10.4089L14.2627 9.03019C14.7508 8.54204 14.7508 7.75058 14.2627 7.26242L12.8839 5.88369C12.3958 5.39554 11.6043 5.39554 11.1162 5.88369L9.73743 7.26244C9.24949 7.75038 9.24928 8.54135 9.73679 9.02956ZM10.4445 8.3231L11.8233 9.70182C11.9209 9.79946 12.0792 9.79946 12.1768 9.70182L13.5556 8.32308C13.6532 8.22545 13.6532 8.06716 13.5556 7.96953L12.1768 6.5908C12.0792 6.49317 11.9209 6.49317 11.8233 6.5908L10.4445 7.96954C10.3469 8.06717 10.3469 8.22546 10.4445 8.3231ZM14.9698 9.7373L13.591 11.116C13.1029 11.6042 13.1029 12.3956 13.591 12.8838L14.9697 14.2624C15.4578 14.7506 16.2493 14.7506 16.7374 14.2624L18.1162 12.8837C18.6043 12.3955 18.6043 11.6041 18.1162 11.1159L16.7375 9.7373C16.2494 9.24914 15.4579 9.24914 14.9698 9.7373ZM15.6769 10.4444L14.2981 11.8231C14.2005 11.9208 14.2005 12.0791 14.2981 12.1767L15.6768 13.5553C15.7744 13.653 15.9327 13.653 16.0303 13.5553L17.4091 12.1766C17.5067 12.079 17.5067 11.9207 17.4091 11.823L16.0304 10.4444C15.9328 10.3468 15.7745 10.3468 15.6769 10.4444ZM13.5555 15.6766L12.1768 14.298C12.0792 14.2004 11.9209 14.2004 11.8233 14.298L10.4446 15.6766C10.347 15.7743 10.347 15.9326 10.4446 16.0302L11.8233 17.4088C11.9209 17.5065 12.0792 17.5065 12.1768 17.4088L13.5555 16.0302C13.6531 15.9326 13.6531 15.7743 13.5555 15.6766Z" fill="currentColor"/></svg>',
     // check
-    tick: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2519 8.56819C15.4905 8.70733 15.571 9.01349 15.4319 9.25202L11.9319 15.252C11.8498 15.3928 11.7041 15.4848 11.5416 15.4983C11.3792 15.5119 11.2203 15.4454 11.1159 15.3202L8.6159 12.3202C8.43912 12.108 8.46778 11.7928 8.67992 11.616C8.89206 11.4392 9.20734 11.4679 9.38412 11.68L11.4275 14.1321L14.5681 8.74815C14.7073 8.50962 15.0134 8.42905 15.2519 8.56819Z" fill="currentColor"/></svg>',
-    // check
     check: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2519 8.56819C15.4905 8.70733 15.571 9.01349 15.4319 9.25202L11.9319 15.252C11.8498 15.3928 11.7041 15.4848 11.5416 15.4983C11.3792 15.5119 11.2203 15.4454 11.1159 15.3202L8.6159 12.3202C8.43912 12.108 8.46778 11.7928 8.67992 11.616C8.89206 11.4392 9.20734 11.4679 9.38412 11.68L11.4275 14.1321L14.5681 8.74815C14.7073 8.50962 15.0134 8.42905 15.2519 8.56819Z" fill="currentColor"/></svg>',
+    // check, the 16 frame (the checkbox's tick)
+    check16: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.7773 4.084C12.0071 4.23717 12.0692 4.54761 11.916 4.77737L7.91603 10.7774C7.83293 10.902 7.69834 10.9828 7.54927 10.9976C7.4002 11.0123 7.25237 10.9595 7.14645 10.8536L4.14645 7.85358C3.95118 7.65831 3.95118 7.34173 4.14645 7.14647C4.34171 6.95121 4.65829 6.95121 4.85355 7.14647L7.42229 9.7152L11.084 4.22267C11.2372 3.99291 11.5476 3.93082 11.7773 4.084Z" fill="currentColor"/></svg>',
     // plus.small
     plus: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 6C12.2761 6 12.5 6.22386 12.5 6.5V11.5H17.5C17.7761 11.5 18 11.7239 18 12C18 12.2761 17.7761 12.5 17.5 12.5H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H11.5V6.5C11.5 6.22386 11.7239 6 12 6Z" fill="currentColor"/></svg>',
     // minus.small
@@ -924,14 +1002,94 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     flipVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5 12.5C17.7761 12.5 18 12.2761 18 12C18 11.7239 17.7761 11.5 17.5 11.5L6.5 11.5C6.22386 11.5 6 11.7239 6 12C6 12.2761 6.22386 12.5 6.5 12.5L17.5 12.5ZM14.8964 18C15.5646 18 15.8992 17.1921 15.4268 16.7197L12.7071 14C12.3166 13.6095 11.6834 13.6095 11.2929 14L8.57322 16.7197C8.10075 17.1921 8.43538 18 9.10355 18L14.8964 18ZM14.2929 17L9.70711 17L12 14.7071L14.2929 17ZM14.8964 6C15.5646 6 15.8992 6.80786 15.4268 7.28033L12.7071 10C12.3166 10.3905 11.6834 10.3905 11.2929 10L8.57322 7.28033C8.10075 6.80785 8.43538 6 9.10355 6L14.8964 6ZM14.2929 7L9.70711 7L12 9.29289L14.2929 7Z" fill="currentColor"/></svg>',
     // rotate
     rotateSquare: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.2322 6.47491C11.2085 5.4986 12.7915 5.4986 13.7678 6.47491L15.2929 8.00003H14C13.7239 8.00003 13.5 8.22389 13.5 8.50003C13.5 8.77618 13.7239 9.00003 14 9.00003H16.5C16.7761 9.00003 17 8.77618 17 8.50003V6.00003C17 5.72389 16.7761 5.50003 16.5 5.50003C16.2239 5.50003 16 5.72389 16 6.00003V7.29293L14.4749 5.7678C13.108 4.40097 10.892 4.40097 9.52513 5.7678L7.14645 8.14648C6.95118 8.34174 6.95118 8.65833 7.14645 8.85359C7.34171 9.04885 7.65829 9.04885 7.85355 8.85359L10.2322 6.47491ZM13.0607 9.64648C12.4749 9.0607 11.5251 9.06069 10.9393 9.64648L7.64645 12.9394C7.06066 13.5252 7.06066 14.4749 7.64645 15.0607L10.9393 18.3536C11.5251 18.9394 12.4749 18.9394 13.0607 18.3536L16.3536 15.0607C16.9393 14.4749 16.9393 13.5252 16.3536 12.9394L13.0607 9.64648ZM11.6464 10.3536C11.8417 10.1583 12.1583 10.1583 12.3536 10.3536L15.6464 13.6465C15.8417 13.8417 15.8417 14.1583 15.6464 14.3536L12.3536 17.6465C12.1583 17.8417 11.8417 17.8417 11.6464 17.6465L8.35355 14.3536C8.15829 14.1583 8.15829 13.8417 8.35355 13.6465L11.6464 10.3536Z" fill="currentColor"/></svg>',
-    // frame
-    flowFree: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 4C7.22386 4 7 4.22386 7 4.5V7H4.5C4.22386 7 4 7.22386 4 7.5C4 7.77614 4.22386 8 4.5 8H7V16H4.5C4.22386 16 4 16.2239 4 16.5C4 16.7761 4.22386 17 4.5 17H7V19.5C7 19.7761 7.22386 20 7.5 20C7.77614 20 8 19.7761 8 19.5V17H16V19.5C16 19.7761 16.2239 20 16.5 20C16.7761 20 17 19.7761 17 19.5V17H19.5C19.7761 17 20 16.7761 20 16.5C20 16.2239 19.7761 16 19.5 16H17V8H19.5C19.7761 8 20 7.77614 20 7.5C20 7.22386 19.7761 7 19.5 7H17V4.5C17 4.22386 16.7761 4 16.5 4C16.2239 4 16 4.22386 16 4.5V7H8V4.5C8 4.22386 7.77614 4 7.5 4ZM16 8H8V16H16V8Z" fill="currentColor"/></svg>',
-    // al.layout-vertical
-    flowVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 7C12.2238 7 12 7.22386 12 7.5V14.289L9.61168 11.8899C9.41686 11.6942 9.10028 11.6935 8.90457 11.8883C8.70887 12.0831 8.70815 12.3997 8.90297 12.5954L12.1456 15.8528C12.2394 15.947 12.367 16 12.5 16C12.633 16 12.7605 15.947 12.8543 15.8528L16.097 12.5954C16.2918 12.3997 16.2911 12.0831 16.0954 11.8883C15.8997 11.6935 15.5831 11.6942 15.3883 11.8899L13 14.289V7.5C13 7.22386 12.7761 7 12.5 7Z" fill="currentColor"/></svg>',
-    // al.layout-horizontal
-    flowHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 11.5C8 11.7761 8.22386 12 8.5 12H15.289L12.8899 14.3883C12.6942 14.5831 12.6935 14.8997 12.8883 15.0954C13.0831 15.2911 13.3997 15.2918 13.5954 15.097L16.8528 11.8543C16.947 11.7605 17 11.633 17 11.5C17 11.367 16.947 11.2394 16.8528 11.1456L13.5954 7.90297C13.3997 7.70815 13.0831 7.70887 12.8883 7.90457C12.6935 8.10028 12.6942 8.41686 12.8899 8.61168L15.289 11H8.5C8.22386 11 8 11.2238 8 11.5Z" fill="currentColor"/></svg>',
-    // layout-grid-uniform
-    flowGrid: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V8H5V5ZM15 5H18V8H15V5ZM13 5H10V8H13V5ZM5 10H8V13H5V10ZM18 10H15V13H18V10ZM10 10H13V13H10V10ZM8 15H5V18H8V15ZM15 15H18V18H15V15ZM13 15H10V18H13V15Z" fill="currentColor"/></svg>',
+    // composed: autolayout-wrap squares
+    flowFree: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 7H7.5C7.22386 7 7 7.2239 7 7.5V9.5C7 9.7761 7.22386 10 7.5 10H9.5C9.77614 10 10 9.7761 10 9.5V7.5C10 7.2239 9.77614 7 9.5 7ZM7.5 6C6.67157 6 6 6.6716 6 7.5V9.5C6 10.3284 6.67157 11 7.5 11H9.5C10.3284 11 11 10.3284 11 9.5V7.5C11 6.6716 10.3284 6 9.5 6H7.5ZM16.5 9H14.5C14.2239 9 14 9.2239 14 9.5V11.5C14 11.7761 14.2239 12 14.5 12H16.5C16.7761 12 17 11.7761 17 11.5V9.5C17 9.2239 16.7761 9 16.5 9ZM14.5 8C13.6716 8 13 8.6716 13 9.5V11.5C13 12.3284 13.6716 13 14.5 13H16.5C17.3284 13 18 12.3284 18 11.5V9.5C18 8.6716 17.3284 8 16.5 8H14.5ZM9.5 14H7.5C7.22386 14 7 14.2239 7 14.5V16.5C7 16.7761 7.22386 17 7.5 17H9.5C9.77614 17 10 16.7761 10 16.5V14.5C10 14.2239 9.77614 14 9.5 14ZM7.5 13C6.67157 13 6 13.6716 6 14.5V16.5C6 17.3284 6.67157 18 7.5 18H9.5C10.3284 18 11 17.3284 11 16.5V14.5C11 13.6716 10.3284 13 9.5 13H7.5Z" fill="currentColor"/></svg>',
+    // composed: autolayout-wrap squares + 1px arrow (its head drawn here, not a kit chevron)
+    flowVertical: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 7H7.5C7.22386 7 7 7.2239 7 7.5V9.5C7 9.7761 7.22386 10 7.5 10H9.5C9.77614 10 10 9.7761 10 9.5V7.5C10 7.2239 9.77614 7 9.5 7ZM7.5 6C6.67157 6 6 6.6716 6 7.5V9.5C6 10.3284 6.67157 11 7.5 11H9.5C10.3284 11 11 10.3284 11 9.5V7.5C11 6.6716 10.3284 6 9.5 6H7.5ZM9.5 14H7.5C7.22386 14 7 14.2239 7 14.5V16.5C7 16.7761 7.22386 17 7.5 17H9.5C9.77614 17 10 16.7761 10 16.5V14.5C10 14.2239 9.77614 14 9.5 14ZM7.5 13C6.67157 13 6 13.6716 6 14.5V16.5C6 17.3284 6.67157 18 7.5 18H9.5C10.3284 18 11 17.3284 11 16.5V14.5C11 13.6716 10.3284 13 9.5 13H7.5Z" fill="currentColor"/><path d="M15.5 6C15.7761 6 16 6.22386 16 6.5V17.5C16 17.7761 15.7761 18 15.5 18C15.2239 18 15 17.7761 15 17.5V6.5C15 6.22386 15.2239 6 15.5 6ZM13.1464 15.1464C13.3417 14.9512 13.6583 14.9512 13.8536 15.1464L15.5 16.7929L17.1464 15.1464C17.3417 14.9512 17.6583 14.9512 17.8536 15.1464C18.0488 15.3417 18.0488 15.6583 17.8536 15.8536L15.8536 17.8536C15.6583 18.0488 15.3417 18.0488 15.1464 17.8536L13.1464 15.8536C12.9512 15.6583 12.9512 15.3417 13.1464 15.1464Z" fill="currentColor"/></svg>',
+    // composed: autolayout-wrap squares + 1px arrow (its head drawn here, not a kit chevron)
+    flowHorizontal: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 7H7.5C7.22386 7 7 7.2239 7 7.5V9.5C7 9.7761 7.22386 10 7.5 10H9.5C9.77614 10 10 9.7761 10 9.5V7.5C10 7.2239 9.77614 7 9.5 7ZM7.5 6C6.67157 6 6 6.6716 6 7.5V9.5C6 10.3284 6.67157 11 7.5 11H9.5C10.3284 11 11 10.3284 11 9.5V7.5C11 6.6716 10.3284 6 9.5 6H7.5ZM16.5 7H14.5C14.2239 7 14 7.2239 14 7.5V9.5C14 9.7761 14.2239 10 14.5 10H16.5C16.7761 10 17 9.7761 17 9.5V7.5C17 7.2239 16.7761 7 16.5 7ZM14.5 6C13.6716 6 13 6.6716 13 7.5V9.5C13 10.3284 13.6716 11 14.5 11H16.5C17.3284 11 18 10.3284 18 9.5V7.5C18 6.6716 17.3284 6 16.5 6H14.5Z" fill="currentColor"/><path d="M6 15.5C6 15.2239 6.22386 15 6.5 15H17.5C17.7761 15 18 15.2239 18 15.5C18 15.7761 17.7761 16 17.5 16H6.5C6.22386 16 6 15.7761 6 15.5ZM15.1464 13.1464C15.3417 12.9512 15.6583 12.9512 15.8536 13.1464L17.8536 15.1464C18.0488 15.3417 18.0488 15.6583 17.8536 15.8536L15.8536 17.8536C15.6583 18.0488 15.3417 18.0488 15.1464 17.8536C14.9512 17.6583 14.9512 17.3417 15.1464 17.1464L16.7929 15.5L15.1464 13.8536C14.9512 13.6583 14.9512 13.3417 15.1464 13.1464Z" fill="currentColor"/></svg>',
+    // composed: autolayout-wrap squares
+    flowGrid: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 7H7.5C7.22386 7 7 7.2239 7 7.5V9.5C7 9.7761 7.22386 10 7.5 10H9.5C9.77614 10 10 9.7761 10 9.5V7.5C10 7.2239 9.77614 7 9.5 7ZM7.5 6C6.67157 6 6 6.6716 6 7.5V9.5C6 10.3284 6.67157 11 7.5 11H9.5C10.3284 11 11 10.3284 11 9.5V7.5C11 6.6716 10.3284 6 9.5 6H7.5ZM16.5 7H14.5C14.2239 7 14 7.2239 14 7.5V9.5C14 9.7761 14.2239 10 14.5 10H16.5C16.7761 10 17 9.7761 17 9.5V7.5C17 7.2239 16.7761 7 16.5 7ZM14.5 6C13.6716 6 13 6.6716 13 7.5V9.5C13 10.3284 13.6716 11 14.5 11H16.5C17.3284 11 18 10.3284 18 9.5V7.5C18 6.6716 17.3284 6 16.5 6H14.5ZM9.5 14H7.5C7.22386 14 7 14.2239 7 14.5V16.5C7 16.7761 7.22386 17 7.5 17H9.5C9.77614 17 10 16.7761 10 16.5V14.5C10 14.2239 9.77614 14 9.5 14ZM7.5 13C6.67157 13 6 13.6716 6 14.5V16.5C6 17.3284 6.67157 18 7.5 18H9.5C10.3284 18 11 17.3284 11 16.5V14.5C11 13.6716 10.3284 13 9.5 13H7.5ZM16.5 14H14.5C14.2239 14 14 14.2239 14 14.5V16.5C14 16.7761 14.2239 17 14.5 17H16.5C16.7761 17 17 16.7761 17 16.5V14.5C17 14.2239 16.7761 14 16.5 14ZM14.5 13C13.6716 13 13 13.6716 13 14.5V16.5C13 17.3284 13.6716 18 14.5 18H16.5C17.3284 18 18 17.3284 18 16.5V14.5C18 13.6716 17.3284 13 16.5 13H14.5Z" fill="currentColor"/></svg>',
+    // al.layout-wrap
+    flowWrap: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15 7C16.1046 7 17 7.89543 17 9C17 10.1046 16.1046 11 15 11H13.5H9.71098L12.1101 8.61171C12.3058 8.41689 12.3065 8.10031 12.1117 7.90461C11.9169 7.7089 11.6003 7.70819 11.4046 7.90301L8.14725 11.1456C8.05299 11.2395 8 11.367 8 11.5C8 11.633 8.05299 11.7605 8.14725 11.8544L11.4046 15.097C11.6003 15.2918 11.9169 15.2911 12.1117 15.0954C12.3065 14.8997 12.3058 14.5831 12.1101 14.3883L9.71098 12L13.5 12H15C16.6569 12 18 10.6569 18 9C18 7.34315 16.6569 6 15 6H14.5C14.2239 6 14 6.22386 14 6.5C14 6.77614 14.2239 7 14.5 7H15Z" fill="currentColor"/></svg>',
+    // al.padding-horizontal
+    padH: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 7.5C8 7.22386 7.77614 7 7.5 7C7.22386 7 7 7.22386 7 7.5V16.5C7 16.7761 7.22386 17 7.5 17C7.77614 17 8 16.7761 8 16.5V7.5ZM16.5 7C16.7761 7 17 7.22386 17 7.5V16.5C17 16.7761 16.7761 17 16.5 17C16.2239 17 16 16.7761 16 16.5V7.5C16 7.22386 16.2239 7 16.5 7ZM13 13V11H11V13H13ZM14 11C14 10.4477 13.5523 10 13 10H11C10.4477 10 10 10.4477 10 11V13C10 13.5523 10.4477 14 11 14H13C13.5523 14 14 13.5523 14 13V11Z" fill="currentColor"/></svg>',
+    // al.padding-vertical
+    padV: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 16C7.22386 16 7 16.2239 7 16.5C7 16.7761 7.22386 17 7.5 17H16.5C16.7761 17 17 16.7761 17 16.5C17 16.2239 16.7761 16 16.5 16H7.5ZM7 7.5C7 7.22385 7.22386 7 7.5 7H16.5C16.7761 7 17 7.22385 17 7.5C17 7.77615 16.7761 8 16.5 8H7.5C7.22386 8 7 7.77615 7 7.5ZM13 11H11V13H13V11ZM11 10C10.4477 10 10 10.4477 10 11V13C10 13.5523 10.4477 14 11 14H13C13.5523 14 14 13.5523 14 13V11C14 10.4477 13.5523 10 13 10H11Z" fill="currentColor"/></svg>',
+    // al.padding-sides
+    padSides: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 9.5C8 9.22385 7.77614 9 7.5 9C7.22386 9 7 9.22385 7 9.5L7 14.5C7 14.7761 7.22386 15 7.5 15C7.77614 15 8 14.7761 8 14.5V9.5ZM17 9.5C17 9.22385 16.7761 9 16.5 9C16.2239 9 16 9.22385 16 9.5V14.5C16 14.7761 16.2239 15 16.5 15C16.7761 15 17 14.7761 17 14.5V9.5ZM9 7.5C9 7.22385 9.22386 7 9.5 7H14.5C14.7761 7 15 7.22385 15 7.5C15 7.77615 14.7761 8 14.5 8H9.5C9.22386 8 9 7.77615 9 7.5ZM9.5 16C9.22386 16 9 16.2239 9 16.5C9 16.7761 9.22386 17 9.5 17H14.5C14.7761 17 15 16.7761 15 16.5C15 16.2239 14.7761 16 14.5 16H9.5Z" fill="currentColor"/></svg>',
+    // al.padding-top
+    padTop: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7C7.22386 7 7 7.22385 7 7.5C7 7.77615 7.22386 8 7.5 8H16.5C16.7761 8 17 7.77615 17 7.5C17 7.22385 16.7761 7 16.5 7L7.5 7ZM11 11H13V13H11V11ZM10 11C10 10.4477 10.4477 10 11 10H13C13.5523 10 14 10.4477 14 11V13C14 13.5523 13.5523 14 13 14H11C10.4477 14 10 13.5523 10 13V11Z" fill="currentColor"/></svg>',
+    // al.padding-right
+    padRight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M17 7.5C17 7.22386 16.7761 7 16.5 7C16.2239 7 16 7.22386 16 7.5V16.5C16 16.7761 16.2239 17 16.5 17C16.7761 17 17 16.7761 17 16.5V7.5ZM13 11V13H11V11H13ZM13 10C13.5523 10 14 10.4477 14 11V13C14 13.5523 13.5523 14 13 14H11C10.4477 14 10 13.5523 10 13V11C10 10.4477 10.4477 10 11 10H13Z" fill="currentColor"/></svg>',
+    // al.padding-bottom
+    padBottom: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11 11H13V13H11V11ZM10 11C10 10.4477 10.4477 10 11 10H13C13.5523 10 14 10.4477 14 11V13C14 13.5523 13.5523 14 13 14H11C10.4477 14 10 13.5523 10 13V11ZM7.5 16C7.22386 16 7 16.2239 7 16.5C7 16.7761 7.22386 17 7.5 17H16.5C16.7761 17 17 16.7761 17 16.5C17 16.2239 16.7761 16 16.5 16H7.5Z" fill="currentColor"/></svg>',
+    // al.padding-left
+    padLeft: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 7.5C8 7.22386 7.77614 7 7.5 7C7.22386 7 7 7.22386 7 7.5V16.5C7 16.7761 7.22386 17 7.5 17C7.77614 17 8 16.7761 8 16.5V7.5ZM13 11V13H11V11H13ZM13 10C13.5523 10 14 10.4477 14 11V13C14 13.5523 13.5523 14 13 14H11C10.4477 14 10 13.5523 10 13V11C10 10.4477 10.4477 10 11 10H13Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.dot (its 30% comes from the colour)
+    alDot: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 7C8.55228 7 9 7.44772 9 8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical, Position=Left
+    alV_L: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4C3 4.55228 3.44772 5 4 5L9 5C9.55228 5 10 4.55229 10 4C10 3.44772 9.55228 3 9 3L4 3ZM4 7C3.44772 7 3 7.44772 3 8C3 8.55228 3.44772 9 4 9L12 9C12.5523 9 13 8.55229 13 8C13 7.44772 12.5523 7 12 7L4 7ZM3 12C3 11.4477 3.44771 11 4 11L7 11C7.55228 11 8 11.4477 8 12C8 12.5523 7.55228 13 7 13L4 13C3.44771 13 3 12.5523 3 12Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical, Position=Center
+    alV_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 3C10.5523 3 11 3.44772 11 4C11 4.55228 10.5523 5 10 5L6 5C5.44772 5 5 4.55228 5 4C5 3.44772 5.44772 3 6 3H10ZM12 7C12.5523 7 13 7.44772 13 8C13 8.55228 12.5523 9 12 9L4 9C3.44772 9 3 8.55228 3 8C3 7.44771 3.44772 7 4 7L12 7ZM10 12C10 11.4477 9.55228 11 9 11H7C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H9C9.55228 13 10 12.5523 10 12Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical, Position=Right
+    alV_R: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 7C3.44772 7 3 7.44772 3 8C3 8.55228 3.44772 9 4 9L12 9C12.5523 9 13 8.55229 13 8C13 7.44772 12.5523 7 12 7L4 7ZM7 3C6.44772 3 6 3.44772 6 4C6 4.55228 6.44772 5 7 5L12 5C12.5523 5 13 4.55229 13 4C13 3.44772 12.5523 3 12 3L7 3ZM8 12C8 11.4477 8.44771 11 9 11L12 11C12.5523 11 13 11.4477 13 12C13 12.5523 12.5523 13 12 13L9 13C8.44771 13 8 12.5523 8 12Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.horizontal, Position=Top
+    alH_T: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M3 4C3 3.44772 3.44772 3 4 3C4.55228 3 5 3.44772 5 4V9C5 9.55228 4.55228 10 4 10C3.44772 10 3 9.55228 3 9V4ZM7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V12C9 12.5523 8.55228 13 8 13C7.44772 13 7 12.5523 7 12V4ZM12 3C11.4477 3 11 3.44772 11 4V7C11 7.55228 11.4477 8 12 8C12.5523 8 13 7.55228 13 7V4C13 3.44772 12.5523 3 12 3Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.horizontal, Position=Center
+    alH_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V12C9 12.5523 8.55228 13 8 13C7.44772 13 7 12.5523 7 12V4ZM3 6C3 5.44772 3.44772 5 4 5C4.55228 5 5 5.44772 5 6V10C5 10.5523 4.55228 11 4 11C3.44772 11 3 10.5523 3 10V6ZM12 6C11.4477 6 11 6.44772 11 7V9C11 9.55228 11.4477 10 12 10C12.5523 10 13 9.55228 13 9V7C13 6.44772 12.5523 6 12 6Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.horizontal, Position=Bottom
+    alH_B: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V12C9 12.5523 8.55228 13 8 13C7.44772 13 7 12.5523 7 12V4ZM3 7C3 6.44772 3.44772 6 4 6C4.55228 6 5 6.44772 5 7V12C5 12.5523 4.55228 13 4 13C3.44772 13 3 12.5523 3 12V7ZM12 8C11.4477 8 11 8.44772 11 9V12C11 12.5523 11.4477 13 12 13C12.5523 13 13 12.5523 13 12V9C13 8.44772 12.5523 8 12 8Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.wrap, Position=Left
+    alW_L: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4V6C3 6.55228 3.44772 7 4 7C4.55228 7 5 6.55228 5 6V4C5 3.44772 4.55228 3 4 3ZM7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V6C9 6.55228 8.55228 7 8 7C7.44772 7 7 6.55228 7 6V4ZM11 4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V6C13 6.55228 12.5523 7 12 7C11.4477 7 11 6.55228 11 6V4ZM3 10C3 9.44772 3.44772 9 4 9C4.55228 9 5 9.44772 5 10V12C5 12.5523 4.55228 13 4 13C3.44772 13 3 12.5523 3 12V10ZM8 9C7.44772 9 7 9.44772 7 10V12C7 12.5523 7.44772 13 8 13C8.55228 13 9 12.5523 9 12V10C9 9.44772 8.55228 9 8 9Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.wrap, Position=Center
+    alW_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4V6C3 6.55228 3.44772 7 4 7C4.55228 7 5 6.55228 5 6V4C5 3.44772 4.55228 3 4 3ZM7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V6C9 6.55228 8.55228 7 8 7C7.44772 7 7 6.55228 7 6V4ZM11 4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V6C13 6.55228 12.5523 7 12 7C11.4477 7 11 6.55228 11 6V4ZM5 10C5 9.44772 5.44772 9 6 9C6.55228 9 7 9.44772 7 10V12C7 12.5523 6.55228 13 6 13C5.44772 13 5 12.5523 5 12V10ZM10 9C9.44772 9 9 9.44772 9 10V12C9 12.5523 9.44772 13 10 13C10.5523 13 11 12.5523 11 12V10C11 9.44772 10.5523 9 10 9Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.wrap, Position=Right
+    alW_R: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 3C3.44772 3 3 3.44772 3 4V6C3 6.55228 3.44772 7 4 7C4.55228 7 5 6.55228 5 6V4C5 3.44772 4.55228 3 4 3ZM7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V6C9 6.55228 8.55228 7 8 7C7.44772 7 7 6.55228 7 6V4ZM11 4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V6C13 6.55228 12.5523 7 12 7C11.4477 7 11 6.55228 11 6V4ZM7 10C7 9.44772 7.44772 9 8 9C8.55228 9 9 9.44772 9 10V12C9 12.5523 8.55228 13 8 13C7.44772 13 7 12.5523 7 12V10ZM12 9C11.4477 9 11 9.44772 11 10V12C11 12.5523 11.4477 13 12 13C12.5523 13 13 12.5523 13 12V10C13 9.44772 12.5523 9 12 9Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical.auto.large, Position=Top
+    alAutoV_T: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12 3C12.5523 3 13 3.44772 13 4C13 4.55229 12.5523 5 12 5L4 5C3.44772 5 3 4.55228 3 4C3 3.44772 3.44771 3 4 3L12 3Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical.auto.large, Position=Center
+    alAutoV_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12 7C12.5523 7 13 7.44772 13 8C13 8.55229 12.5523 9 12 9L4 9C3.44772 9 3 8.55228 3 8C3 7.44772 3.44771 7 4 7L12 7Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.vertical.auto.large, Position=Bottom
+    alAutoV_B: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12 11C12.5523 11 13 11.4477 13 12C13 12.5523 12.5523 13 12 13L4 13C3.44772 13 3 12.5523 3 12C3 11.4477 3.44771 11 4 11L12 11Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.vertical.small, Position=Left
+    alAutoVs_L: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 7C3.44772 7 3 7.44772 3 8C3 8.55228 3.44772 9 4 9L8 9C8.55228 9 9 8.55229 9 8C9 7.44772 8.55228 7 8 7L4 7Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.vertical.small, Position=Center
+    alAutoVs_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 7C5.44772 7 5 7.44772 5 8C5 8.55228 5.44772 9 6 9L10 9C10.5523 9 11 8.55228 11 8C11 7.44772 10.5523 7 10 7L6 7Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.vertical.small, Position=Right
+    alAutoVs_R: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 7C7.44772 7 7 7.44772 7 8C7 8.55228 7.44772 9 8 9L12 9C12.5523 9 13 8.55229 13 8C13 7.44772 12.5523 7 12 7L8 7Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.large, Position=Left
+    alAutoH_L: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 4C3 3.44772 3.44772 3 4 3C4.55228 3 5 3.44772 5 4V12C5 12.5523 4.55228 13 4 13C3.44772 13 3 12.5523 3 12V4Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.large, Position=Center
+    alAutoH_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4V12C9 12.5523 8.55228 13 8 13C7.44772 13 7 12.5523 7 12V4Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.large, Position=Right
+    alAutoH_R: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11 4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4V12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12V4Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.small, Position=Top
+    alAutoHs_T: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 3C7.44772 3 7 3.44772 7 4V8C7 8.55228 7.44772 9 8 9C8.55228 9 9 8.55228 9 8V4C9 3.44772 8.55228 3 8 3Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.small, Position=Center
+    alAutoHs_C: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 5C7.44772 5 7 5.44772 7 6V10C7 10.5523 7.44772 11 8 11C8.55228 11 9 10.5523 9 10V6C9 5.44772 8.55228 5 8 5Z" fill="currentColor"/></svg>',
+    // autolayoutgrid.auto.horizontal.small, Position=Bottom
+    alAutoHs_B: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 7C7.44772 7 7 7.44772 7 8V12C7 12.5523 7.44772 13 8 13C8.55228 13 9 12.5523 9 12V8C9 7.44772 8.55228 7 8 7Z" fill="currentColor"/></svg>',
+    // al.constrain-horiz (the same glyph as spanWidth): Fixed width
+    fixedW: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 8.49976C16.7761 8.49976 17 8.72361 17 8.99976V11.4998V13.9998C17 14.2759 16.7761 14.4998 16.5 14.4998C16.2239 14.4998 16 14.2759 16 13.9998V11.9998L7 11.9998L7 13.9998C7 14.2759 6.77614 14.4998 6.5 14.4998C6.22386 14.4998 6 14.2759 6 13.9998L6 11.4998L6 8.99976C6 8.72361 6.22386 8.49976 6.5 8.49976C6.77614 8.49976 7 8.72361 7 8.99976L7 10.9998L16 10.9998V8.99976C16 8.72361 16.2239 8.49976 16.5 8.49976Z" fill="currentColor"/></svg>',
+    // al.constrain-vert: Fixed height
+    fixedH: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 6.50024C8.5 6.2241 8.72386 6.00024 9 6.00024H11.5H14C14.2761 6.00024 14.5 6.2241 14.5 6.50024C14.5 6.77639 14.2761 7.00024 14 7.00024H12V16.0002H14C14.2761 16.0002 14.5 16.2241 14.5 16.5002C14.5 16.7764 14.2761 17.0002 14 17.0002H11.5H9C8.72386 17.0002 8.5 16.7764 8.5 16.5002C8.5 16.2241 8.72386 16.0002 9 16.0002H11V7.00024H9C8.72386 7.00024 8.5 6.77639 8.5 6.50024Z" fill="currentColor"/></svg>',
+    // al.width-hug
+    hugW: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.14644 8.14645C7.34171 7.95119 7.65829 7.95118 7.85355 8.14644L10.8536 11.1464C10.9473 11.2402 11 11.3674 11 11.5C11 11.6326 10.9473 11.7598 10.8536 11.8535L7.85355 14.8535C7.65829 15.0488 7.34171 15.0488 7.14645 14.8535C6.95118 14.6583 6.95118 14.3417 7.14645 14.1464L9.79289 11.5L7.14645 8.85356C6.95119 8.65829 6.95118 8.34171 7.14644 8.14645ZM16.8536 8.14645C17.0488 8.34171 17.0488 8.65829 16.8536 8.85356L14.2071 11.5L16.8536 14.1464C17.0488 14.3417 17.0488 14.6583 16.8536 14.8535C16.6583 15.0488 16.3417 15.0488 16.1464 14.8535L13.1464 11.8535C13.0527 11.7598 13 11.6326 13 11.5C13 11.3674 13.0527 11.2402 13.1464 11.1464L16.1464 8.14644C16.3417 7.95118 16.6583 7.95119 16.8536 8.14645Z" fill="currentColor"/></svg>',
+    // al.height-hug
+    hugH: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8535 7.14645C15.0488 7.34171 15.0488 7.65829 14.8535 7.85355L11.8536 10.8536C11.7598 10.9473 11.6326 11 11.5 11C11.3674 11 11.2402 10.9473 11.1464 10.8536L8.14645 7.85355C7.95118 7.65829 7.95118 7.34171 8.14645 7.14645C8.34171 6.95118 8.65829 6.95118 8.85355 7.14645L11.5 9.79289L14.1464 7.14645C14.3417 6.95119 14.6583 6.95118 14.8535 7.14645ZM14.8535 16.8536C14.6583 17.0488 14.3417 17.0488 14.1464 16.8536L11.5 14.2071L8.85355 16.8536C8.65829 17.0488 8.34171 17.0488 8.14645 16.8536C7.95118 16.6583 7.95118 16.3417 8.14645 16.1464L11.1464 13.1464C11.2402 13.0527 11.3674 13 11.5 13C11.6326 13 11.7598 13.0527 11.8536 13.1464L14.8535 16.1464C15.0488 16.3417 15.0488 16.6583 14.8535 16.8536Z" fill="currentColor"/></svg>',
+    // al.width-fill
+    fillW: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.35355 8.14645C9.54882 8.34171 9.54882 8.65829 9.35355 8.85355L7.20713 11L16.7928 10.9998L14.6465 8.85357C14.4512 8.65831 14.4512 8.34173 14.6464 8.14646C14.8417 7.95119 15.1583 7.95118 15.3535 8.14643L18.3535 11.1462C18.4473 11.24 18.5 11.3671 18.5 11.4997C18.5 11.6323 18.4473 11.7595 18.3536 11.8533L15.3536 14.8535C15.1583 15.0488 14.8417 15.0488 14.6465 14.8536C14.4512 14.6583 14.4512 14.3417 14.6464 14.1465L16.7929 11.9998L7.20708 12L9.35355 14.1464C9.54882 14.3417 9.54882 14.6583 9.35355 14.8536C9.15829 15.0488 8.84171 15.0488 8.64645 14.8536L5.64645 11.8536C5.45118 11.6583 5.45118 11.3417 5.64645 11.1464L8.64645 8.14645C8.84171 7.95118 9.15829 7.95118 9.35355 8.14645Z" fill="currentColor"/></svg>',
+    // al.height-fill
+    fillH: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8536 14.1464C15.0488 14.3417 15.0488 14.6583 14.8536 14.8535L11.8536 17.8535C11.6583 18.0488 11.3417 18.0488 11.1464 17.8535L8.14645 14.8535C7.95118 14.6583 7.95118 14.3417 8.14645 14.1464C8.34171 13.9512 8.65829 13.9512 8.85355 14.1464L11 16.2929V7.70711L8.85355 9.85355C8.65829 10.0488 8.34171 10.0488 8.14645 9.85355C7.95118 9.65829 7.95118 9.34171 8.14645 9.14645L11.1464 6.14645C11.2402 6.05268 11.3674 6 11.5 6C11.6326 6 11.7598 6.05268 11.8536 6.14645L14.8536 9.14645C15.0488 9.34171 15.0488 9.65829 14.8536 9.85355C14.6583 10.0488 14.3417 10.0488 14.1464 9.85355L12 7.70711L12 16.2929L14.1464 14.1464C14.3417 13.9512 14.6583 13.9512 14.8536 14.1464Z" fill="currentColor"/></svg>',
+    // al.absolute-position: Ignore auto layout
+    ignoreLayout: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M6 7C6 6.44771 6.44771 6 7 6H9.5C9.77614 6 10 6.22386 10 6.5C10 6.77614 9.77614 7 9.5 7H7V9.5C7 9.77614 6.77614 10 6.5 10C6.22386 10 6 9.77614 6 9.5V7ZM18 7C18 6.44771 17.5523 6 17 6H14.5C14.2239 6 14 6.22386 14 6.5C14 6.77614 14.2239 7 14.5 7H17V9.5C17 9.77614 17.2239 10 17.5 10C17.7761 10 18 9.77614 18 9.5V7ZM7 18C6.44771 18 6 17.5523 6 17V14.5C6 14.2239 6.22386 14 6.5 14C6.77614 14 7 14.2239 7 14.5V17H9.5C9.77614 17 10 17.2239 10 17.5C10 17.7761 9.77614 18 9.5 18H7ZM18 17C18 17.5523 17.5523 18 17 18H14.5C14.2239 18 14 17.7761 14 17.5C14 17.2239 14.2239 17 14.5 17H17V14.5C17 14.2239 17.2239 14 17.5 14C17.7761 14 18 14.2239 18 14.5V17ZM9.99994 10H13.9999V14H9.99994V10ZM8.99994 10C8.99994 9.44772 9.44765 9 9.99994 9H13.9999C14.5522 9 14.9999 9.44772 14.9999 10V14C14.9999 14.5523 14.5522 15 13.9999 15H9.99994C9.44765 15 8.99994 14.5523 8.99994 14V10Z" fill="currentColor"/></svg>',
+    // autolayout-add-vertical: the Layout header's Add auto layout, when the layers stack
+    alAddV: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 9.5L7 7.5C7 7.22386 7.22386 7 7.5 7L16.5 7C16.7761 7 17 7.22386 17 7.5L17 9.5C17 9.77614 16.7761 10 16.5 10L7.5 10C7.22386 10 7 9.77614 7 9.5ZM6 7.5C6 6.67157 6.67157 6 7.5 6L16.5 6C17.3284 6 18 6.67157 18 7.5L18 9.5C18 10.3284 17.3284 11 16.5 11L7.5 11C6.67157 11 6 10.3284 6 9.5L6 7.5ZM7 16.5L7 14.5C7 14.2239 7.22386 14 7.5 14L9.5 14C9.77614 14 10 14.2239 10 14.5L10 16.5C10 16.7761 9.77614 17 9.5 17L7.5 17C7.22386 17 7 16.7761 7 16.5ZM6 14.5C6 13.6716 6.67157 13 7.5 13L9.5 13C10.3284 13 11 13.6716 11 14.5L11 16.5C11 17.3284 10.3284 18 9.5 18L7.5 18C6.67157 18 6 17.3284 6 16.5L6 14.5ZM13.5 16C13.2239 16 13 15.7761 13 15.5C13 15.2239 13.2239 15 13.5 15L15 15L15 13.5C15 13.2239 15.2239 13 15.5 13C15.7761 13 16 13.2239 16 13.5L16 15L17.5 15C17.7761 15 18 15.2239 18 15.5C18 15.7761 17.7761 16 17.5 16L16 16L16 17.5C16 17.7761 15.7761 18 15.5 18C15.2239 18 15 17.7761 15 17.5L15 16L13.5 16Z" fill="currentColor"/></svg>',
+    // autolayout-add-horizontal: the same, when the layers sit in a row
+    alAddH: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 7H7.5C7.22386 7 7 7.22386 7 7.5V16.5C7 16.7761 7.22386 17 7.5 17H9.5C9.77614 17 10 16.7761 10 16.5V7.5C10 7.22386 9.77614 7 9.5 7ZM7.5 6C6.67157 6 6 6.67157 6 7.5V16.5C6 17.3284 6.67157 18 7.5 18H9.5C10.3284 18 11 17.3284 11 16.5V7.5C11 6.67157 10.3284 6 9.5 6H7.5ZM16.5 7H14.5C14.2239 7 14 7.22386 14 7.5V9.5C14 9.77614 14.2239 10 14.5 10H16.5C16.7761 10 17 9.77614 17 9.5V7.5C17 7.22386 16.7761 7 16.5 7ZM14.5 6C13.6716 6 13 6.67157 13 7.5V9.5C13 10.3284 13.6716 11 14.5 11H16.5C17.3284 11 18 10.3284 18 9.5V7.5C18 6.67157 17.3284 6 16.5 6H14.5ZM16 13.5C16 13.2239 15.7761 13 15.5 13C15.2239 13 15 13.2239 15 13.5V15H13.5C13.2239 15 13 15.2239 13 15.5C13 15.7761 13.2239 16 13.5 16H15V17.5C15 17.7761 15.2239 18 15.5 18C15.7761 18 16 17.7761 16 17.5V16H17.5C17.7761 16 18 15.7761 18 15.5C18 15.2239 17.7761 15 17.5 15H16V13.5Z" fill="currentColor"/></svg>',
+    // autolayout-add-wrap
+    alAddWrap: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7H9.5C9.77614 7 10 7.22386 10 7.5V9.5C10 9.77614 9.77614 10 9.5 10H7.5C7.22386 10 7 9.77614 7 9.5V7.5C7 7.22386 7.22386 7 7.5 7ZM6 7.5C6 6.67157 6.67157 6 7.5 6H9.5C10.3284 6 11 6.67157 11 7.5V9.5C11 10.3284 10.3284 11 9.5 11H7.5C6.67157 11 6 10.3284 6 9.5V7.5ZM14.5 7H16.5C16.7761 7 17 7.22386 17 7.5V9.5C17 9.77614 16.7761 10 16.5 10H14.5C14.2239 10 14 9.77614 14 9.5V7.5C14 7.22386 14.2239 7 14.5 7ZM13 7.5C13 6.67157 13.6716 6 14.5 6H16.5C17.3284 6 18 6.67157 18 7.5V9.5C18 10.3284 17.3284 11 16.5 11H14.5C13.6716 11 13 10.3284 13 9.5V7.5ZM9.5 14H7.5C7.22386 14 7 14.2239 7 14.5V16.5C7 16.7761 7.22386 17 7.5 17H9.5C9.77614 17 10 16.7761 10 16.5V14.5C10 14.2239 9.77614 14 9.5 14ZM7.5 13C6.67157 13 6 13.6716 6 14.5V16.5C6 17.3284 6.67157 18 7.5 18H9.5C10.3284 18 11 17.3284 11 16.5V14.5C11 13.6716 10.3284 13 9.5 13H7.5ZM16 13.5C16 13.2239 15.7761 13 15.5 13C15.2239 13 15 13.2239 15 13.5V15H13.5C13.2239 15 13 15.2239 13 15.5C13 15.7761 13.2239 16 13.5 16H15V17.5C15 17.7761 15.2239 18 15.5 18C15.7761 18 16 17.7761 16 17.5V16H17.5C17.7761 16 18 15.7761 18 15.5C18 15.2239 17.7761 15 17.5 15H16V13.5Z" fill="currentColor"/></svg>',
     // radius.top.left
     cornerTL: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.4781 8L12.5 8H15.5C15.7761 8 16 8.22386 16 8.5C16 8.77614 15.7761 9 15.5 9H12.5C11.7917 9 11.2905 9.00039 10.8987 9.0324C10.5128 9.06393 10.2772 9.12365 10.092 9.21799C9.71569 9.40973 9.40973 9.71569 9.21799 10.092C9.12365 10.2772 9.06393 10.5128 9.0324 10.8987C9.00039 11.2905 9 11.7917 9 12.5V15.5C9 15.7761 8.77614 16 8.5 16C8.22386 16 8 15.7761 8 15.5V12.5L8 12.4781C8 11.7966 7.99999 11.2546 8.03572 10.8173C8.07231 10.3695 8.14884 9.98765 8.32698 9.63803C8.6146 9.07354 9.07354 8.6146 9.63803 8.32698C9.98765 8.14884 10.3695 8.07231 10.8173 8.03572C11.2546 7.99999 11.7966 8 12.4781 8Z" fill="currentColor"/></svg>',
     // radius.top.right
@@ -1020,7 +1178,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     target.addEventListener("pointerenter", () => {
       clearTimeout(tipTimer);
       if (performance.now() < tipWarmUntil) showTip(target);
-      else tipTimer = setTimeout(() => showTip(target), 500);
+      // 300 ms (was 500; her call 2026-10-15, it came in late), then at once from one tip to the next.
+      else tipTimer = setTimeout(() => showTip(target), 300);
     });
     target.addEventListener("pointerleave", hideTip);
     target.addEventListener("pointerdown", hideTip);
@@ -1544,19 +1703,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let refreshPanel = () => {};
 
   // Left toolbar, after pen.dev's: Copy the changes for the bake skill, Save them so a reload keeps
-  // them. They're actions, not tools, so neither stays pressed. (Reset sits in the panel's top row, Hide UI
-  // at its right.)
+  // them, then Reset, which goes back to the code (her call, 2026-10-14: it was in the panel's top row, where
+  // Undo and Redo stay). They're actions, not tools, so none stays pressed; Reset greys out with nothing to
+  // reset. (Hide UI sits over the panel's top row.)
+  const REPO_URL = "https://github.com/monica-makes/finetune";
   function makeToolbar(hotkey) {
     const bar = el("div", "ft-toolbar");
-    // As Figma's left rail: each tool's icon in its box, its name under it.
+    // The left rail: each tool's icon in its box; its name is its tooltip.
     const actions = [
       ["copy", "Copy", "Copy changes and prompt", copyChanges, KEYS.shift + KEYS.mod + "E"],
       ["floppyDisk", "Save", "Save changes in this browser", saveNow, KEYS.alt + KEYS.mod + "S"],
+      ["refresh", "Reset", "Reset to the code's last presets", resetEdits, null],
     ].map(([icon, label, name, onClick, keys]) => {
       const b = button("ft-tool", null, onClick);
       const box = el("span", "ft-tool-icon");
       box.innerHTML = ICON[icon];
-      b.append(box, el("span", "ft-tool-label", label));
+      b.appendChild(box);
       b.setAttribute("aria-label", name);
       b.setAttribute("data-ft-tip", name);
       if (keys) b.setAttribute("data-ft-tip-key", keys);
@@ -1564,7 +1726,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       withTip(b);
       return b;
     });
-    bar.append(...actions);
+    // finetune's mark first, as Figma's rail starts with its logo: it opens the repo.
+    const logo = el("a", "ft-tool ft-logo");
+    logo.href = REPO_URL;
+    logo.target = "_blank";
+    logo.rel = "noreferrer";
+    const logoBox = el("span", "ft-tool-icon");
+    logoBox.innerHTML = ICON.logo;
+    logo.appendChild(logoBox);
+    logo.setAttribute("aria-label", "View the repo");
+    logo.setAttribute("data-ft-tip", "View the repo");
+    logo.setAttribute("data-ft-tip-side", "right");
+    withTip(logo);
+    bar.append(logo, el("span", "ft-rail-line"), ...actions);
+    resetBtn = actions[2];
+    historyChanged();
     document.body.appendChild(bar);
     uiBox = el("div", "ft-ui");
     uiButton = iconButton(ICON.sidebarSimple, "Hide UI", toggleUi);
@@ -1574,6 +1750,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return bar;
   }
 
+  // The first time finetune shows in this browser, a note in the middle of the window says the hotkey turns the
+  // overlays off and on (her ask, 2026-10-14; the key in the tooltips' shortcut colour); kept in localStorage so it
+  // shows once.
+  const HOTKEY_NOTE_KEY = "finetune:tip:hotkey";
+  function hotkeyNote(hotkey) {
+    try {
+      if (localStorage.getItem(HOTKEY_NOTE_KEY) === "shown") return;
+      localStorage.setItem(HOTKEY_NOTE_KEY, "shown");
+    } catch (e) { return; }
+    const words = el("span");
+    words.append("Press ", el("span", "ft-toast-key", hotkey.toUpperCase()), " to toggle overlays off and on");
+    toast(words, null, 4000, true);
+  }
+
   // Hide UI, as Figma's Minimize UI: the panel, the toolbar, the grid and the selection go at once, leaving
   // only this button, in a small box where it sat, to bring them back. The hotkey (T), ⌘\ and ⇧⌘\ (Figma's
   // Show/Hide UI and Minimize UI; Ctrl on Windows) do the same. From fully hidden (open: false,
@@ -1581,6 +1771,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let minimized = false;
   let uiButton = null;
   let uiBox = null;
+  // The toolbar's Reset; historyChanged greys it out.
+  let resetBtn = null;
   function drawUiButton() {
     if (!uiButton) return;
     const name = minimized ? "Show UI" : "Hide UI";
@@ -1715,6 +1907,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     type: "columns", visible: true, color: { hex: "FF0000", opacity: 10, visible: true },
     count: 12, align: "stretch", width: 0, offset: 40, gutter: 20,
   });
+  // The grid the call declares (`layout`: the site's decided grid, { count, gutter, margin }, or align / offset /
+  // width for a packed one), read as a guide's fields; null when the call has none.
+  let declaredGrid = null;
+  // Set by the panel: takes the declared grid as the page's layout when it has none yet.
+  let adoptPageGrid = () => {};
+  function readLayout(l) {
+    if (!l || !isNum(l.count) || l.count < 1) return null;
+    const g = { count: Math.round(l.count), gutter: isNum(l.gutter) ? l.gutter : 0 };
+    if (l.align && l.align !== "stretch" && GUIDE_ALIGN.some(([a]) => a === l.align)) {
+      Object.assign(g, { align: l.align, offset: isNum(l.offset) ? l.offset : 0, width: isNum(l.width) ? l.width : 0 });
+    } else Object.assign(g, { align: "stretch", offset: isNum(l.margin) ? l.margin : isNum(l.offset) ? l.offset : 0 });
+    return g;
+  }
   function validGuide(g) {
     return !!g && g.type === "columns" && typeof g.visible === "boolean"
       && !!g.color && /^[0-9A-F]{6}$/.test(g.color.hex) && isNum(g.color.opacity)
@@ -1852,6 +2057,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const entry = { styles };
         if (typeof e.html === "string") entry.html = e.html;
         if (e.deleted === true) entry.deleted = true;
+        // Spacing's share of the translate on a free-flow container (see nudge), so a change of Flow can take back
+        // just that share; any other shape is dropped.
+        if (e.sim && isNum(e.sim.x) && isNum(e.sim.y)) entry.sim = { x: e.sim.x, y: e.sim.y };
+        // The padding and margins auto layout wrote to hold the layers (see applyInferred), so Freeform can take
+        // them off after a reload too.
+        if (e.inferred && typeof e.inferred === "object") {
+          const inferred = {};
+          Object.keys(e.inferred).forEach((p) => { if (/^(padding|margin)-/.test(p) && typeof e.inferred[p] === "string") inferred[p] = e.inferred[p]; });
+          if (Object.keys(inferred).length) entry.inferred = inferred;
+        }
         if (e.adjust && typeof e.adjust === "object") {
           const adjust = Object.assign({}, NO_ADJUST);
           Object.keys(NO_ADJUST).forEach((k) => { if (isNum(e.adjust[k])) adjust[k] = e.adjust[k]; });
@@ -2503,6 +2718,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     record(target, (entry) => {
       if (value) entry.styles[prop] = value;
       else delete entry.styles[prop];
+      // Her moves (a drag, the arrows, X and Y) add to the translate, so Spacing's share inside it (nudge) still
+      // holds; only a translate that is gone takes the share with it.
+      if (prop === "translate" && !value) delete entry.sim;
     });
   }
 
@@ -2665,12 +2883,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let toastEl = null;
   let toastTimer = 0;
   // action: a button on the toast ({ label, run }); ms: how long it stays (1.8 seconds unless said). It fades out.
-  function toast(text, action, ms) {
+  function toast(text, action, ms, center) {
     if (!toastEl) {
       toastEl = el("div", "ft-toast");
       document.body.appendChild(toastEl);
     }
-    toastEl.textContent = text;
+    // Words, or a node (the hotkey note, with its key coloured).
+    if (typeof text === "string") toastEl.textContent = text;
+    else toastEl.replaceChildren(text);
+    toastEl.classList.toggle("is-center", !!center);
     // One action (Undo) or several, each the same plain button (neither stands out), then the close.
     const acts = !action ? [] : Array.isArray(action) ? action : [action];
     toastEl.classList.toggle("has-action", acts.length > 0);
@@ -3107,6 +3328,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           hoverBox.hidden = true;
           history.quiet++;
           still(t, true);
+          // A corner drag is Fixed on both axes, as in Figma: inside auto layout, grow, shrink and stretch let go
+          // once here, so the size the drag writes holds.
+          if (layoutParentOf(t)) ["w", "h"].forEach((axis) => fixAxis(t, axis, null));
         }
         let w = Math.max(1, start.w + (west ? -1 : 1) * (ev.clientX - x0));
         let h = Math.max(1, start.h + (north ? -1 : 1) * (ev.clientY - y0));
@@ -3173,6 +3397,54 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       select(null);
       noteChange();
       undoToast("Deleted " + list.length + (list.length === 1 ? " layer" : " layers"), undo);
+    }
+
+    // Figma's ⇧A and ⌥⇧A on one layer that holds others. Adding reads the auto layout from how the layers sit
+    // (applyInferred), so nothing moves where the gaps are even; uneven gaps are evened out and the toast says so.
+    // Where the layers overlap or can't be measured, a toast says why and nothing changes: the Flow row still
+    // applies it on purpose. Each is one undo step of its own, apart from whatever came before it.
+    const holdsLayers = (t) => !(t instanceof SVGElement) && !hasText(t) && t.children.length > 0;
+    function addAutoLayout() {
+      const list = current();
+      // Several layers at once are a ⌘G group's auto layout, which isn't here yet. Until it is, no toast offers
+      // "two or more layers" as a way in.
+      if (list.length > 1) return toast("Select one layer with layers inside");
+      const t = list[0];
+      if (!t || !holdsLayers(t)) return toast("Select a layer with layers inside");
+      if (/flex|grid/.test(getComputedStyle(t).display)) return toast("Already auto layout");
+      // Layers placed with position: absolute are out of any flow, so there's nothing for a flow to arrange.
+      if (!flowChildren(t).length) {
+        return toast(flowChildren(t, true).length ? "Its layers are placed with position: absolute, so auto layout can't arrange them"
+          : "Select a layer with layers inside");
+      }
+      const { inf } = readInferred(t);
+      if (inf.reason === "overlap") return toast("Its layers overlap, so auto layout would move them. Pick a Flow to apply it anyway.");
+      if (inf.reason) return toast("Some of its layers can't be measured, so auto layout would move them. Pick a Flow to apply it anyway.");
+      if (history.timer) commitStep();
+      history.quiet++;
+      applyInferred(t);
+      history.quiet--;
+      noteChange();
+      reshow();
+      undoToast("Added auto layout" + (inf.moves ? " · layers moved" : ""), undo);
+    }
+    // Back to Freeform, as the Flow row's Freeform. Her padding stays: it's the box's, as in Figma.
+    function removeAutoLayout() {
+      const list = current();
+      if (list.length > 1) return toast("Select one layer with auto layout");
+      const t = list[0];
+      if (!t || !holdsLayers(t) || !/flex|grid/.test(getComputedStyle(t).display)) return toast("No auto layout to remove");
+      const own = ownValue(t, "display");
+      const fromCode = /flex|grid/.test(own);
+      if (history.timer) commitStep();
+      history.quiet++;
+      toFreeform(t);
+      history.quiet--;
+      noteChange();
+      reshow();
+      // Figma freezes the layers where they are; here they follow the code's own layout (her call to change). A
+      // code grid turned to block stacks its cells in one column, so there the toast just says they moved.
+      undoToast("Removed auto layout" + (/grid/.test(own) ? " · layers moved" : fromCode ? " · layers follow the code's layout" : ""), undo);
     }
 
     // Double-click puts the caret where you clicked; Enter selects all the text.
@@ -3271,8 +3543,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       markLoop = requestAnimationFrame(tick);
     }
 
+    // A layer previewed from the panel (a group's items menu): outlined until the menu lets go.
+    let previewed = null;
+    function preview(t) {
+      previewed = t || null;
+      hoverBox.hidden = !previewed;
+      if (!previewed) return;
+      frameRect(hoverBox, unionRect([previewed]));
+      hoverBox.classList.toggle("is-comp", !motion() && !!componentOf(previewed));
+    }
+
     // Hover outlines what a click would pick: a group as one box.
     document.addEventListener("pointermove", (e) => {
+      if (previewed) return;
       const live = active() && !editing && !moving && marquee.hidden;
       const moving_ = live && motion() ? motionPick(e.target) : null;
       const t = !live ? null : moving_ || levelPick(e.target, e.metaKey || e.ctrlKey).pick;
@@ -3390,6 +3673,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return;
       }
       if (!current().length && !column) return;
+      // Figma's ⇧A and ⌥⇧A (Shift+A, Alt+Shift+A elsewhere), add and remove auto layout. Read by code, since ⌥⇧A
+      // types Å on a Mac. Motion has no layout to add.
+      if (e.code === "KeyA" && e.shiftKey && !e.metaKey && !e.ctrlKey && !e.repeat && !motion()) {
+        e.preventDefault();
+        return e.altKey ? removeAutoLayout() : addAutoLayout();
+      }
       // Figma's Delete and Backspace.
       if ((e.key === "Delete" || e.key === "Backspace") && !e.metaKey && !e.ctrlKey && !e.altKey && current().length) {
         e.preventDefault();
@@ -3434,7 +3723,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     sync();
 
-    return { sync, refresh: place, reshow, selectLayers, tabChanged, guidesChanged };
+    return { sync, refresh: place, reshow, selectLayers, tabChanged, guidesChanged, preview, addAutoLayout, removeAutoLayout };
   }
 
   const WEIGHT_NAMES = {
@@ -3492,8 +3781,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     return {
       close,
-      toggle(btn, items, current, onPick, onHover) {
+      // span: an element the menu drops down under, as wide as it (8 in from its edges), as Figma's header menu
+      // drops under the panel's header; without it the menu opens at the button.
+      toggle(btn, items, current, onPick, onHover, span) {
         if (anchor === btn) return close();
+        menu.style.width = "";
         if (hover) hover(null);
         if (anchor) anchor.classList.remove("is-open");
         anchor = btn;
@@ -3519,7 +3811,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           if (hover) item.addEventListener("pointerenter", () => hover(it.value));
           const check = el("span", "ft-menu-check");
           if (same(it.value, current)) check.innerHTML = ICON.check;
-          item.append(check, el("span", null, it.label));
+          item.appendChild(check);
+          // An item with a glyph shows it before its words, as the kit's resizing menu does.
+          if (it.icon) {
+            const glyph = el("span", "ft-menu-icon");
+            glyph.innerHTML = ICON[it.icon];
+            item.appendChild(glyph);
+          }
+          item.appendChild(el("span", null, it.label));
           // An item that can be deleted shows a trash can on hover.
           if (it.remove) {
             const trash = el("span", "ft-menu-trash");
@@ -3534,6 +3833,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           menu.appendChild(item);
         });
         menu.hidden = false;
+        if (span) {
+          const sr = span.getBoundingClientRect();
+          menu.style.left = sr.left + 8 + "px";
+          menu.style.width = sr.width - 16 + "px";
+          menu.style.top = Math.max(8, Math.min(sr.bottom + 4, window.innerHeight - menu.offsetHeight - 8)) + "px";
+          return;
+        }
         const r = btn.getBoundingClientRect();
         const i = items.findIndex((it) => same(it.value, current));
         // Kept on screen: a button near the right edge opens its menu leftward. With no current item it
@@ -3762,14 +4068,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return { left, top, right, bottom, width: right - left, height: bottom - top };
   }
 
-  // A move by dx, dy as a translate, recorded like one typed into the Position fields.
-  function nudge(t, dx, dy) {
+  // A move by dx, dy as a translate, recorded like one typed into the Position fields. sim "stack" is Spacing's
+  // move on a free-flow container: its share is added up in entry.sim apart from her own moves, so a change of
+  // Flow takes back just Spacing's share and a layer she moved keeps her move.
+  function nudge(t, dx, dy, sim) {
     [dx, dy] = localDelta(t, dx, dy);
     const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
     const tx = Math.round(((cur[0] || 0) + dx) * 10) / 10;
     const ty = Math.round(((cur[1] || 0) + dy) * 10) / 10;
     boxed(t);
     setStyle(t, "translate", tx || ty ? tx + "px " + ty + "px" : "");
+    if (sim) record(t, (entry) => {
+      if (!entry.styles.translate) return;
+      const was = entry.sim || { x: 0, y: 0 };
+      const share = { x: Math.round((was.x + dx) * 10) / 10, y: Math.round((was.y + dy) * 10) / 10 };
+      if (share.x || share.y) entry.sim = share;
+      else delete entry.sim;
+    });
   }
 
   // "All items" for the guide alignments: what she could select (text, images, boxes with a fill),
@@ -3784,10 +4099,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return all.filter((e) => !all.some((o) => o !== e && o.contains(e)));
   }
 
-  // The grid the page's code already has, read as a horizontal layout: its widest CSS grid with four or
-  // more equal columns, at least half the window wide (a two-column list is content, not the page's grid).
-  // Count and gutter are the grid's own; equal margins read as Stretch, otherwise Left with an offset.
+  // The grid the page's code already has, read as a horizontal layout: the one the call declares (`layout`, the
+  // site's decided grid, her call 2026-10-15: a site has its grid even where no CSS grid draws it), else its widest
+  // CSS grid with four or more equal columns, at least half the window wide (a two-column list is content, not
+  // the page's grid). Count and gutter are the grid's own; equal margins read as Stretch, otherwise Left with an
+  // offset.
   function pageGrid() {
+    if (declaredGrid) return Object.assign(newGuide(), declaredGrid);
     const W = document.documentElement.clientWidth;
     let best = null;
     for (const e of document.body.querySelectorAll("*")) {
@@ -3948,7 +4266,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // Sets every gap in the stack to n by moving each item after the first (so the ones below move down too).
-  // Each move is an ordinary edit.
+  // Each move is an ordinary edit, marked as Spacing's so a change of Flow can take it back (the flex gap then
+  // spaces them instead).
   function setStackGap(stack, n) {
     const y = stack.axis === "y";
     let edge = null;
@@ -3956,7 +4275,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (i) {
         const r = t.getBoundingClientRect();
         const d = edge + n - (y ? r.top : r.left);
-        if (Math.abs(d) >= 0.05) nudge(t, y ? 0 : d, y ? d : 0);
+        if (Math.abs(d) >= 0.05) nudge(t, y ? 0 : d, y ? d : 0, "stack");
       }
       const r2 = t.getBoundingClientRect();
       edge = y ? r2.bottom : r2.right;
@@ -3966,7 +4285,576 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // What the page itself says for a property, written back only where it differs (so a value that matches the
   // code leaves no edit behind).
   function setUnlessOwn(t, prop, value) {
-    setStyle(t, prop, ownValue(t, prop) === value ? "" : value);
+    if (ownValue(t, prop) === value) handBack(t, prop);
+    else setStyle(t, prop, value);
+  }
+
+  // Takes the edit off and puts back the layer's own inline value, if the code wrote one (a React style prop):
+  // setStyle's "" only removes, which would also drop the code's inline value until the next undo.
+  function handBack(t, prop) {
+    // On a component, the "" went to every instance that doesn't override it, so each gets its own value back,
+    // not only the one selected.
+    const shared = sharedComponent(t, prop);
+    const list = shared
+      ? instancesOf(shared).filter((i) => i === t || (edits.elements[selectorFor(i)] || { styles: {} }).styles[prop] == null)
+      : [t];
+    setStyle(t, prop, "");
+    list.forEach((i) => {
+      const own = originalOf(i).styles[prop];
+      if (own) i.style.setProperty(prop, own);
+    });
+  }
+
+  // Figma's Resizing inside auto layout (Fixed, Hug, Fill) and Ignore auto layout, written as CSS longhands only:
+  // the flex shorthand next to its own longhands would make undo depend on the order they were written in.
+
+  // The parent a layer is laid out in, when it is auto layout (a flex or a grid), past any display: contents
+  // wrapper as alignToParent reads it. main is the axis a flex runs along ("w" for a row); a grid has none.
+  // inFlow is false for a layer taken out of the flow (absolute or fixed), which the parent no longer sizes.
+  function layoutParentOf(t) {
+    if (!(t instanceof HTMLElement) && !isSvgRoot(t)) return null;
+    let p = t.parentElement;
+    while (p && p !== document.body && getComputedStyle(p).display === "contents") p = p.parentElement;
+    if (!p) return null;
+    const cs = getComputedStyle(p);
+    if (!/flex|grid/.test(cs.display)) return null;
+    const flex = /flex/.test(cs.display);
+    const pos = getComputedStyle(t).position;
+    return { el: p, flex, main: flex ? (/column/.test(cs.flexDirection) ? "h" : "w") : null, inFlow: pos !== "absolute" && pos !== "fixed" };
+  }
+  // Across a flex (or along either axis of a grid) a child fills by stretching: align-self, or justify-self for a
+  // grid's columns.
+  const selfProp = (lp, axis) => (!lp.flex && axis === "w" ? "justify-self" : "align-self");
+  // Whether it stretches: its own value, or the parent's -items when its own says auto. normal stretches a box too.
+  function stretches(t, lp, axis) {
+    const prop = selfProp(lp, axis);
+    let v = getComputedStyle(t).getPropertyValue(prop).trim();
+    if (v === "auto") v = getComputedStyle(lp.el).getPropertyValue(prop === "align-self" ? "align-items" : "justify-items").trim();
+    return /^(stretch|normal|legacy)$/.test(v);
+  }
+  // A layer's size along one axis as it is, then with its own size hugging (fit-content), then with its own size
+  // auto, each read with the inline value swapped in and put straight back. Costs two forced layouts, so it's read
+  // when the panel is built or forced, never on scroll.
+  function sizeTrial(t, axis) {
+    const prop = axis === "w" ? "width" : "height";
+    const get = () => {
+      const v = axis === "w" ? t.offsetWidth : t.offsetHeight;
+      return v != null ? v : t.getBoundingClientRect()[prop];
+    };
+    const was = t.style.getPropertyValue(prop);
+    const pri = t.style.getPropertyPriority(prop);
+    still(t, true);
+    const now = get();
+    t.style.setProperty(prop, "fit-content");
+    const hug = get();
+    t.style.setProperty(prop, "auto");
+    const auto = get();
+    if (was) t.style.setProperty(prop, was, pri);
+    else t.style.removeProperty(prop);
+    flush();
+    still(t, false);
+    return { now, hug, auto };
+  }
+  // Whether nothing sets this axis's size, so it's whatever the layout gives it.
+  const sizedByLayout = (t, axis) => {
+    const s = sizeTrial(t, axis);
+    return Math.abs(s.now - s.auto) < 0.5;
+  };
+  // Resizing as Figma would read it off the code: "fixed", "hug" or "fill".
+  function sizeModeOf(t, axis) {
+    const lp = layoutParentOf(t);
+    const laid = lp && lp.inFlow;
+    if (laid && lp.main === axis && parseFloat(getComputedStyle(t).flexGrow) > 0) return "fill";
+    // A size written as a length is Fixed even when it matches the content: the trials below can't tell a 196px
+    // width from a hug of 196. A percentage isn't one, as it follows the parent. Along a flex, a basis that's a
+    // length sizes the box whatever its width says.
+    const own = t.style.getPropertyValue(axis === "w" ? "width" : "height");
+    if (own && /\d/.test(own) && !/%/.test(own)) return "fixed";
+    if (laid && lp.flex && lp.main === axis && /\d/.test(getComputedStyle(t).flexBasis)) return "fixed";
+    const s = sizeTrial(t, axis);
+    if (laid && lp.main !== axis && stretches(t, lp, axis) && Math.abs(s.now - s.auto) < 0.5) return "fill";
+    if (Math.abs(s.now - s.hug) < 0.5) return "hug";
+    if (Math.abs(s.now - s.auto) < 0.5 && s.auto > s.hug + 0.5) return "fill";
+    return "fixed";
+  }
+  // Whether finetune changed a property (on the layer, or on its component), as against the code's own value.
+  const editedHere = (t, prop) => prop in originalOf(t).styles && t.style.getPropertyValue(prop) !== originalOf(t).styles[prop];
+  // Leaving Fill (or Fixed's shrink lock): what finetune wrote for it goes back to the code's own.
+  function unfill(t, lp, axis) {
+    const props = lp.main === axis ? ["flex-grow", "flex-shrink", "flex-basis", axis === "w" ? "min-width" : "min-height"] : [selfProp(lp, axis)];
+    props.forEach((p) => { if (editedHere(t, p)) handBack(t, p); });
+  }
+  // Fixed along one axis: the size as px (when px is given), and inside auto layout whatever would still grow,
+  // shrink or stretch it switched off, so the number holds. A corner drag and a typed W or H come here too.
+  function fixAxis(t, axis, px) {
+    const lp = layoutParentOf(t);
+    if (lp && lp.inFlow) {
+      unfill(t, lp, axis);
+      if (lp.main === axis) {
+        setUnlessOwn(t, "flex-grow", "0");
+        setUnlessOwn(t, "flex-shrink", "0");
+        setUnlessOwn(t, "flex-basis", "auto");
+      } else if (stretches(t, lp, axis) && sizedByLayout(t, axis)) {
+        // A px size already beats the stretch; start keeps it from reading as Fill when the two happen to match.
+        setUnlessOwn(t, selfProp(lp, axis), lp.flex ? "flex-start" : "start");
+      }
+    }
+    if (px != null) setSize(t, axis === "w" ? px : null, axis === "h" ? px : null);
+  }
+  // Hug contents (a container): its size from what's inside. The code's own size is handed back first, and
+  // fit-content written only when that doesn't already hug (fit-content also beats a stretch, which auto doesn't).
+  function hugAxis(t, axis) {
+    const lp = layoutParentOf(t);
+    const prop = axis === "w" ? "width" : "height";
+    if (lp && lp.inFlow) {
+      unfill(t, lp, axis);
+      if (lp.main === axis) {
+        setUnlessOwn(t, "flex-grow", "0");
+        setUnlessOwn(t, "flex-basis", "auto");
+      }
+    }
+    handBack(t, prop);
+    if (sizeModeOf(t, axis) !== "hug") setStyle(t, prop, "fit-content");
+  }
+  // Fill container: along the flex, grow from nothing (min 0, so long words can't push it past its share); across
+  // it, stretch. Its own size goes, as a size would stop the stretch.
+  function fillAxis(t, axis) {
+    const lp = layoutParentOf(t);
+    if (!lp || !lp.inFlow) return;
+    const prop = axis === "w" ? "width" : "height";
+    unfill(t, lp, axis);
+    if (lp.main === axis) {
+      // A parent that hugs along the flex has no room to grow into, so a basis of 0 would collapse the layer. As
+      // in Figma, the parent turns Fixed at the size it has now.
+      if (sizeModeOf(lp.el, axis) === "hug") {
+        const ps = sizeOf(lp.el);
+        fixAxis(lp.el, axis, Math.round(axis === "w" ? ps.w : ps.h));
+      }
+      setUnlessOwn(t, "flex-grow", "1");
+      setUnlessOwn(t, "flex-basis", "0px");
+      setUnlessOwn(t, axis === "w" ? "min-width" : "min-height", "0px");
+      // A basis of 0 already outranks any width the code sets, so none is written.
+      handBack(t, prop);
+      return;
+    }
+    setUnlessOwn(t, selfProp(lp, axis), "stretch");
+    handBack(t, prop);
+    if (!sizedByLayout(t, axis)) setStyle(t, prop, "auto");
+  }
+  function setSizeMode(t, axis, mode) {
+    if (mode === "fill") return fillAxis(t, axis);
+    if (mode === "hug") return hugAxis(t, axis);
+    const s = sizeOf(t);
+    fixAxis(t, axis, Math.round(axis === "w" ? s.w : s.h));
+  }
+
+  // Ignore auto layout: the layer leaves its parent's flow (absolute) and stays where it is on screen, its translate
+  // kept. The parent becomes the box it's placed in, so a static parent is made relative.
+  const ignoresLayout = (t) => /^(absolute|fixed)$/.test(getComputedStyle(t).position);
+  function setIgnoreLayout(t, on) {
+    const lp = layoutParentOf(t);
+    if (!lp) return;
+    const p = lp.el;
+    const posEdited = (e) => { const en = entryOf(e); return !!(en && en.styles.position != null); };
+    if (!on) {
+      // Back in the flow means the code's own position, so a relative layer keeps its offset and stays the box
+      // its own absolute children sit in. Only a layer the code itself takes out of the flow is written static.
+      if (/^(absolute|fixed)$/.test(ownValue(t, "position"))) setStyle(t, "position", "static");
+      else handBack(t, "position");
+      handBack(t, "left");
+      handBack(t, "top");
+      // The parent's relative was only there to place its ignored children.
+      const others = flowChildren(p, true).some((c) => c !== t && posEdited(c));
+      if (!others && posEdited(p) && ownValue(p, "position") === "static") handBack(p, "position");
+      return;
+    }
+    still(t, true);
+    const r0 = t.getBoundingClientRect();
+    const s0 = sizeOf(t);
+    // A Fill would collapse once out of the flow, so it keeps today's size.
+    ["w", "h"].forEach((axis) => {
+      if (sizeModeOf(t, axis) === "fill") setSize(t, axis === "w" ? Math.round(s0.w) : null, axis === "h" ? Math.round(s0.h) : null);
+    });
+    // A static parent made relative would also catch any other absolute layer inside it that's placed against a
+    // box further out, and move it. Then it stays static and this layer is placed against that outer box instead.
+    const staticParent = getComputedStyle(p).position === "static";
+    const catches = staticParent && [...p.querySelectorAll("*")].some((d) =>
+      !t.contains(d) && getComputedStyle(d).position === "absolute" && d.offsetParent && !p.contains(d.offsetParent));
+    if (staticParent && !catches) setStyle(p, "position", "relative");
+    const cs = getComputedStyle(t);
+    setStyle(t, "position", "absolute");
+    const cb = t.offsetParent || p;
+    const pr = cb.getBoundingClientRect();
+    const n = (v) => parseFloat(v) || 0;
+    const tr = cs.translate && cs.translate !== "none" ? cs.translate.split(/\s+/).map(n) : [];
+    const left = r0.left - pr.left - cb.clientLeft + cb.scrollLeft - n(cs.marginLeft) - (tr[0] || 0);
+    const top = r0.top - pr.top - cb.clientTop + cb.scrollTop - n(cs.marginTop) - (tr[1] || 0);
+    setStyle(t, "left", round1(left) + "px");
+    setStyle(t, "top", round1(top) + "px");
+    // Out of the flow a box shrinks to fit what's left of the parent, which can wrap its words: it keeps its size.
+    const s1 = sizeOf(t);
+    if (Math.abs(s1.w - s0.w) >= 0.5) setSize(t, Math.round(s0.w), null);
+    if (Math.abs(s1.h - s0.h) >= 0.5) setSize(t, null, Math.round(s0.h));
+    // Anything the sums miss (a transform, a scale on the parent) is measured and taken out.
+    const r1 = t.getBoundingClientRect();
+    if (Math.abs(r1.left - r0.left) >= 0.05) setStyle(t, "left", round1(left + r0.left - r1.left) + "px");
+    if (Math.abs(r1.top - r0.top) >= 0.05) setStyle(t, "top", round1(top + r0.top - r1.top) + "px");
+    flush();
+    still(t, false);
+  }
+
+  // Takes Spacing's share (nudge's entry.sim) out of a layer's translate and keeps the rest, her own moves.
+  function takeBackSpacing(t) {
+    const e = edits.elements[selectorFor(t)];
+    if (!e || !e.sim) return;
+    const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
+    const x = Math.round(((cur[0] || 0) - e.sim.x) * 10) / 10;
+    const y = Math.round(((cur[1] || 0) - e.sim.y) * 10) / 10;
+    const own = String(originalOf(t).styles.translate || "").trim().split(/\s+/).map(parseFloat);
+    if (x === (own[0] || 0) && y === (own[1] || 0)) handBack(t, "translate");
+    else setStyle(t, "translate", x + "px " + y + "px");
+    record(t, (entry) => { delete entry.sim; });
+  }
+
+  // Auto layout, read from a container's CSS as Figma's panel shows it: justify-content along the flow and
+  // align-items across it, each start, center or end. Auto is Figma's Gap Auto (space-between; around and evenly
+  // read the same, as the panel has no cell for them). Baseline reads as start: there's no Baseline control yet.
+  const ALIGN_MAIN = { normal: "start", "flex-start": "start", start: "start", left: "start", center: "center", "flex-end": "end", end: "end", right: "end", "space-between": "auto", "space-around": "auto", "space-evenly": "auto" };
+  const ALIGN_CROSS = { normal: "start", stretch: "start", "flex-start": "start", start: "start", "self-start": "start", baseline: "start", center: "center", "flex-end": "end", end: "end", "self-end": "end" };
+  const ALIGN_CSS = { start: "flex-start", center: "center", end: "flex-end" };
+  // "safe center" and "first baseline" mean their keyword here.
+  const alignWord = (v) => String(v || "").trim().replace(/^(safe|unsafe|first|last)\s+/, "");
+  const mainOf = (v) => ALIGN_MAIN[alignWord(v)] || "start";
+  const crossOf = (v) => ALIGN_CROSS[alignWord(v)] || "start";
+  const stretchy = (v) => /^(normal|stretch)$/.test(alignWord(v));
+  function alignOf(t) {
+    const cs = getComputedStyle(t);
+    return { main: mainOf(cs.justifyContent), cross: crossOf(cs.alignItems), stretch: stretchy(cs.alignItems) };
+  }
+  function padOf(t) {
+    const cs = getComputedStyle(t);
+    return [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map((v) => parseFloat(v) || 0);
+  }
+
+  // The layers a flex or grid places. An absolute one is out of the flow (Figma's Ignore auto layout), so it has no
+  // part in the gap or the alignment; all keeps it, for Freeform's Spacing, which moves absolute layers too. A
+  // display: contents wrapper has no box of its own: the flex or grid places its children, so they stand in for it.
+  function flowChildren(t, all) {
+    const out = [];
+    Array.from(t.children).forEach((c) => {
+      if (isUi(c)) return;
+      const cs = getComputedStyle(c);
+      if (cs.display === "contents") out.push(...flowChildren(c, all));
+      else if (cs.display !== "none" && cs.position !== "fixed" && (all || cs.position !== "absolute")) out.push(c);
+    });
+    return out;
+  }
+  // Words straight inside a display: contents wrapper become a box of their own in a flex, one with no element to
+  // measure.
+  const looseWords = (t) => Array.from(t.children).some((c) => !isUi(c) && getComputedStyle(c).display === "contents"
+    && (Array.from(c.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim()) || looseWords(c)));
+
+  // A layer's border box from its container's border box, with transforms left out (a running animation, or a move
+  // she made, isn't layout). Offset geometry does that for an HTML element; an <svg> has none, so its rect is read
+  // instead, scaled back by the container's own scale and with its own translate taken off. null when it has no box.
+  function boxIn(t, c) {
+    if (c instanceof HTMLElement) {
+      if (!c.offsetParent) return null;
+      const mine = c.offsetParent === t;
+      const off = { x: c.offsetLeft + (mine ? t.clientLeft : -t.offsetLeft), y: c.offsetTop + (mine ? t.clientTop : -t.offsetTop), w: c.offsetWidth, h: c.offsetHeight };
+      // Offset geometry rounds to whole pixels, so two 22.4px lines of text would read as a 1px gap that isn't
+      // there, and auto layout would move them. A layer whose transform only moves it (most layers, and an
+      // animation's slide) is read from its rect instead, which keeps the fractions, with the move taken off.
+      // A turned or scaled layer keeps the offsets. So does one under a turn or a skew anywhere above (the container,
+      // or a tilted card around it): a rect is the upright box around the turned one, so every gap read from it
+      // would be wrong. A plain scale up there is fine, it's read off the container's rect below. So is a translate
+      // that calc() mixes, which can't be taken off the rect exactly.
+      const cs = getComputedStyle(c);
+      const tcs = getComputedStyle(t);
+      const moveOnly = (s) => s.rotate === "none" && s.scale === "none" && (s.transform === "none" || /^matrix\(1, 0, 0, 1,/.test(s.transform));
+      const upright = (s) => s.rotate === "none" && /^(none|matrix\([^,]+, 0, 0,)/.test(s.transform);
+      let up = t;
+      while (up && upright(getComputedStyle(up))) up = up.parentElement;
+      if (!moveOnly(cs) || up || /\(/.test(cs.translate)) return off;
+      const n = (v) => parseFloat(v) || 0;
+      // The container's scale on screen (its own, or a scaled page around it), against its exact layout size.
+      const lay = (k, a, b) => (/px$/.test(tcs[k]) ? n(tcs[k]) + (tcs.boxSizing !== "border-box" ? n(tcs["padding" + a]) + n(tcs["padding" + b]) + n(tcs["border" + a + "Width"]) + n(tcs["border" + b + "Width"]) : 0) : 0);
+      const r = c.getBoundingClientRect();
+      const tr = t.getBoundingClientRect();
+      const lw = lay("width", "Left", "Right") || t.offsetWidth;
+      const lh = lay("height", "Top", "Bottom") || t.offsetHeight;
+      if (!lw || !lh) return off;
+      const sx = tr.width / lw;
+      const sy = tr.height / lh;
+      const w = r.width / sx;
+      const h = r.height / sy;
+      // A translate in % stays a % in the computed value, and it's a share of the layer's own size.
+      const part = (v, size) => (/%$/.test(v) ? (n(v) / 100) * size : n(v));
+      const tl = cs.translate && cs.translate !== "none" ? cs.translate.split(/\s+/) : [];
+      const m = cs.transform !== "none" ? new DOMMatrixReadOnly(cs.transform) : null;
+      return {
+        x: (r.left - tr.left) / sx + t.scrollLeft - (tl[0] ? part(tl[0], w) : 0) - (m ? m.e : 0),
+        y: (r.top - tr.top) / sy + t.scrollTop - (tl[1] ? part(tl[1], h) : 0) - (m ? m.f : 0),
+        w,
+        h,
+      };
+    }
+    if (!c.getBoundingClientRect) return null;
+    const r = c.getBoundingClientRect();
+    const tr = t.getBoundingClientRect();
+    const sx = t.offsetWidth ? tr.width / t.offsetWidth : 1;
+    const sy = t.offsetHeight ? tr.height / t.offsetHeight : 1;
+    const cs = getComputedStyle(c);
+    const n = (v) => parseFloat(v) || 0;
+    const content = cs.boxSizing !== "border-box";
+    const w = n(cs.width) + (content ? n(cs.paddingLeft) + n(cs.paddingRight) + n(cs.borderLeftWidth) + n(cs.borderRightWidth) : 0);
+    const h = n(cs.height) + (content ? n(cs.paddingTop) + n(cs.paddingBottom) + n(cs.borderTopWidth) + n(cs.borderBottomWidth) : 0);
+    // A turn or a scale about the centre leaves the centre where it was, so only the moves are taken off it.
+    // A % translate is a share of the layer's own size, as above.
+    const tl = cs.translate && cs.translate !== "none" ? cs.translate.split(/\s+/).map((v, i) => (/%$/.test(v) ? (n(v) / 100) * (i ? h : w) : n(v))) : [];
+    const m = cs.transform && cs.transform !== "none" ? new DOMMatrixReadOnly(cs.transform) : null;
+    const cx = ((r.left + r.right) / 2 - tr.left) / sx - (tl[0] || 0) - (m ? m.e : 0);
+    const cy = ((r.top + r.bottom) / 2 - tr.top) / sy - (tl[1] || 0) - (m ? m.f : 0);
+    return { x: cx - w / 2, y: cy - h / 2, w, h };
+  }
+
+  // A px length, written unless the code's own reads the same (a gap's normal reads as 0), so a value that matches
+  // the code leaves no edit behind.
+  function setPx(t, prop, n) {
+    const own = ownValue(t, prop);
+    if ((own === "normal" ? 0 : parseFloat(own)) === n) handBack(t, prop);
+    else setStyle(t, prop, n + "px");
+  }
+
+  // An alignment, handed back when the code's own means the same (normal and flex-start are both start).
+  function setAlignment(t, prop, value) {
+    const own = ownValue(t, prop);
+    const same = value === "space-between" ? alignWord(own) === value
+      : prop === "justify-content" ? mainOf(own) === mainOf(value) : crossOf(own) === crossOf(value);
+    if (same) handBack(t, prop);
+    else setStyle(t, prop, value);
+  }
+
+  // In Figma a new alignment never changes a layer's Fill. In CSS a layer fills across only under stretch, so
+  // before align-items first leaves the code's stretch, each layer that fills across keeps it with its own
+  // align-self. A layer that fills reads as one that spans the content box (a fixed one that happens to span it
+  // gets an align-self that changes nothing).
+  function keepStretch(t) {
+    if (!stretchy(ownValue(t, "align-items")) || !stretchy(getComputedStyle(t).alignItems)) return;
+    const col = /column/.test(getComputedStyle(t).flexDirection);
+    const p = padOf(t);
+    const inner = col ? t.clientWidth - p[1] - p[3] : t.clientHeight - p[0] - p[2];
+    flowChildren(t).forEach((c) => {
+      const cs = getComputedStyle(c);
+      if (!/^(auto|normal|stretch)$/.test(cs.alignSelf)) return;
+      const m = col ? (parseFloat(cs.marginLeft) || 0) + (parseFloat(cs.marginRight) || 0) : (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+      const b = boxIn(t, c);
+      if (b && Math.abs((col ? b.w : b.h) + m - inner) < 0.5) setUnlessOwn(c, "align-self", "stretch");
+    });
+  }
+  // Back on the code's stretch, those align-selfs say nothing, so they'd only be noise in Copy.
+  function dropStretch(t) {
+    if (!stretchy(getComputedStyle(t).alignItems)) return;
+    flowChildren(t, true).forEach((c) => {
+      const e = entryOf(c);
+      if (e && e.styles["align-self"] === "stretch") handBack(c, "align-self");
+    });
+  }
+
+  // A container's layers as margin boxes from its border box, in the code's order, for inferLayout. Offset geometry
+  // ignores transforms, so a running animation can't skew them; Spacing's share of a translate is added back,
+  // since that's where she sees the layer. Her own moves stay hers and aren't read as layout. m is the margins (top,
+  // right, bottom, left). null when a layer has no box to read: the padding read from the others alone would move
+  // every layer.
+  function layoutBoxes(t, list) {
+    const out = [];
+    for (const c of list) {
+      const box = boxIn(t, c);
+      if (!box) return null;
+      const cs = getComputedStyle(c);
+      const m = [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map((v) => parseFloat(v) || 0);
+      const e = entryOf(c);
+      const x = box.x + ((e && e.sim && e.sim.x) || 0);
+      const y = box.y + ((e && e.sim && e.sim.y) || 0);
+      out.push({ el: c, m, l: x - m[3], t: y - m[0], r: x + box.w + m[1], b: y + box.h + m[2] });
+    }
+    return out;
+  }
+
+  // Figma's Add auto layout, as a pure read: the flow, gap, alignment and padding that keep the boxes where they
+  // are. opts.flow forces the direction; opts.content and opts.pad (a real container's content box and own
+  // padding) let padding be read too. moves says some layer will still move (the gaps differ, or the order on
+  // screen isn't the code's). Returns { reason } when the boxes overlap both ways.
+  function inferLayout(boxes, opts) {
+    opts = opts || {};
+    if (!boxes.length) return { reason: "empty" };
+    // Margin boxes, or border boxes (bare): collapsed block margins overlap as margin boxes even though the layers
+    // themselves sit one after another, so either way counts as a stack.
+    const fits = (lo, hi, bare) => {
+      const at = (x, k) => x[k] + (bare && x.m ? { t: x.m[0], b: -x.m[2], l: x.m[3], r: -x.m[1] }[k] : 0);
+      const s = boxes.slice().sort((a, b) => at(a, lo) - at(b, lo));
+      return s.every((x, i) => !i || at(x, lo) >= at(s[i - 1], hi) - 0.5);
+    };
+    const stacks = (lo, hi) => fits(lo, hi) || fits(lo, hi, true);
+    const flow = opts.flow || (boxes.length < 2 || stacks("t", "b") ? "vertical" : stacks("l", "r") ? "horizontal" : null);
+    if (!flow) return { reason: "overlap" };
+    const y = flow === "vertical";
+    const [lo, hi, clo, chi] = y ? ["t", "b", "l", "r"] : ["l", "r", "t", "b"];
+    const same = (vals, tol) => vals.every((v) => Math.abs(v - vals[0]) <= tol);
+    let moves = false;
+    // Flex places them in the code's order, so the gaps are read in that order too: between margin boxes, since
+    // flex doesn't collapse margins.
+    let gaps = boxes.slice(1).map((b, i) => b[lo] - boxes[i][hi]);
+    // Figma's gap is the space she sees between the layers, which is also what Freeform's Spacing shows. So where
+    // margins between the layers make that space and it's even, the gap is read between the border boxes and those
+    // margins go (dropMargins); the first's start and the last's end stay, inside the padding. Block margins that
+    // collapsed (two 8px margins make one 8px space) take the same path, since there the margin boxes overlap.
+    // Only where the border boxes sit unevenly and the margin boxes evenly do the margins stay, under a gap of 0.
+    const ms = (b) => (b.m ? b.m[y ? 0 : 3] : 0);
+    const me = (b) => (b.m ? b.m[y ? 2 : 1] : 0);
+    const bare = boxes.slice(1).map((b, i) => b[lo] + ms(b) - (boxes[i][hi] - me(boxes[i])));
+    const holds = (g) => same(g, 0.5) && g[0] >= -0.5;
+    let dropMargins = false;
+    const between = boxes.slice(1).some((b, i) => ms(b) || me(boxes[i]));
+    if (between && (holds(bare) || (!holds(gaps) && gaps.some((g) => g < -0.5)))) {
+      gaps = bare;
+      dropMargins = true;
+    }
+    let gap = 0;
+    if (gaps.length) {
+      if (same(gaps, 0.5)) gap = gaps[0];
+      else {
+        const s = gaps.slice().sort((a, b) => a - b);
+        const mid = s.length >> 1;
+        gap = s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+        moves = true;
+      }
+      // CSS has no negative gap.
+      if (gap < -0.5) moves = true;
+      gap = Math.max(0, Math.round(gap));
+    }
+    const starts = boxes.map((b) => b[clo]);
+    const mids = boxes.map((b) => (b[clo] + b[chi]) / 2);
+    const ends = boxes.map((b) => b[chi]);
+    const cross = same(starts, 1) ? "start" : same(mids, 1) ? "center" : same(ends, 1) ? "end" : "start";
+    if (cross === "start" && !same(starts, 1)) moves = true;
+    let pad = [0, 0, 0, 0];
+    if (opts.content && opts.pad) {
+      const C = opts.content;
+      const own = opts.pad;
+      pad = own.slice();
+      const add = (i, v) => { pad[i] = Math.max(0, Math.round(own[i] + v)); };
+      const first = Math.min(...boxes.map((b) => b[lo]));
+      // Only the sides that place the layers change: where the flow starts, and across it the side (or the
+      // middle) the alignment holds to. The rest keep the code's, so no padding grows that places nothing.
+      add(y ? 0 : 3, first - (y ? C.t : C.l));
+      if (cross === "start") add(y ? 3 : 0, Math.min(...starts) - (y ? C.l : C.t));
+      else if (cross === "end") add(y ? 1 : 2, (y ? C.r : C.b) - Math.max(...ends));
+      else {
+        const d = mids[0] - (y ? (C.l + C.r) / 2 : (C.t + C.b) / 2);
+        if (Math.abs(d) >= 0.5) {
+          if (d > 0) add(y ? 3 : 0, 2 * d);
+          else add(y ? 1 : 2, -2 * d);
+        }
+      }
+    }
+    return { flow, gap, pad, cross, main: "start", moves, dropMargins };
+  }
+
+  // Turns a real container into auto layout from how its layers sit, so they don't jump: display (inline stays
+  // inline), direction, the gap, align-items (always written, so the layers hug as Figma's do) and the padding,
+  // each a longhand through setUnlessOwn, so what the code already has leaves no edit. A layer that filled across
+  // keeps filling (align-self: stretch). Spacing's moves on the layers go, the gap takes over from them.
+  // The padding and margins written only to hold the layers are marked (entry.inferred), so going back to
+  // Freeform can take them off again: the code's block layout places the layers without them.
+  // readInferred is the read alone, so the Layout header can say what ⇧A would pick without writing anything.
+  function readInferred(t, forced) {
+    const p = padOf(t);
+    const content = { l: t.clientLeft + p[3], t: t.clientTop + p[0], r: t.clientLeft + t.clientWidth - p[1], b: t.clientTop + t.clientHeight - p[2] };
+    if (looseWords(t)) return { inf: { reason: "unmeasured" } };
+    const boxes = layoutBoxes(t, flowChildren(t));
+    if (!boxes) return { inf: { reason: "unmeasured" } };
+    return { inf: inferLayout(boxes, { flow: forced, content, pad: p }), boxes, content, p };
+  }
+  function applyInferred(t, forced) {
+    const { inf, boxes, content, p } = readInferred(t, forced);
+    if (inf.reason) return inf;
+    const mark = (el, prop) => record(el, (entry) => {
+      if (entry.styles[prop] == null) return;
+      entry.inferred = Object.assign({}, entry.inferred, { [prop]: entry.styles[prop] });
+    });
+    const y = inf.flow === "vertical";
+    const fills = boxes.filter((b) => (y ? Math.abs(b.l - content.l) < 0.5 && Math.abs(b.r - content.r) < 0.5
+      : Math.abs(b.t - content.t) < 0.5 && Math.abs(b.b - content.b) < 0.5));
+    const own = ownValue(t, "display");
+    if (/flex/.test(own)) handBack(t, "display");
+    else setStyle(t, "display", own.startsWith("inline") ? "inline-flex" : "flex");
+    setUnlessOwn(t, "flex-direction", y ? "column" : "row");
+    setPx(t, y ? "row-gap" : "column-gap", inf.gap);
+    setAlignment(t, "justify-content", "flex-start");
+    setUnlessOwn(t, "align-items", ALIGN_CSS[inf.cross]);
+    fills.forEach((b) => setUnlessOwn(b.el, "align-self", "stretch"));
+    boxes.forEach((b) => takeBackSpacing(b.el));
+    if (inf.dropMargins) {
+      const [ps, pe] = y ? ["margin-top", "margin-bottom"] : ["margin-left", "margin-right"];
+      boxes.forEach((b, i) => {
+        if (i && b.m[y ? 0 : 3]) {
+          setPx(b.el, ps, 0);
+          mark(b.el, ps);
+        }
+        if (i < boxes.length - 1 && b.m[y ? 2 : 1]) {
+          setPx(b.el, pe, 0);
+          mark(b.el, pe);
+        }
+      });
+    }
+    ["padding-top", "padding-right", "padding-bottom", "padding-left"].forEach((prop, i) => {
+      if (Math.abs(inf.pad[i] - p[i]) < 0.05) return;
+      setPx(t, prop, inf.pad[i]);
+      mark(t, prop);
+    });
+    if (selection) selection.reshow();
+    return inf;
+  }
+
+  // Back to Freeform, what applyInferred wrote only to hold the layers goes too, unless she has changed it since
+  // (then it's hers and stays).
+  function dropInferred(t) {
+    const e = entryOf(t);
+    if (!e || !e.inferred) return;
+    const inf = e.inferred;
+    Object.keys(inf).forEach((prop) => {
+      const now = entryOf(t);
+      if (now && now.styles[prop] === inf[prop]) handBack(t, prop);
+    });
+    record(t, (entry) => { delete entry.inferred; });
+  }
+
+  // A container back to Freeform, for the Flow row and ⌥⇧A alike. An inline layer stays inline (inline-block), so
+  // the text around it doesn't reflow.
+  function toFreeform(t) {
+    const own = ownValue(t, "display");
+    if (/flex|grid/.test(own)) setStyle(t, "display", own.startsWith("inline") ? "inline-block" : "block");
+    else {
+      handBack(t, "display");
+      // Back to inline, a layer she moved, turned or sized loses that on screen, so it's boxed again.
+      const e = edits.elements[selectorFor(t)];
+      if (e && ["translate", "rotate", "scale", "width", "height"].some((p) => e.styles[p])) boxed(t);
+    }
+    handBack(t, "flex-direction");
+    // Wrap, the gaps and the alignment mean nothing off flex, so her edits to them go too (they'd only be noise in
+    // Copy). Her padding stays: it still places the layers. The padding and margins that only held the layers under
+    // flex go, or the block layout would add them to its own and move the layers.
+    const e = entryOf(t);
+    ["flex-wrap", "row-gap", "column-gap", "justify-content", "align-items"].forEach((p) => {
+      if (e && e.styles[p] != null) handBack(t, p);
+    });
+    dropInferred(t);
+    flowChildren(t, true).forEach((c) => {
+      const ce = entryOf(c);
+      if (ce && ce.styles["align-self"] === "stretch") handBack(c, "align-self");
+      dropInferred(c);
+    });
   }
 
   function guideLayer(g) {
@@ -4789,16 +5677,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Shown on load, like Figma's panel.
     const root = el("div", "ft-inspector");
 
-    // Undo and redo the latest change, as in Figma (also ⌘Z and ⌘⇧Z); Reset goes back to the code. They sit
-    // at the left of the panel's top row; Hide UI is at its right.
+    // Undo and redo the latest change, as in Figma (also ⌘Z and ⌘⇧Z). They sit at the left of the panel's top
+    // row; Hide UI is at its right (Reset is in the left toolbar).
     const undoBtn = iconButton(ICON.undo, "Undo", undo);
     const redoBtn = iconButton(ICON.redo, "Redo", redo);
     undoBtn.setAttribute("data-ft-tip-key", KEYS.mod + "Z");
     redoBtn.setAttribute("data-ft-tip-key", KEYS.shift + KEYS.mod + "Z");
     const actions = el("div", "ft-actions");
-    // Reset is off with nothing to reset: no edit on the page and nothing Save stored.
-    const resetBtn = iconButton(ICON.refresh, "Reset to the code's last presets", resetEdits);
-    actions.append(undoBtn, redoBtn, resetBtn);
+    actions.append(undoBtn, redoBtn);
     const top = el("div", "ft-top");
     top.appendChild(actions);
     // Design and Motion, as Figma's Design and Prototype, in a bar at the bottom of the window. It lives in the
@@ -4838,7 +5724,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     historyChanged = () => {
       undoBtn.disabled = !history.past.length && !history.timer && !undoReset;
       redoBtn.disabled = !history.future.length;
-      resetBtn.disabled = !canReset();
+      // Reset is off with nothing to reset: no edit on the page and nothing Save stored.
+      if (resetBtn) resetBtn.disabled = !canReset();
     };
 
     // A page fill saved from an earlier visit comes back; the bottom layer is the base.
@@ -4899,13 +5786,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const imagePop = makeImagePop(root, menu, () => changed(false));
 
     // Horizontal layout: one columns layout at a time (Figma's layout guide). With none saved for the page,
-    // it starts as the page's own grid when its code has one (pageGrid), ready to tweak. Its row's icon opens its
-    // color, the eye shows or hides it, and its fields and alignment sit under it. Save keeps it; Copy
-    // never includes it. The header saves it as a style, or applies a saved one.
+    // it starts as the page's own grid when its code has one (pageGrid), ready to tweak, hidden until ⌃G or its eye
+    // shows it (her call: visibility off is the default). Its row's icon opens its color, the eye shows or hides
+    // it, and its fields and alignment sit under it. Save keeps it; Copy never includes it. The header saves it as
+    // a style, or applies a saved one.
     const guides = edits.guides;
     if (!guides.length) {
       const own = pageGrid();
-      if (own) guides.push(own);
+      if (own) guides.push(Object.assign(own, { visible: false }));
     }
     const overlay = el("div", "ft-guides");
     const guideSec = el("div", "ft-section");
@@ -5225,6 +6113,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       afterGuides();
     }
     drawGuides();
+    adoptPageGrid = () => {
+      if (guides.length) return;
+      const own = pageGrid();
+      if (!own) return;
+      guides.push(Object.assign(own, { visible: false }));
+      drawGuides();
+    };
     let fillLayers = [];
     const chosen = el("div", "ft-chosen");
     let textLayer = null;
@@ -5251,10 +6146,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return wrap;
     }
 
-    // A segmented control: one choice pressed at a time, each with a Figma-style tooltip.
-    function segmented(options, apply) {
-      const seg = el("div", "ft-seg");
-      const btns = options.map(([value, icon, tip]) => {
+    // A segmented control: one choice pressed at a time, each with a Figma-style tooltip. cls adds a look (ft-seg-track
+    // is UI3's one-track control); an option's 4th slot is its shortcut, shown in the tooltip.
+    function segmented(options, apply, cls) {
+      const seg = el("div", "ft-seg" + (cls ? " " + cls : ""));
+      const btns = options.map(([value, icon, tip, key]) => {
         const b = button("ft-seg-btn", null, () => {
           apply(value);
           changed(true);
@@ -5262,6 +6158,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         b.innerHTML = ICON[icon];
         b.setAttribute("data-ft-tip", tip);
         b.setAttribute("aria-label", tip);
+        if (key) b.setAttribute("data-ft-tip-key", key);
         withTip(b);
         seg.appendChild(b);
         return [value, b];
@@ -5337,11 +6234,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const grid = el("div", "ft-type");
       grid.append(labeled("Alignment", alignRow(toParent), true), labeled("Position", xy, true), labeled("Rotation", rotRow, true));
       s.appendChild(grid);
+      // Ignore auto layout, in the header as in Figma, on a layer whose parent is auto layout. On a component
+      // instance it would change every instance, so it waits for an override.
+      let ignore = null;
+      if (layoutParentOf(target)) {
+        const actions = el("div", "ft-head-actions");
+        const locked = !!sharedComponent(target, "position");
+        ignore = iconButton(ICON.ignoreLayout, locked ? "Override this instance first" : "Ignore auto layout", () => {
+          if (locked) return;
+          setIgnoreLayout(target, !ignoresLayout(target));
+          changed(true);
+        });
+        if (locked) {
+          ignore.setAttribute("aria-disabled", "true");
+          // A screen reader still names the control; why it's off goes with it as its description.
+          ignore.setAttribute("aria-label", "Ignore auto layout");
+          ignore.setAttribute("aria-description", "Override this instance first");
+        }
+        actions.appendChild(ignore);
+        s.firstChild.appendChild(actions);
+      }
       draws.push((force) => {
         const now = read();
         x.set(now.x, force);
         y.set(now.y, force);
         rot.set(Math.round(now.rot * 10) / 10 + "°", force);
+        if (ignore) ignore.setAttribute("aria-pressed", String(ignoresLayout(target)));
       });
       return s;
     }
@@ -5953,8 +6871,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           resizing: target.style.width === "max-content" ? "hug" : target.style.height ? "fixed" : "auto",
         };
       };
-      // A new size, as the code writes it: a vector's geometry, anything else its width and height.
-      const resize = (nw, nh) => setSize(target, nw, nh);
+      // A new size, as the code writes it: a vector's geometry, anything else its width and height. Inside auto
+      // layout a typed number is Fixed, as in Figma, so grow, shrink and stretch let go of that axis.
+      const resize = (nw, nh) => {
+        if (vector || !layoutParentOf(target)) return setSize(target, nw, nh);
+        if (nw != null) fixAxis(target, "w", nw);
+        if (nh != null) fixAxis(target, "h", nh);
+      };
       const resizing = segmented([
         ["hug", "arrowLineRight", "Auto width"],
         ["auto", "resizeHeight", "Auto height"],
@@ -5962,6 +6885,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       ], (v) => {
         boxed(target);
         const r = target.getBoundingClientRect();
+        // Inside auto layout this row is Resizing too: a Fill would keep sizing the box over any width written
+        // here, so it lets go first, and a px size is Fixed, with grow, shrink and stretch off.
+        const lp = layoutParentOf(target);
+        if (lp && lp.inFlow) {
+          if (v === "hug") unfill(target, lp, "w");
+          else fixAxis(target, "w", Math.round(r.width));
+          if (v === "fixed") fixAxis(target, "h", Math.round(r.height));
+          else unfill(target, lp, "h");
+          if (v === "hug") setStyle(target, "width", "max-content");
+          if (v !== "fixed") setStyle(target, "height", "");
+          return;
+        }
         setStyle(target, "width", v === "hug" ? "max-content" : Math.round(r.width) + "px");
         setStyle(target, "height", v === "fixed" ? Math.round(r.height) + "px" : "");
       });
@@ -5982,6 +6917,39 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         resize(vector ? (nw != null ? nw : now.w) : nw, n);
       });
       w.input.disabled = h.input.disabled = fixed;
+      // Resizing's menus, from a caret on W and H (the kit's "_Menu resizing" order): Fixed always, Hug on an auto
+      // layout container, Fill when the parent is auto layout. Text keeps its own Resizing row too; Hug for text is
+      // that row's Auto width. The items are worked out when the menu opens, as a Flow change can change them.
+      // A container, read as the Flow row below reads it (declared there, after this).
+      const holds = !(target instanceof SVGElement) && !hasText(target) && target.children.length > 0;
+      const sizeMenus = !fixed && !vector && (holds || !!layoutParentOf(target));
+      const modeOf = { w: null, h: null };
+      const sizeItems = (axis) => {
+        const W = axis === "w";
+        const lp = layoutParentOf(target);
+        const items = [{ label: W ? "Fixed width" : "Fixed height", value: "fixed", icon: W ? "fixedW" : "fixedH" }];
+        if (holds && /flex|grid/.test(getComputedStyle(target).display)) items.push({ label: "Hug contents", value: "hug", icon: W ? "hugW" : "hugH" });
+        if (lp && lp.inFlow) items.push({ label: "Fill container", value: "fill", icon: W ? "fillW" : "fillH" });
+        return items;
+      };
+      const carets = {};
+      if (sizeMenus) {
+        [["w", w], ["h", h]].forEach(([axis, f]) => {
+          const caret = button("ft-field-caret", null, () => {
+            const items = sizeItems(axis);
+            modeOf[axis] = sizeModeOf(target, axis);
+            menu.toggle(caret, items, modeOf[axis], (v) => {
+              setSizeMode(target, axis, v);
+              modeOf.w = modeOf.h = null;
+              changed(true);
+            });
+          });
+          caret.innerHTML = ICON.caretDown;
+          caret.setAttribute("aria-label", axis === "w" ? "Width options" : "Height options");
+          f.wrap.appendChild(caret);
+          carets[axis] = caret;
+        });
+      }
       const lock = iconButton(ICON.lockRatio, "Constrain proportions", () => {
         locked = !locked;
         changed(true);
@@ -5994,11 +6962,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const grid = el("div", "ft-type");
       if (hasText(target) && !inSvg(target)) grid.appendChild(labeled("Resizing", resizing.seg, true));
 
-      // A group (a container in the code) shows its Flow and its Spacing, read from its CSS and written back
-      // as CSS: Vertical and Horizontal are flex in a column or a row, Freeform is no flex. Grid shows only on a
-      // grid, which isn't made here. Spacing is the gap on a flex or grid (a grid's two gaps side by side, across
-      // then down); on anything else, when the children sit in one column or row, it moves the ones after the first,
-      // so the ones below move too.
+      // A group (a container in the code) shows its Flow, read from its CSS and written back as CSS: Vertical and
+      // Horizontal are flex in a column or a row, Freeform is no flex. Grid shows only on a grid, which isn't made
+      // here. On auto layout (a flex or a grid) the section is Figma's: Alignment, Gap and Padding, all CSS longhands.
+      // On Freeform, Spacing moves the children after the first when they sit in one column or row, so the ones
+      // below move too.
       const container = !(target instanceof SVGElement) && !hasText(target) && target.children.length > 0;
       const flowOf = () => {
         const cs = getComputedStyle(target);
@@ -6006,62 +6974,381 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (/flex/.test(cs.display)) return /column/.test(cs.flexDirection) ? "vertical" : "horizontal";
         return "free";
       };
-      const items = () => Array.from(target.children).filter((c) => {
-        const cs = getComputedStyle(c);
-        return !isUi(c) && cs.display !== "none" && cs.position !== "fixed";
-      });
+      const wrapOf = () => /^wrap/.test(getComputedStyle(target).flexWrap);
+      // The -reverse flows read as their base; the Flow tip says so.
+      const dirOf = () => (/column/.test(getComputedStyle(target).flexDirection) ? "column" : "row");
+      const items = () => flowChildren(target, flowOf() === "free");
       const px = (v) => (v === "normal" ? 0 : parseFloat(v) || 0);
       const gapOf = () => {
         const cs = getComputedStyle(target);
         const flow = flowOf();
-        if (flow === "vertical") return { css: "row-gap", axis: "y", n: px(cs.rowGap) };
-        if (flow === "horizontal") return { css: "column-gap", axis: "x", n: px(cs.columnGap) };
-        if (flow === "grid") return { grid: true, x: px(cs.columnGap), y: px(cs.rowGap) };
+        // Gap Auto is space-between along a flex's flow; a grid has none.
+        const auto = (flow === "vertical" || flow === "horizontal") && mainOf(cs.justifyContent) === "auto";
+        // A wrapped row and a grid have a gap each way: across (column-gap), then down (row-gap).
+        if (flow === "grid" || (flow === "horizontal" && wrapOf())) return { two: true, grid: flow === "grid", x: px(cs.columnGap), y: px(cs.rowGap), auto };
+        if (flow === "vertical") return { css: "row-gap", axis: "y", n: px(cs.rowGap), auto };
+        if (flow === "horizontal") return { css: "column-gap", axis: "x", n: px(cs.columnGap), auto };
         const st = stackOf(items());
         if (!st) return null;
         return { stack: st, axis: st.axis, n: st.gaps.every((g) => Math.abs(g - st.gaps[0]) < 0.5) ? Math.round(st.gaps[0]) : null };
       };
       let flow = null;
       let spacing = null;
-      let spacingY = null;
+      // Auto layout's rows (Alignment, Gap, Padding), placed after Resizing.
+      const alEls = [];
       if (container) {
         const now = flowOf();
         const opts = [["free", "flowFree", "Freeform"], ["vertical", "flowVertical", "Vertical layout"], ["horizontal", "flowHorizontal", "Horizontal layout"]];
         if (now === "grid") opts.push(["grid", "flowGrid", "Grid"]);
         flow = segmented(opts, (v) => {
-          if (v === "grid" || v === flowOf()) return;
+          const was = flowOf();
+          if (v === "grid" || v === was) return;
+          // An inline layer stays inline (inline-flex, inline-block), so the text around it doesn't reflow.
           const own = ownValue(target, "display");
+          const inline = own.startsWith("inline");
           if (v === "free") {
-            setStyle(target, "display", /flex|grid/.test(own) ? "block" : "");
-            setStyle(target, "flex-direction", "");
-          } else {
-            setStyle(target, "display", /flex/.test(own) ? "" : "flex");
+            toFreeform(target);
+            // Figma freezes the layers where they are; here they follow the code's own layout (her call to change).
+            if (was !== "free") toast("Layers follow the code's layout");
+          } else if (was === "vertical" || was === "horizontal") {
+            // Vertical and Horizontal trade places: the gap moves to the new axis, and the nine dots keep the same
+            // cell, so what was along the flow is now across it.
+            const g = gapOf();
+            const a = alignOf(target);
+            const from = g.two ? "column-gap" : g.css;
+            const to = v === "vertical" ? "row-gap" : "column-gap";
+            const n = g.two ? g.x : g.n;
             setUnlessOwn(target, "flex-direction", v === "vertical" ? "column" : "row");
+            if (from !== to) {
+              setPx(target, to, n);
+              handBack(target, from);
+            }
+            if (a.main !== "auto") {
+              if (a.cross !== a.main) {
+                keepStretch(target);
+                setAlignment(target, "justify-content", ALIGN_CSS[a.cross]);
+                setAlignment(target, "align-items", ALIGN_CSS[a.main]);
+                dropStretch(target);
+              }
+            }
+          } else if (/flex/.test(own)) {
+            // The code has the flex (she had picked Freeform), so it comes back as the code has it.
+            handBack(target, "display");
+            setUnlessOwn(target, "flex-direction", v === "vertical" ? "column" : "row");
+            items().forEach((c) => takeBackSpacing(c));
+          } else {
+            // From Freeform on a container the code doesn't flex: the gap, padding and alignment are read from where
+            // the layers sit (Figma's Add auto layout), so nothing jumps where that can hold them. The gap takes over
+            // Spacing's moves. Where it can't (uneven gaps, a layer with no box to read), the toast says so.
+            const inf = applyInferred(target, v);
+            if (inf.reason) {
+              setStyle(target, "display", inline ? "inline-flex" : "flex");
+              setUnlessOwn(target, "flex-direction", v === "vertical" ? "column" : "row");
+            }
+            if (inf.moves || (inf.reason && inf.reason !== "empty")) toast("Some layers moved to fit the auto layout");
           }
-          // The spacing's axis can change with the flow.
+          if (v === "vertical") {
+            // Wrap is Horizontal's only (UI3 hides it on Vertical), so a wrap she turned on goes. A wrap the code
+            // has stays as the code has it: writing nowrap would change the page's own layout.
+            const wrapWas = originalOf(target).styles["flex-wrap"];
+            if (wrapWas != null && target.style.getPropertyValue("flex-wrap") !== wrapWas) handBack(target, "flex-wrap");
+          }
+          // The section's rows change with the flow (Alignment, Gap and Padding on auto layout, Spacing off it).
           if (selection) selection.reshow();
+        }, "ft-seg-track");
+        // A reversed flow reads as its base, and its cell says so.
+        if (/reverse/.test(getComputedStyle(target).flexDirection) && (now === "vertical" || now === "horizontal")) {
+          const b = flow.seg.children[now === "vertical" ? 1 : 2];
+          const tip = b.getAttribute("data-ft-tip") + " (reversed in the code)";
+          b.setAttribute("data-ft-tip", tip);
+          b.setAttribute("aria-label", tip);
+        }
+        // Wrap sits in the action column beside the track, for Horizontal only, as in UI3. Off Horizontal its
+        // slot keeps the track the same width.
+        const wrapBtn = iconButton(ICON.flowWrap, "Wrap", () => {
+          // Turning it on where the code wraps (wrap-reverse too) hands back the code's own, so its order holds.
+          if (wrapOf()) setUnlessOwn(target, "flex-wrap", "nowrap");
+          else if (/^wrap/.test(ownValue(target, "flex-wrap"))) handBack(target, "flex-wrap");
+          else setStyle(target, "flex-wrap", "wrap");
+          // A wrapped row has a gap each way, so the section is rebuilt for what Spacing shows.
+          if (selection) selection.reshow();
+          changed(true);
         });
-        grid.appendChild(labeled("Flow", flow.seg, true));
+        const wrapGap = el("span", "ft-action-gap");
+        const flowRow = el("div", "ft-with-action");
+        flowRow.append(flow.seg, wrapBtn, wrapGap);
+        grid.appendChild(labeled("Flow", flowRow, true));
+        draws.push(() => {
+          wrapBtn.hidden = flowOf() !== "horizontal";
+          wrapGap.hidden = !wrapBtn.hidden;
+          wrapBtn.setAttribute("aria-pressed", String(wrapOf()));
+        });
+        // Figma's suggestion on a Freeform frame: the header's Add auto layout, which names what ⇧A would pick. It's
+        // read again whenever the edits change, since Spacing changes the gap it would read. A commit there redraws
+        // without force, as a scroll does, so the edits themselves say when to read: a scroll leaves them as they
+        // were and skips the measuring.
+        if (now === "free") {
+          const addActions = el("div", "ft-head-actions");
+          const addBtn = iconButton(ICON.alAddV, "Add auto layout", () => selection && selection.addAutoLayout());
+          addBtn.setAttribute("data-ft-tip-key", KEYS.shift + "A");
+          addActions.appendChild(addBtn);
+          s.firstChild.appendChild(addActions);
+          let readAt = null;
+          draws.push((force) => {
+            const at = snapshot();
+            if (at === readAt && !force) return;
+            readAt = at;
+            const { inf } = readInferred(target);
+            const tip = inf.reason ? "Add auto layout"
+              : "Add " + inf.flow + " auto layout" + (inf.moves ? " (layers move)" : " · gap " + inf.gap);
+            addBtn.setAttribute("data-ft-tip", tip);
+            addBtn.setAttribute("aria-label", tip);
+            // Swapped only on a change, so a draw under the pointer never rebuilds the glyph.
+            const glyph = !inf.reason && inf.flow === "horizontal" ? "alAddH" : "alAddV";
+            if (addBtn.dataset.ftIcon !== glyph) { addBtn.innerHTML = ICON[glyph]; addBtn.dataset.ftIcon = glyph; }
+          });
+        }
         const g = gapOf();
-        if (g && g.grid) {
-          spacing = numField(ICON.arrowsHorizontal, "Horizontal spacing");
-          spacingY = numField(ICON.arrowsVertical, "Vertical spacing");
-          [[spacing, "column-gap"], [spacingY, "row-gap"]].forEach(([f, css]) => editable(f.input, changed, (v) => {
+        if (now === "free") {
+          if (g) {
+            spacing = numField(g.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
+            editable(spacing.input, changed, (v) => {
+              const n = parseFloat(v);
+              const now2 = gapOf();
+              if (isNum(n) && now2 && now2.stack) setStackGap(now2.stack, n);
+            });
+          }
+        } else {
+          // Gap: a number, or Auto (space-between, Figma's Gap Auto). The typed gap stays under Auto as its minimum
+          // (her call whether Auto zeroes it). Never below 0: CSS has no negative gap. Leaving Auto puts back the
+          // alignment along the flow it had while this layer stayed selected; after that it's only known to the
+          // code, so the code's own comes back (start when the code's is Auto too).
+          let mainWas = null;
+          const toAuto = () => {
+            const a = alignOf(target);
+            if (a.main !== "auto") mainWas = a.main;
+            setAlignment(target, "justify-content", "space-between");
+          };
+          const fromAuto = () => {
+            if (alignOf(target).main !== "auto") return;
+            const code = mainOf(ownValue(target, "justify-content"));
+            setAlignment(target, "justify-content", ALIGN_CSS[mainWas || (code === "auto" ? "start" : code)]);
+          };
+          const gapField = (icon, tip, css, auto) => {
+            const f = numField(icon, tip);
+            editable(f.input, changed, (v) => {
+              if (auto && /^\s*auto\s*$/i.test(v)) return toAuto();
+              const n = parseFloat(v);
+              if (!isNum(n)) return;
+              setPx(target, css, Math.max(0, n));
+              if (auto) fromAuto();
+            });
+            if (auto) {
+              // Figma's caret on the gap field, as on the font size: its one choice is Auto.
+              const caret = button("ft-field-caret", null, () => menu.toggle(caret, [{ label: "Auto", value: "auto" }], gapOf().auto ? "auto" : null, () => {
+                toAuto();
+                changed(true);
+              }));
+              caret.innerHTML = ICON.caretDown;
+              caret.setAttribute("aria-label", "Gap options");
+              f.wrap.appendChild(caret);
+            }
+            return f;
+          };
+          let gapX = null;
+          let gapY = null;
+          let gap1 = null;
+          if (g.two) {
+            gapX = gapField(ICON.arrowsHorizontal, "Horizontal gap", "column-gap", !g.grid);
+            gapY = gapField(ICON.arrowsVertical, "Vertical gap", "row-gap", false);
+          } else gap1 = gapField(g.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Gap between items", g.css, true);
+          draws.push((force) => {
+            const gg = gapOf();
+            if (!gg || gg.stack) return;
+            if (gapX && gg.two) {
+              gapX.set(gg.auto ? "Auto" : Math.round(gg.x), force);
+              gapY.set(Math.round(gg.y), force);
+            } else if (gap1 && gg.css) gap1.set(gg.auto ? "Auto" : Math.round(gg.n), force);
+          });
+
+          if (g.grid) {
+            const pair = el("div", "ft-type-pair");
+            pair.append(gapX.wrap, gapY.wrap);
+            alEls.push(labeled("Gap", pair, true));
+          } else {
+            // Alignment, Figma's nine dots: along a column the rows are the flow (justify-content) and the columns
+            // are across it (align-items); along a row it's the other way. The picked cell shows the flow's glyph,
+            // the rest a dot that turns into it under the pointer. Under Gap Auto only the alignment across is free,
+            // so the box has three cells, the picked one showing the layers spread along the flow.
+            const box = el("div", "ft-al-box");
+            box.setAttribute("role", "group");
+            box.setAttribute("aria-label", "Alignment");
+            const POS = ["start", "center", "end"];
+            const COL = ["left", "center", "right"];
+            const ROW = ["top", "center", "bottom"];
+            let key = "";
+            let cells = [];
+            const state = () => {
+              const dir = dirOf();
+              const a = alignOf(target);
+              return { dir, a, wrap: dir === "row" && wrapOf(), auto: a.main === "auto" };
+            };
+            const cellOf = (st) => {
+              if (st.auto) return POS.indexOf(st.a.cross);
+              const m = POS.indexOf(st.a.main);
+              const c = POS.indexOf(st.a.cross);
+              return st.dir === "column" ? m * 3 + c : c * 3 + m;
+            };
+            const across = (cross) => {
+              keepStretch(target);
+              setAlignment(target, "align-items", ALIGN_CSS[cross]);
+              dropStretch(target);
+            };
+            const pickCell = (i) => {
+              const st = state();
+              if (st.auto) {
+                if (st.a.cross !== POS[i]) across(POS[i]);
+                return;
+              }
+              const r = Math.floor(i / 3);
+              const c = i % 3;
+              const main = POS[st.dir === "column" ? r : c];
+              const cross = POS[st.dir === "column" ? c : r];
+              if (main !== st.a.main) setAlignment(target, "justify-content", ALIGN_CSS[main]);
+              if (cross !== st.a.cross) across(cross);
+            };
+            // Each cell holds two glyphs: the one it shows at rest, and the one it shows picked (or under the pointer).
+            const glyphs = (st, i) => {
+              if (st.auto) {
+                const col = st.dir === "column";
+                const rest = ICON[col ? "alAutoVs_" + "LCR"[i] : "alAutoHs_" + "TCB"[i]];
+                const on = (col ? ["alAutoV_T", "alAutoV_C", "alAutoV_B"] : ["alAutoH_L", "alAutoH_C", "alAutoH_R"]).map((k) => ICON[k]).join("");
+                return [rest + rest + rest, on];
+              }
+              const r = Math.floor(i / 3);
+              const c = i % 3;
+              return [ICON.alDot, ICON[st.wrap ? "alW_" + "LCR"[c] : st.dir === "column" ? "alV_" + "LCR"[c] : "alH_" + "TCB"[r]]];
+            };
+            const build = (st) => {
+              box.className = "ft-al-box" + (st.auto ? (st.dir === "column" ? " is-auto is-cols" : " is-auto is-rows") : "");
+              cells = Array.from({ length: st.auto ? 3 : 9 }, (_, i) => {
+                const [rest, on] = glyphs(st, i);
+                const r = Math.floor(i / 3);
+                const c = i % 3;
+                const tip = st.auto ? "Align " + (st.dir === "column" ? COL[i] : ROW[i])
+                  : "Align " + (r === 1 ? COL[c] : ROW[r] + " " + COL[c]);
+                const b = button("ft-al-cell", null, () => {
+                  pickCell(i);
+                  changed(true);
+                });
+                b.innerHTML = '<span class="ft-al-rest">' + rest + '</span><span class="ft-al-on">' + on + "</span>";
+                b.setAttribute("data-ft-tip", tip);
+                b.setAttribute("aria-label", tip);
+                withTip(b);
+                return b;
+              });
+              box.replaceChildren(...cells);
+            };
+            // The arrows move the picked cell, as in Figma.
+            box.addEventListener("keydown", (e) => {
+              const d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+              if (!d || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+              e.preventDefault();
+              const st = state();
+              const at = cellOf(st);
+              const clamp = (n) => Math.min(2, Math.max(0, n));
+              const next = st.auto ? clamp(at + (st.dir === "column" ? d[1] : d[0]))
+                : clamp(Math.floor(at / 3) + d[0]) * 3 + clamp((at % 3) + d[1]);
+              if (next === at) return;
+              pickCell(next);
+              changed(true);
+              if (cells[next]) cells[next].focus();
+            });
+            draws.push(() => {
+              const f = flowOf();
+              if (f !== "vertical" && f !== "horizontal") return;
+              const st = state();
+              const k = [st.dir, st.wrap, st.auto].join();
+              if (k !== key) {
+                key = k;
+                build(st);
+              }
+              const on = cellOf(st);
+              cells.forEach((b, i) => b.setAttribute("aria-pressed", String(i === on)));
+            });
+            let gapEl = gap1 && gap1.wrap;
+            if (g.two) {
+              gapEl = el("div", "ft-al-gaps");
+              gapEl.append(gapX.wrap, gapY.wrap);
+            }
+            const gapCell = labeled("Gap", gapEl);
+            gapCell.classList.add("ft-al-top");
+            const alCell = labeled("Alignment", box);
+            alCell.classList.add("ft-al-top");
+            alEls.push(alCell, gapCell);
+          }
+
+          // Padding: Horizontal and Vertical, or each side after Individual padding (open when the sides differ, as
+          // Figma opens it). Longhands only. A Fixed frame keeps its size, so the padding comes out of its content;
+          // a hugging one grows, as in Figma. Until Resizing reads Fixed, Fixed is an inline px width or height.
+          const writePad = (sides, v) => {
             const n = parseFloat(v);
-            if (isNum(n)) setStyle(target, css, Math.max(0, n) + "px");
-          }));
-        } else if (g) {
-          spacing = numField(g.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
-          editable(spacing.input, changed, (v) => {
-            const n = parseFloat(v);
-            const now2 = gapOf();
-            if (!isNum(n) || !now2) return;
-            if (now2.css) setStyle(target, now2.css, Math.max(0, n) + "px");
-            else setStackGap(now2.stack, n);
+            if (!isNum(n)) return;
+            const sz = sizeOf(target);
+            const fw = /px$/.test(target.style.width);
+            const fh = /px$/.test(target.style.height);
+            sides.forEach((side) => setPx(target, "padding-" + side, Math.max(0, n)));
+            if (fw || fh) setSize(target, fw ? sz.w : null, fh ? sz.h : null);
+          };
+          const p0 = padOf(target);
+          let split = p0[0] !== p0[2] || p0[1] !== p0[3];
+          const padH = numField(ICON.padH, "Horizontal padding");
+          const padV = numField(ICON.padV, "Vertical padding");
+          editable(padH.input, changed, (v) => writePad(["left", "right"], v));
+          editable(padV.input, changed, (v) => writePad(["top", "bottom"], v));
+          const each = el("div", "ft-span2 ft-pads");
+          const toggle = iconButton(ICON.padSides, "Individual padding", () => {
+            split = !split;
+            each.hidden = !split;
+            toggle.setAttribute("aria-pressed", String(split));
+          });
+          toggle.setAttribute("aria-pressed", String(split));
+          each.hidden = !split;
+          const side = (name, icon, tip) => {
+            const f = numField(ICON[icon], tip);
+            editable(f.input, changed, (v) => writePad([name], v));
+            return f;
+          };
+          const pl = side("left", "padLeft", "Left padding");
+          const pt = side("top", "padTop", "Top padding");
+          const pr = side("right", "padRight", "Right padding");
+          const pb = side("bottom", "padBottom", "Bottom padding");
+          [[pl, pt], [pr, pb]].forEach(([a, b]) => {
+            const pair = el("div", "ft-type-pair");
+            pair.append(a.wrap, b.wrap);
+            const row = el("div", "ft-with-action");
+            row.append(pair, el("span", "ft-action-gap"));
+            each.appendChild(row);
+          });
+          const padPair = el("div", "ft-type-pair");
+          padPair.append(padH.wrap, padV.wrap);
+          const padRow = el("div", "ft-with-action");
+          padRow.append(padPair, toggle);
+          alEls.push(labeled("Padding", padRow, true), each);
+          draws.push((force) => {
+            const p = padOf(target).map(round1);
+            padH.set(p[3] === p[1] ? p[3] : "Mixed", force);
+            padV.set(p[0] === p[2] ? p[0] : "Mixed", force);
+            pt.set(p[0], force);
+            pr.set(p[1], force);
+            pb.set(p[2], force);
+            pl.set(p[3], force);
           });
         }
       }
-      grid.appendChild(labeled("Dimensions", dimsRow, true));
+      // On auto layout the size is Figma's Resizing.
+      grid.appendChild(labeled(alEls.length ? "Resizing" : "Dimensions", dimsRow, true));
+      alEls.forEach((e) => grid.appendChild(e));
       // Clip content, as Figma's frames have it, on a container: its overflow, hidden (clipped) or visible. Checking
       // writes hidden, unchecking visible; landing back on what the code says takes the edit off.
       let clip = null;
@@ -6081,14 +7368,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         draws.push(() => {
           const on = clipped();
           clip.setAttribute("aria-checked", String(on));
-          box.innerHTML = on ? ICON.tick : "";
+          box.innerHTML = on ? ICON.check16 : "";
         });
       }
-      if (spacingY) {
-        const gaps = el("div", "ft-type-pair");
-        gaps.append(spacing.wrap, spacingY.wrap);
-        grid.appendChild(labeled("Spacing", gaps, true));
-      } else if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
+      if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
       // Clip content ends the section, as in Figma.
       if (clip) grid.appendChild(clip);
       s.appendChild(grid);
@@ -6097,14 +7380,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         resizing.set(now.resizing);
         w.set(now.w, force);
         h.set(now.h, force);
+        // Resizing's mode costs forced layouts, so it's read on a forced draw (and the first), never on a scroll.
+        if (sizeMenus && (force || modeOf.w == null)) {
+          [["w", w], ["h", h]].forEach(([axis, f]) => {
+            // A caret with nothing but Fixed in it isn't worth a click.
+            carets[axis].hidden = sizeItems(axis).length < 2;
+            modeOf[axis] = carets[axis].hidden ? "fixed" : sizeModeOf(target, axis);
+            f.input.placeholder = { hug: "Hug", fill: "Fill" }[modeOf[axis]] || "";
+          });
+        }
         lock.setAttribute("aria-pressed", String(locked));
+        // The kit shows the link broken when off and joined when on. Swapped only on a change, so a draw
+        // under the pointer never rebuilds the glyph.
+        const lockIcon = locked ? ICON.lockRatio : ICON.linkBroken;
+        if (lock.dataset.ftIcon !== String(locked)) { lock.innerHTML = lockIcon; lock.dataset.ftIcon = String(locked); }
         if (flow) flow.set(flowOf());
         if (spacing) {
           const g = gapOf();
-          if (g && g.grid) {
-            spacing.set(Math.round(g.x), force);
-            spacingY.set(Math.round(g.y), force);
-          } else spacing.set(!g ? "" : g.n == null ? "Mixed" : Math.round(g.n), force);
+          spacing.set(!g || !g.stack ? "" : g.n == null ? "Mixed" : Math.round(g.n), force);
         }
       });
       return s;
@@ -6267,13 +7560,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function kindLine(t) {
       const comp = document.documentElement.classList.contains("ft-motion") ? "" : componentOf(t);
       if (comp) return componentLine(t, comp);
-      const tag = t.tagName.toLowerCase();
-      const kind = hasText(t) ? "Text" : tag === "img" ? "Image" : t instanceof SVGSVGElement ? "SVG"
-        : isVector(t) ? (tag === "g" ? "Group" : "Vector") : t.children.length ? "Group" : "Box";
+      const kind = kindOf(t);
       const row = el("div", "ft-kind");
-      row.append(el("span", "ft-kind-name", kind), el("span", "ft-kind-el", tag + (t.id ? "#" + t.id : t.classList.length ? "." + t.classList[0] : "")));
-      if (kind === "Group") row.appendChild(itemCount(Array.from(t.children).filter((c) => !isUi(c)).length));
+      row.append(el("span", "ft-kind-name", kind), el("span", "ft-kind-el", elName(t)));
+      if (kind === "Group") row.append(el("span", "ft-kind-dot", "·"), itemCount(Array.from(t.children).filter((c) => !isUi(c))));
       return row;
+    }
+    function kindOf(t) {
+      const tag = t.tagName.toLowerCase();
+      return hasText(t) ? "Text" : tag === "img" ? "Image" : t instanceof SVGSVGElement ? "SVG"
+        : isVector(t) ? (tag === "g" ? "Group" : "Vector") : t.children.length ? "Group" : "Box";
+    }
+    function elName(t) {
+      return t.tagName.toLowerCase() + (t.id ? "#" + t.id : t.classList.length ? "." + t.classList[0] : "");
     }
 
     // A component, as Figma's instance: its name, what an edit reaches, and Override, which makes this one's edits
@@ -6297,9 +7596,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return row;
     }
 
-    // How many items a group holds, on the right of its kind line, in the kind's own type.
-    function itemCount(n) {
-      return el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " item" : " items"));
+    // How many items a group holds, after the element's name in its small type, with a caret: it opens
+    // the items as a menu (each as its kind line would read it), to select one she knows without hunting for it on
+    // the page; hovering an item outlines it on the page (her ask, 2026-10-14).
+    function itemCount(list) {
+      const n = list.length;
+      const b = button("ft-kind-count", null, () => menu.toggle(b,
+        list.map((t, i) => ({ label: kindOf(t) + " · " + elName(t), value: i })), null,
+        (i) => selection.selectLayers([list[i]]),
+        (i) => selection.preview(i == null ? null : list[i]), b.closest(".ft-kind")));
+      b.append(el("span", null, n + (n === 1 ? " item" : " items")), caret());
+      return b;
     }
 
     // A motion group's line: Group and how many layers run its animation (they aren't one element in the code).
@@ -6314,7 +7621,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function kindLineMany(list, isGroup) {
       const row = el("div", "ft-kind");
       row.appendChild(el("span", "ft-kind-name", isGroup ? "Group" : list.length + " selected"));
-      if (isGroup) row.appendChild(itemCount(list.length));
+      if (isGroup) row.appendChild(itemCount(list));
       return row;
     }
 
@@ -6333,11 +7640,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const COLUMN_TIP_KEY = "finetune:tip:column";
     // With a key, the how-to gets Figma's trailing close (the row's 24 icon button at the panel's right edge, level
     // with the first line); closing puts it away for this session (sessionStorage "finetune:tip:<key>").
+    // icon: null for words alone (the column and stretch rows, her call 2026-10-14; the help cards keep theirs).
     function helpRow(icon, text, key) {
       const body = el("div", "ft-help-body");
-      const mark = el("span", "ft-help-icon");
-      mark.innerHTML = ICON[icon];
-      body.append(mark, el("p", "ft-help-text", text));
+      if (icon) {
+        const mark = el("span", "ft-help-icon");
+        mark.innerHTML = ICON[icon];
+        body.appendChild(mark);
+      }
+      body.appendChild(el("p", "ft-help-text", text));
       if (key) {
         const store = "finetune:tip:" + key;
         body.classList.add("ft-help-closable");
@@ -6391,6 +7702,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const row = el("div", "ft-kind");
       row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", g ? "of " + g.count : ""));
       if (n) row.appendChild(el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " layer" : " layers")));
+      // A click on the line opens the Page settings, where the layout these columns come from lives.
+      row.classList.add("ft-kind-link");
+      row.addEventListener("click", () => {
+        if (selection) selection.selectLayers([]);
+        guideSec.scrollIntoView({ block: "nearest" });
+      });
       return row;
     }
     // Columns and layers: Alignment lines the layers up with them, and its how-to sits under it.
@@ -6400,8 +7717,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const row = el("div", "ft-type-pair");
       row.append(actionSeg(many ? COLUMNS_ACROSS : COLUMN_ACROSS, (how) => alignColumns(cols, list, how)), el("div"));
       const grid = el("div", "ft-type");
-      const help = many ? helpRow("gridColumns", "Line layers up with the leftmost column, the center, or the rightmost column.", "align")
-        : helpRow("gridColumn", "Line layers up with this column's left edge, center, or right edge.", "align");
+      const help = many ? helpRow(null, "Line layers up with the leftmost, center, or rightmost column.", "align")
+        : helpRow(null, "Line layers up with this column's left edge, center, or right edge.", "align");
       grid.appendChild(labeled(many ? "Align to columns" : "Align to column", row, true));
       s.append(grid, help);
       return s;
@@ -6432,8 +7749,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
       const icon = el("span");
       icon.innerHTML = ICON.spanWidth;
-      match.append(icon, el("span", null, "Match layer width" + (top.length > 1 ? "s" : "") + " to " + n + " columns"));
-      const help = helpRow("fitWidth", "Stretch layers across the columns, from the leftmost edge to the rightmost.", "fitWidth");
+      match.append(icon, el("span", null, "Make selected " + n + " cols wide"));
+      const help = helpRow(null, "Stretch layers across the columns, from the leftmost edge to the rightmost.", "fitWidth");
       const grid = el("div", "ft-type");
       grid.append(labeled("Dimensions", dims, true));
       s.append(grid, match, help);
@@ -7109,8 +8426,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // the last shown section is a last child (see the double-line rule in PANEL LOOK).
     // Figma's shortcuts for what finetune does too (same key, same action), shown in their buttons' tooltips: ⌥8 and
     // ⌥9 Design and Motion, ⌥⌘S Save, ⇧⌘E Copy changes, and in Design ⌥A ⌥H ⌥D ⌥W ⌥V ⌥S the alignments, ⇧H and ⇧V the flips, ⇧⌘H
-    // show or hide, 1 to 0 opacity (10% to 100%), and the arrows a nudge (Shift for 10). Undo, Redo, ⌘G, ⇧⌘G and ⌘\
-    // are handled where those live. None fires while typing in a field or in words being edited.
+    // show or hide, 1 to 0 opacity (10% to 100%), and the arrows a nudge (Shift for 10). Undo, Redo, ⌘G, ⇧⌘G, ⇧A,
+    // ⌥⇧A and ⌘\ are handled where those live. None fires while typing in a field or in words being edited.
     function flipLayer(t, across) {
       const cs = getComputedStyle(t);
       const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
@@ -7256,6 +8573,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     opts = opts || {};
     const id = String(opts.id || "finetune");
     const hotkey = String(opts.key || "t").toLowerCase();
+    // A later call without a layout keeps the one declared; one with a layout hands it to a panel already built.
+    if (opts.layout) {
+      declaredGrid = readLayout(opts.layout);
+      if (declaredGrid && inspector) adoptPageGrid();
+    }
     const target = opts.target || ":root";
     const presets = opts.presets || {};
     const onChange = typeof opts.onChange === "function" ? opts.onChange : null;
@@ -7516,6 +8838,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         selection = makeSelection();
         // open: false starts it hidden, for a page where something else (a button, the hotkey) opens it.
         if (opts.open === false) showPanel(false);
+        else hotkeyNote(hotkey);
       }
       // The controls panel: on the page when the call has controls (the inspector alone otherwise), shown and
       // hidden with the inspector (the hotkey, open: false).

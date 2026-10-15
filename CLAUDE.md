@@ -30,4 +30,4 @@ These override default behavior. Follow them exactly.
 ## Git
 - Ask before committing. Commit only your own hunks; other sessions may be editing the same files.
 - Never push and never create the GitHub repo unless asked in that session.
-- Never save anything to `~/Desktop`. No parallel agents or workflows.
+- Never save anything to `~/Desktop`.
