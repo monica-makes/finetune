@@ -111,6 +111,7 @@ It's built from Figma's own component library, [UI3: Figma's UI Kit](https://www
 - **v0**, this: one script, five controls, copy, presets, the skill.
 - **v1**: a React hook for Next.js, a dev-only save-to-file endpoint, URL-hash sharing of a tuned state.
 - **v2**: select-an-element mode. Press the key, click any unit on the page, and its panel opens.
+- **Noted**: a way to turn the how-to tips off for good, for people who already know them (today a tip's × hides it for the session).
 
 ## Inspiration
 

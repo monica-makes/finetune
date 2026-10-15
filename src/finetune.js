@@ -574,6 +574,8 @@ html.ft-motion .ft-hover-box, html.ft-motion .ft-sel-box, html.ft-motion .ft-han
 html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
 /* A layer with no animation: one full-width button to add one (Figma's secondary button). */
 .ft-choice.ft-add-anim { width: 100%; }
+/* Match layer width: ends where the W / H row does, clear of the section's 32 trailing column. */
+.ft-choice.ft-match-cols { width: calc(100% - 32px); }
 
 .ft-hover-box, .ft-sel-box {
   position: fixed; z-index: 2147483645; box-sizing: border-box; pointer-events: none;
@@ -586,7 +588,11 @@ html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
 .ft-help-body { display: flex; align-items: flex-start; gap: 8px; }
 .ft-help-icon { flex: none; width: 24px; height: 24px; color: var(--ft-i-text); }
 .ft-help-icon svg { display: block; width: 24px; height: 24px; }
-.ft-help-text { margin: 4px 0 0; color: var(--ft-i-text); }
+.ft-help-text { flex: 1; min-width: 0; margin: 4px 0 0; color: var(--ft-i-text); }
+.ft-help-body[hidden] { display: none; }
+/* The section's right padding is 8 (room for trailing icon buttons); a how-to without a close takes 8 more so its
+   text has 16 on both sides. With a close, the close sits in that trailing column. */
+.ft-help-body:not(.ft-help-closable) { padding-right: 8px; }
 /* Under a section's controls (Align to column, Match item width), the how-to sits 8 below them. */
 .ft-section > .ft-choice + .ft-help-body { margin-top: 8px; }
 .ft-section > .ft-type + .ft-choice, .ft-section > .ft-type + .ft-help-body { margin-top: 8px; }
@@ -630,11 +636,15 @@ html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: n
 }
 .ft-comp-label[hidden] { display: none; }
 .ft-comp-label svg { display: block; width: 24px; height: 24px; margin: -6px; }
-html.ft-moving body *:not(input) { cursor: default; }
+/* Figma's canvas cursor while finetune is on, so it reads as its own mode: UI3's Move tool arrow (icon.24.move),
+   black with its white rim, the tip at 5 5. */
+html.ft-moving body *:not(input) { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M20.9986 11.183C20.9664 12.0324 20.4007 12.7687 19.5882 13.0187L14.5645 14.5645L13.0188 19.5882C12.7688 20.4007 12.0325 20.9663 11.183 20.9986C10.3336 21.0308 9.55653 20.5225 9.2457 19.7313L4.13856 6.7313C3.84765 5.99082 4.02329 5.14834 4.58584 4.58578C5.1484 4.02323 5.99088 3.84759 6.73136 4.13849L19.7314 9.24564C20.5226 9.55647 21.0308 10.3335 20.9986 11.183Z' fill='white'/%3E%3Cpath d='M13.7644 13.7644L12.063 19.2941C11.938 19.7003 11.5698 19.9832 11.1451 19.9993C10.7204 20.0154 10.3319 19.7613 10.1764 19.3656L5.06931 6.36565C4.92386 5.99541 5.01167 5.57417 5.29295 5.29289C5.57423 5.01161 5.99547 4.92379 6.36571 5.06925L19.3657 10.1764C19.7613 10.3318 20.0155 10.7203 19.9993 11.145C19.9832 11.5698 19.7004 11.9379 19.2941 12.0629L13.7644 13.7644Z' fill='black'/%3E%3C/svg%3E") 5 5, default; }
 html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: text; }
 [data-ft-editing] { outline: none; }
 /* A layer being read or dragged runs no transitions, so an edit lands at once (see still()). */
 [data-ft-still], [data-ft-still] * { transition: none !important; }
+/* A deleted layer (Delete or Backspace) is only hidden: the live page is never taken apart (that breaks a React page). */
+[data-ft-deleted] { display: none !important; }
 
 .ft-panel {
   position: fixed; top: 16px; left: 16px; z-index: 2147483647;
@@ -1841,6 +1851,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         Object.keys(e.styles).forEach((p) => { if (typeof e.styles[p] === "string") styles[p] = e.styles[p]; });
         const entry = { styles };
         if (typeof e.html === "string") entry.html = e.html;
+        if (e.deleted === true) entry.deleted = true;
         if (e.adjust && typeof e.adjust === "object") {
           const adjust = Object.assign({}, NO_ADJUST);
           Object.keys(NO_ADJUST).forEach((k) => { if (isNum(e.adjust[k])) adjust[k] = e.adjust[k]; });
@@ -2046,7 +2057,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const sel = selectorFor(target);
     const entry = edits.elements[sel] || { styles: {} };
     change(entry);
-    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects) edits.elements[sel] = entry;
+    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects || entry.deleted) edits.elements[sel] = entry;
     else delete edits.elements[sel];
     noteChange();
   }
@@ -2537,6 +2548,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
       if (entry.adjust) setToneFilter(toneId(sel), entry.adjust);
       Object.keys(entry.styles).forEach((p) => t.style.setProperty(p, entry.styles[p]));
+      if (entry.deleted) t.setAttribute("data-ft-deleted", "");
     });
     // Saved component edits, on every instance but where one overrides that property.
     Object.keys(edits.components).forEach((name) => {
@@ -2595,6 +2607,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
     Object.keys(edits.elements).forEach((sel) => {
       const e = edits.elements[sel];
+      if (e.deleted) return lines.push([sel, "delete"]);
       const parts = Object.keys(e.styles).map((p) => p + ": " + e.styles[p]);
       if (e.html != null) parts.push("text: " + e.html);
       if (e.src) parts.push('src: new image "' + e.src.name + '", chosen from her computer');
@@ -2758,9 +2771,41 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (e === pageEl) return true;
       if (getComputedStyle(e).display === "contents") return true;
       const r = e.getBoundingClientRect();
-      return r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1;
+      if (r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1) return true;
+      return invisible(e, r);
     };
-    // The layers from the page down to t, outermost first, wrappers that only hold the page left out.
+    // Layers that draw nothing of their own are passed through too, so code full of wrappers doesn't cost a click per
+    // wrapper: a box with no size (one that only holds positioned layers), or one the same size and place as its only
+    // child. Anything with a look of its own stays a layer (a fill, border, shadow, outline, filter, blend, opacity,
+    // transform, clip or mask, a ::before / ::after, its own words), as do images, vectors, controls, links and
+    // components (their outline and name are how she finds them).
+    const OWN_LOOK = /^(A|BUTTON|IMG|PICTURE|VIDEO|CANVAS|IFRAME|INPUT|TEXTAREA|SELECT|LABEL)$/;
+    const noPseudo = (e, which) => {
+      const c = getComputedStyle(e, which).content;
+      return c === "none" || c === "normal";
+    };
+    function invisible(e, r) {
+      if (!(e instanceof HTMLElement) || OWN_LOOK.test(e.tagName) || hasText(e) || componentOf(e)) return false;
+      const cs = getComputedStyle(e);
+      const bare = cs.backgroundColor === "rgba(0, 0, 0, 0)" && cs.backgroundImage === "none"
+        && ["Top", "Right", "Bottom", "Left"].every((side) => cs["border" + side + "Style"] === "none" || parseFloat(cs["border" + side + "Width"]) === 0)
+        && cs.boxShadow === "none" && cs.outlineStyle === "none" && cs.filter === "none"
+        && (cs.backdropFilter || cs.webkitBackdropFilter || "none") === "none"
+        && cs.opacity === "1" && cs.mixBlendMode === "normal" && cs.transform === "none"
+        && cs.translate === "none" && cs.rotate === "none" && cs.scale === "none"
+        && cs.clipPath === "none" && (cs.maskImage || cs.webkitMaskImage || "none") === "none"
+        && noPseudo(e, "::before") && noPseudo(e, "::after");
+      if (!bare) return false;
+      if (r.width < 1 || r.height < 1) return true;
+      const shown = Array.from(e.children).filter((c) => {
+        const cr = c.getBoundingClientRect();
+        return cr.width >= 1 && cr.height >= 1;
+      });
+      if (shown.length !== 1) return false;
+      const c = shown[0].getBoundingClientRect();
+      return Math.abs(c.left - r.left) < 1 && Math.abs(c.top - r.top) < 1 && Math.abs(c.width - r.width) < 1 && Math.abs(c.height - r.height) < 1;
+    }
+    // The layers from the page down to t, outermost first, wrappers that only hold the page (or draw nothing) left out.
     function levelOf(t) {
       const chain = [];
       for (let e = t; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
@@ -3113,6 +3158,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       undoToast("Ungrouped " + list.length + " layers", undo);
     }
 
+    // Delete / Backspace: the selected layers are hidden and listed as "delete" for the bake to take out of the code.
+    // A deleted layer leaves any ⌘G group it was in.
+    function deleteSelection() {
+      const list = current().slice();
+      const sels = list.map(selectorFor);
+      list.forEach((t) => {
+        record(t, (entry) => { entry.deleted = true; });
+        t.setAttribute("data-ft-deleted", "");
+      });
+      edits.groups = edits.groups.map((g) => g.filter((s) => !sels.includes(s))).filter((g) => g.length > 1);
+      inside = scope = null;
+      hoverBox.hidden = true;
+      select(null);
+      noteChange();
+      undoToast("Deleted " + list.length + (list.length === 1 ? " layer" : " layers"), undo);
+    }
+
     // Double-click puts the caret where you clicked; Enter selects all the text.
     function startEditing(t, x, y) {
       editing = t;
@@ -3328,6 +3390,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return;
       }
       if (!current().length && !column) return;
+      // Figma's Delete and Backspace.
+      if ((e.key === "Delete" || e.key === "Backspace") && !e.metaKey && !e.ctrlKey && !e.altKey && current().length) {
+        e.preventDefault();
+        return deleteSelection();
+      }
       if (e.key === "Escape") {
         // Out a level: from a layer inside a group to the group, then to nothing.
         if (selected && inside && groupOf(selected) === inside) {
@@ -6264,11 +6331,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // panel while a columns layout shows and nothing is selected, with a close that puts it away for good in this
     // browser; shorter, without the close, as the panel when just a column is picked.
     const COLUMN_TIP_KEY = "finetune:tip:column";
-    function helpRow(icon, text) {
+    // With a key, the how-to gets Figma's trailing close (the row's 24 icon button at the panel's right edge, level
+    // with the first line); closing puts it away for this session (sessionStorage "finetune:tip:<key>").
+    function helpRow(icon, text, key) {
       const body = el("div", "ft-help-body");
       const mark = el("span", "ft-help-icon");
       mark.innerHTML = ICON[icon];
       body.append(mark, el("p", "ft-help-text", text));
+      if (key) {
+        const store = "finetune:tip:" + key;
+        body.classList.add("ft-help-closable");
+        try { body.hidden = sessionStorage.getItem(store) === "closed"; } catch (e) {}
+        body.appendChild(iconButton(ICON.dismiss, "Close", () => {
+          body.hidden = true;
+          try { sessionStorage.setItem(store, "closed"); } catch (e) {}
+        }));
+      }
       return body;
     }
     function helpCard(title, icon, text, onClose) {
@@ -6322,8 +6400,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const row = el("div", "ft-type-pair");
       row.append(actionSeg(many ? COLUMNS_ACROSS : COLUMN_ACROSS, (how) => alignColumns(cols, list, how)), el("div"));
       const grid = el("div", "ft-type");
-      const help = many ? helpRow("gridColumns", "Line layers up with the leftmost column, the center, or the rightmost column.")
-        : helpRow("gridColumn", "Line layers up with this column's left edge, center, or right edge.");
+      const help = many ? helpRow("gridColumns", "Line layers up with the leftmost column, the center, or the rightmost column.", "align")
+        : helpRow("gridColumn", "Line layers up with this column's left edge, center, or right edge.", "align");
       grid.appendChild(labeled(many ? "Align to columns" : "Align to column", row, true));
       s.append(grid, help);
       return s;
@@ -6347,7 +6425,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const dims = el("div", "ft-type-pair");
       dims.append(w.wrap, h.wrap);
       const n = columnSpan(cols);
-      const match = button("ft-choice ft-choice-icon ft-add-anim", null, () => {
+      const match = button("ft-choice ft-choice-icon ft-add-anim ft-match-cols", null, () => {
         matchColumns(cols, list);
         changed(true);
         offerStyle();
@@ -6355,7 +6433,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const icon = el("span");
       icon.innerHTML = ICON.spanWidth;
       match.append(icon, el("span", null, "Match layer width" + (top.length > 1 ? "s" : "") + " to " + n + " columns"));
-      const help = helpRow("fitWidth", "Stretch layers across the columns, from the leftmost edge to the rightmost.");
+      const help = helpRow("fitWidth", "Stretch layers across the columns, from the leftmost edge to the rightmost.", "fitWidth");
       const grid = el("div", "ft-type");
       grid.append(labeled("Dimensions", dims, true));
       s.append(grid, match, help);
@@ -6978,6 +7056,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           }
         }
         if (JSON.stringify(a.adjust) !== JSON.stringify(b.adjust)) setToneFilter(toneId(sel), b.adjust || NO_ADJUST);
+        if (!!a.deleted !== !!b.deleted) t.toggleAttribute("data-ft-deleted", !!b.deleted);
       });
       edits.elements = next.elements;
       // Components after the layers' own edits, so an override taken off falls back to the component's value.
