@@ -113,6 +113,9 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   cursor: default; user-select: none;
 }
+/* Under about 690 wide the centred Design / Motion bar (174 wide) reaches under the panel, so the panel stops
+   8 above the bar (12 + its 44 + 8) and its last rows stay in reach. */
+@media (max-width: 690px) { .ft-inspector { max-height: calc(100vh - 76px); } }
 .ft-inspector[hidden] { display: none; }
 /* The panel's scrollbar floats over its content, as Figma's does, so the content keeps its 240 when it scrolls: the
    browser's own is hidden and finetune draws the thumb (drawThumb). The thumb is a 4px pill, 2px in from the panel's
@@ -130,6 +133,11 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-inspector :where(button, input) {
   font: inherit; letter-spacing: inherit; color: inherit;
   margin: 0; padding: 0; border: 0; background: none; outline: none;
+}
+/* Keyboard focus on a button shows UI3's 1px blue ring, as the checkboxes' does (.ft-check-row); a mouse click
+   leaves no focus behind (button()). */
+.ft-inspector button:focus-visible:not(.ft-check-row), .ft-ui button:focus-visible, .ft-tool:focus-visible .ft-tool-icon {
+  outline: 1px solid var(--ft-blue-text); outline-offset: -1px;
 }
 /* The panel's top row: Undo and Redo at the left, Hide UI over its right end (Reset is in the left toolbar). */
 .ft-top {
@@ -262,6 +270,8 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 /* A component's line: its name, what an edit reaches, then Override across the width (pressed while it's on). */
 .ft-kind-comp { flex-direction: column; align-items: stretch; gap: 4px; }
 .ft-kind-comp .ft-kind-el { white-space: normal; }
+/* A cva component's name and its variant on one line, as a group's element and count sit ("Button · outline"). */
+.ft-kind-head { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .ft-choice.ft-override { margin-top: 8px; }
 .ft-choice.ft-override[aria-pressed="true"], .ft-choice.ft-override[aria-pressed="true"]:hover { background: var(--ft-purple-soft); color: var(--ft-purple-text); box-shadow: none; }
 /* A section with nothing under its head (Fill, Stroke or Effects before the +) is just the head, as in Figma. */
@@ -339,6 +349,8 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-menu-icon svg { display: block; width: 24px; height: 24px; }
 .ft-menu-heading { padding: 6px 8px 4px 24px; font-size: 11px; color: var(--ft-on-dark-3); white-space: nowrap; }
 .ft-menu-heading:not(:first-child) { margin-top: 4px; }
+/* Select layer's rows step in a level per layer they sit inside, as the layers they are nest. */
+.ft-menu-nest { padding-left: calc(var(--ft-depth) * 12px); }
 /* A line between a menu's parts, as Figma's: Motion's coded animations above, its generic ones below. */
 .ft-menu-divider { height: 1px; margin: 7px -8px; background: var(--ft-dark-line); }
 .ft-menu-trash { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin: 0 -4px 0 auto; padding-left: 8px; opacity: 0; }
@@ -349,6 +361,22 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-styles-heading { display: flex; align-items: center; height: 32px; padding: 0 16px; font-weight: 550; }
 .ft-style-row { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px 0 16px; cursor: default; }
 .ft-style-row:hover { background: var(--ft-i-hover); }
+/* The layout on the page now: not a pick (it's already on), so it keeps Figma's selected fill (bg-selected), a full
+   width rectangle as Figma's in-use "Grid" row has, hovered or not. */
+.ft-style-current, .ft-style-current:hover { background: var(--ft-blue-soft); }
+/* Figma's styles popover is 216 wide, not the 240 of the others (measured from her shots of Layout guide styles).
+   The Fonts popover copies it, so the two sit the same beside the panel. */
+.ft-pop.ft-styles-pop, .ft-pop.ft-fonts-pop { width: 216px; }
+/* Fonts: the type filter sits where the styles popover's first heading sits (8 under the divider, a 32 row), its
+   dropdown 8 in from each side so its words line up with the rows' 16. The list scrolls under it. */
+.ft-fonts-filter { display: flex; align-items: center; height: 32px; margin-top: 8px; padding: 0 8px; }
+.ft-fonts-filter > .ft-dd { flex: 1; min-width: 0; }
+.ft-fonts-list { max-height: min(360px, calc(100vh - 120px)); overflow-y: auto; overscroll-behavior: none; padding: 0 0 8px; }
+/* A family's row is a style row with Figma's check column in the icon's slot: the tick on the one in use. */
+.ft-font-check { display: grid; place-items: center; flex: none; width: 16px; height: 16px; }
+.ft-font-check svg { display: block; width: 24px; height: 24px; margin: -4px; }
+/* Each name is drawn in its own face at 13, as Figma's font list shows them, so a face reads at a glance. */
+.ft-font-name { font-size: 13px; font-weight: 400; letter-spacing: 0; }
 .ft-style-row > svg { display: block; flex: none; width: 24px; height: 24px; margin: -4px; }
 .ft-style-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ft-style-trash { opacity: 0; }
@@ -392,9 +420,10 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 /* The rail, slimmed (her call, 2026-10-14: no names, tighter): icons only, each a 32 box with its 24 icon at 1:1
    (the panel's button size), 4 apart and 8 in from the rail's edges; the names are in the tooltips. Hover greys the
    box and nothing stays picked (they're actions). It starts with finetune's mark, a link to the repo, over a short
-   grey line, as Figma's rail starts with its logo (her ask, 2026-10-15); the line keeps the tools' 4px rhythm. */
+   grey line, as Figma's rail starts with its logo (her ask, 2026-10-15); the line sits 6 from the boxes on either side
+   (the 4px gap plus 2, her ask: 4 read tight next to a line). */
 .ft-tool { display: flex; color: inherit; text-decoration: none; cursor: default; }
-.ft-rail-line { flex: none; width: 16px; height: 1px; margin: 0 auto; background: var(--ft-i-line); }
+.ft-rail-line { flex: none; width: 16px; height: 1px; margin: 2px auto; background: var(--ft-i-line); }
 /* The mark at 20 (a touch over the tools' glyphs, as Figma's logo stands over its tools); hover fills it in. */
 .ft-logo .ft-tool-icon svg { width: 20px; height: 20px; }
 .ft-logo .ft-logo-fill, .ft-logo:hover .ft-logo-line { display: none; }
@@ -462,6 +491,9 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
    the box is three cells, each holding three glyphs spread along the flow, centred where the nine dots' rows (or
    columns) are. */
 .ft-type > .ft-al-top { align-self: start; }
+/* Figma's Scale section spaces its second row (Scale, Anchor point) 3px further down than the other sections. The
+   row is also a labeled row, so this replaces the -4px above: -4 + 3 = -1. */
+.ft-scale-grid > .ft-al-top { margin-top: -1px; }
 .ft-al-box { display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); height: 64px; border-radius: 5px; background: var(--ft-i-field); }
 .ft-al-box.is-cols { grid-template: 1fr / repeat(3, 1fr); }
 .ft-al-box.is-rows { grid-template: repeat(3, 1fr) / 1fr; }
@@ -477,10 +509,31 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-al-box .ft-al-cell[aria-pressed="true"] > .ft-al-on { display: flex; }
 .ft-al-cell:hover { color: var(--ft-i-text-2); }
 .ft-al-cell[aria-pressed="true"] { color: var(--ft-accent-text); }
+/* Scale (K). Scale's field and its presets caret are two cells 1px apart, the caret cell 24 wide; it darkens on
+   hover (Figma's #E6E6E6) and shows UI3's selected blue while its menu is open. Anchor point is the nine dots' grey
+   field (64 tall, as Alignment's): the picked cell shows a 10px blue square in place of its dot. Both are always
+   drawn, one over the other, so moving the anchor fades the old square out and the new one in at the same time. */
+.ft-scale-combo { display: flex; gap: 1px; min-width: 0; }
+.ft-scale-combo > .ft-num-field { flex: 1; border-radius: 5px 0 0 5px; }
+.ft-scale-dd { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 0 5px 5px 0; background: var(--ft-i-field); color: var(--ft-i-text); }
+.ft-scale-dd:hover { background: var(--ft-i-line); }
+.ft-scale-dd.is-open { background: var(--ft-blue-soft); box-shadow: inset 0 0 0 1px var(--ft-blue); }
+.ft-scale-dd svg { display: block; width: 24px; height: 24px; }
+.ft-anchor-box { display: grid; grid-template: repeat(3, 1fr) / 22px 1fr 22px; height: 64px; border-radius: 5px; background: var(--ft-i-field); }
+.ft-anchor-cell { display: grid; place-items: center; min-width: 0; min-height: 0; color: var(--ft-i-text-3); }
+.ft-anchor-cell > * { grid-area: 1 / 1; }
+.ft-anchor-cell svg { display: block; width: 16px; height: 16px; }
+.ft-anchor-cell > .ft-al-rest, .ft-anchor-sq { transition: opacity 120ms linear; }
+.ft-anchor-sq { width: 10px; height: 10px; border-radius: 2px; background: var(--ft-blue); opacity: 0; }
+.ft-anchor-cell[aria-pressed="true"] > .ft-anchor-sq { opacity: 1; }
+.ft-anchor-cell[aria-pressed="true"] > .ft-al-rest { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .ft-anchor-cell > .ft-al-rest, .ft-anchor-sq { transition: none; } }
 /* A wrapped row's two gaps stack in Gap's column; Individual padding opens two rows, as the corners do. */
 .ft-al-gaps, .ft-pads { display: flex; flex-direction: column; gap: 8px; }
 .ft-pads[hidden] { display: none; }
 .ft-head-actions, .ft-btn-group { display: flex; }
+/* An icon button's own display: grid would otherwise beat [hidden] (the Styles popover's +). */
+.ft-head-actions > [hidden] { display: none; }
 /* Figma's layout guides: drawn over the page, one layer each, never in the way of a click. */
 .ft-guides { position: fixed; inset: 0; z-index: 2147483644; pointer-events: none; }
 .ft-inspector[hidden] ~ .ft-guides, .ft-inspector[hidden] ~ .ft-panel { display: none; }
@@ -635,15 +688,30 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
    so an empty box only firms its line on hover (finetune's own). Focus puts a 2px ring of the panel's surface inside
    the line, as the kit does. The glyph paints with currentColor, so each state just sets color. */
 .ft-check-row { display: flex; align-items: center; gap: 8px; height: 24px; text-align: left; }
-.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 5px; color: var(--ft-on-brand); background: var(--ft-i-surface-2); box-shadow: inset 0 0 0 1px var(--ft-i-line); }
-.ft-check-row:hover .ft-check { box-shadow: inset 0 0 0 1px var(--ft-i-text-3); }
-.ft-check-row:is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { background: var(--ft-blue); box-shadow: inset 0 0 0 1px var(--ft-blue-text); }
+.ft-check { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 6px; color: var(--ft-i-text); background: var(--ft-i-surface-2); box-shadow: inset 0 0 0 1px var(--ft-i-line); transition: background-color 150ms ease-out; }
+/* Hover darkens the box (her Figma, 2026-10-15); a click flashes that back out until the pointer leaves. Corners 6
+   (her call: the kit's 5 read square next to Figma's). */
+.ft-check-row:hover:not(.is-pressed) .ft-check { background: color-mix(in srgb, var(--ft-i-surface-2), var(--ft-i-text) 9%); box-shadow: inset 0 0 0 1px var(--ft-i-text-3); }
+/* Checked, as her Figma draws it (her call, 2026-10-15, over the kit's blue fill): the box stays as it is and a
+   check is drawn in, in the text color; unchecked, the check just fades out. Only a click animates it (.is-toggling),
+   so a panel that opens on a checked box shows it already drawn. */
+.ft-check-mark { opacity: 0; }
+.ft-check-mark path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.ft-check-row[aria-checked="true"] .ft-check-mark { opacity: 1; }
+.ft-check-row[aria-checked="true"] .ft-check-mark path { stroke-dashoffset: 0; }
+.ft-check-row.is-toggling[aria-checked="true"] .ft-check-mark path { transition: stroke-dashoffset 220ms cubic-bezier(0.2, 0, 0, 1); }
+.ft-check-row.is-toggling[aria-checked="false"] .ft-check-mark { transition: opacity 120ms ease-out; }
+.ft-check-row.is-toggling[aria-checked="false"] .ft-check-mark path { transition: stroke-dashoffset 0s 120ms; }
+@media (prefers-reduced-motion: reduce) { .ft-check-row.is-toggling .ft-check-mark, .ft-check-row.is-toggling .ft-check-mark path { transition: none; } }
 .ft-check-row[aria-checked="mixed"] .ft-check::after { content: ""; width: 8px; height: 1px; border-radius: 0.5px; background: currentColor; }
 .ft-check-row:focus-visible .ft-check { box-shadow: inset 0 0 0 1px var(--ft-blue-text); }
-.ft-check-row:focus-visible:is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { box-shadow: inset 0 0 0 1px var(--ft-blue-text), inset 0 0 0 3px var(--ft-i-surface); }
-.ft-check-row:is(:disabled, [aria-disabled="true"]) { pointer-events: none; }
+/* Off: the box goes faint and its label takes the secondary text, as the disabled fields beside it do. One with a tip
+   saying why still takes the hover, so the tip shows; its click does nothing. */
+.ft-check-row:is(:disabled, [aria-disabled="true"]):not([data-ft-tip]) { pointer-events: none; }
+.ft-check-row:is(:disabled, [aria-disabled="true"]) { cursor: default; }
+.ft-check-row:is(:disabled, [aria-disabled="true"]) > span:last-child { color: var(--ft-i-text-2); }
 .ft-check-row:is(:disabled, [aria-disabled="true"]) .ft-check { background: none; box-shadow: inset 0 0 0 1px var(--ft-i-line); }
-.ft-check-row:is(:disabled, [aria-disabled="true"]):is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { color: var(--ft-i-on-disabled); background: var(--ft-i-disabled); box-shadow: none; }
+.ft-check-row:is(:disabled, [aria-disabled="true"]):is([aria-checked="true"], [aria-checked="mixed"]) .ft-check { color: var(--ft-i-text-3); }
 .ft-check-row:is(:disabled, [aria-disabled="true"])[aria-checked="mixed"] .ft-check { color: var(--ft-i-text-3); }
 .ft-check svg { display: block; width: 16px; height: 16px; margin: 0; }
 /* Motion's accent: pink where Design uses its blue (the selection, focus, the bar's chosen cell, and Motion's
@@ -693,9 +761,54 @@ html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
 /* A corner drags to resize: a 15px target around the 7px square. Only one layer that isn't turned resizes. */
 .ft-handle { pointer-events: auto; }
 .ft-handle::before { content: ""; position: absolute; inset: -4px; }
-html.ft-moving .ft-sel-box .ft-nw, html.ft-moving .ft-sel-box .ft-se { cursor: nwse-resize; }
-html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: nesw-resize; }
+/* The resize cursor: the macOS diagonal arrow, with a line drawn outside each head that matches its size and angle. Hotspot at the centre. */
+html.ft-moving .ft-sel-box .ft-nw, html.ft-moving .ft-sel-box .ft-se { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M18.78 18.198A0.46 0.46 0 0 1 18.198 18.78L12.353 16.832A0.46 0.46 0 0 1 12.173 16.07L16.07 12.173A0.46 0.46 0 0 1 16.832 12.353ZM14.967 17.703L14.413 19.363L21.838 21.838L19.363 14.413L17.703 14.967ZM5.22 5.802A0.46 0.46 0 0 1 5.802 5.22L11.647 7.168A0.46 0.46 0 0 1 11.827 7.93L7.93 11.827A0.46 0.46 0 0 1 7.168 11.647ZM9.033 6.297L9.587 4.637L2.162 2.162L4.637 9.587L6.297 9.033Z' stroke-width='2'/%3E%3Cpath d='M14.413 19.363L21.838 21.838L19.363 14.413M9.587 4.637L2.162 2.162L4.637 9.587' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M18.78 18.198A0.46 0.46 0 0 1 18.198 18.78L12.353 16.832A0.46 0.46 0 0 1 12.173 16.07L16.07 12.173A0.46 0.46 0 0 1 16.832 12.353ZM5.22 5.802A0.46 0.46 0 0 1 5.802 5.22L11.647 7.168A0.46 0.46 0 0 1 11.827 7.93L7.93 11.827A0.46 0.46 0 0 1 7.168 11.647Z' fill='black'/%3E%3Cpath d='M14.413 19.363L21.838 21.838L19.363 14.413M9.587 4.637L2.162 2.162L4.637 9.587' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, nwse-resize; }
+html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M18.198 5.22A0.46 0.46 0 0 1 18.78 5.802L16.832 11.647A0.46 0.46 0 0 1 16.07 11.827L12.173 7.93A0.46 0.46 0 0 1 12.353 7.168ZM17.703 9.033L19.363 9.587L21.838 2.162L14.413 4.637L14.967 6.297ZM5.802 18.78A0.46 0.46 0 0 1 5.22 18.198L7.168 12.353A0.46 0.46 0 0 1 7.93 12.173L11.827 16.07A0.46 0.46 0 0 1 11.647 16.832ZM6.297 14.967L4.637 14.413L2.162 21.838L9.587 19.363L9.033 17.703Z' stroke-width='2'/%3E%3Cpath d='M19.363 9.587L21.838 2.162L14.413 4.637M4.637 14.413L2.162 21.838L9.587 19.363' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M18.198 5.22A0.46 0.46 0 0 1 18.78 5.802L16.832 11.647A0.46 0.46 0 0 1 16.07 11.827L12.173 7.93A0.46 0.46 0 0 1 12.353 7.168ZM5.802 18.78A0.46 0.46 0 0 1 5.22 18.198L7.168 12.353A0.46 0.46 0 0 1 7.93 12.173L11.827 16.07A0.46 0.46 0 0 1 11.647 16.832Z' fill='black'/%3E%3Cpath d='M19.363 9.587L21.838 2.162L14.413 4.637M4.637 14.413L2.162 21.838L9.587 19.363' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, nesw-resize; }
 .ft-sel-box.no-resize .ft-handle { display: none; }
+/* Figma's edge handles, full-length 8px strips with no paint along each side: in Design a side sizes one axis (left and
+   right the width, top and bottom the height), in Scale (K) it scales. The corners come after them in the box, so a
+   corner wins where they meet. In Scale every handle takes UI3's scale cursor (cursor-resize-scale), its hotspot at
+   the arrow's middle. */
+.ft-handle.ft-edge { display: none; background: none; border: 0; }
+.ft-handle.ft-edge::before { inset: 0; }
+.ft-sel-box:not(.no-resize):not(.is-editing) .ft-edge { display: block; }
+/* On a small layer the corners' 15px targets would cover the edges: there they shrink to the 7px squares, so the
+   middle of each side is its edge's. */
+.ft-sel-box.is-small .ft-handle:not(.ft-edge)::before { inset: 0; }
+.ft-n, .ft-s { left: 0; right: 0; width: auto; height: 8px; }
+.ft-n { top: -4px; }
+.ft-s { bottom: -4px; }
+.ft-e, .ft-w { top: 0; bottom: 0; width: 8px; height: auto; }
+.ft-e { right: -4px; }
+.ft-w { left: -4px; }
+/* There the strips would cover most of the layer (all of a 4px bar's middle), so a drag on it would resize rather
+   than move it: they sit just outside its sides instead, and the layer's whole body stays draggable, as Figma
+   keeps a small or thin layer's body. 9px, as the box's 1px border sits inside the layer. */
+.ft-sel-box.is-small .ft-n { top: -9px; }
+.ft-sel-box.is-small .ft-s { bottom: -9px; }
+.ft-sel-box.is-small .ft-e { right: -9px; }
+.ft-sel-box.is-small .ft-w { left: -9px; }
+/* Her resize cursor turned level for the left and right sides and upright for the top and bottom, the same glyph as
+   the corners' in a 32 box so the heads fit, its hotspot in the middle. */
+html.ft-moving .ft-sel-box .ft-e, html.ft-moving .ft-sel-box .ft-w { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM22.13 17.935L22.913 19.5L29.913 16L22.913 12.5L22.13 14.065ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167ZM9.87 14.065L9.087 12.5L2.087 16L9.087 19.5L9.87 17.935Z' stroke-width='2'/%3E%3Cpath d='M22.913 19.5L29.913 16L22.913 12.5M9.087 12.5L2.087 16L9.087 19.5' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167Z' fill='black'/%3E%3Cpath d='M22.913 19.5L29.913 16L22.913 12.5M9.087 12.5L2.087 16L9.087 19.5' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, ew-resize; }
+html.ft-moving .ft-sel-box .ft-n, html.ft-moving .ft-sel-box .ft-s { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM17.935 9.87L19.5 9.087L16 2.087L12.5 9.087L14.065 9.87ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666ZM14.065 22.13L12.5 22.913L16 29.913L19.5 22.913L17.935 22.13Z' stroke-width='2'/%3E%3Cpath d='M19.5 9.087L16 2.087L12.5 9.087M12.5 22.913L16 29.913L19.5 22.913' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666Z' fill='black'/%3E%3Cpath d='M19.5 9.087L16 2.087L12.5 9.087M12.5 22.913L16 29.913L19.5 22.913' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, ns-resize; }
+/* Figma's rotation: a zone just outside each corner (4 to 20px out, under the corner's own target) turns the layer
+   about its pivot (the code's transform-origin, its centre unless the code moves it). Her rotate cursor bends away from the selection at each corner (on a turned layer, by the screen corner the zone sits at, data-glyph); while a turn is dragged the
+   whole page keeps it (html.ft-turning-*), so it doesn't flicker back to the arrow off the zone. */
+.ft-rot { display: none; position: absolute; width: 20px; height: 20px; pointer-events: auto; }
+.ft-sel-box.can-rotate:not(.is-editing) .ft-rot { display: block; }
+.ft-rot-nw { left: -20px; top: -20px; }
+.ft-rot-ne { right: -20px; top: -20px; }
+.ft-rot-sw { left: -20px; bottom: -20px; }
+.ft-rot-se { right: -20px; bottom: -20px; }
+/* While a turn is dragged the selection box's own zones and handles let the pointer through, so crossing another
+   corner's zone doesn't swap in that corner's glyph. */
+html[class*="ft-turning-"] .ft-sel-box * { pointer-events: none; }
+html.ft-moving .ft-sel-box .ft-rot-nw:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="nw"], html.ft-moving.ft-turning-nw body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M20.377 4.339A0.46 0.46 0 0 1 20.377 5.161L14.866 7.917A0.46 0.46 0 0 1 14.2 7.506L14.2 1.994A0.46 0.46 0 0 1 14.866 1.583ZM5.161 20.377A0.46 0.46 0 0 1 4.339 20.377L1.583 14.866A0.46 0.46 0 0 1 1.994 14.2L7.506 14.2A0.46 0.46 0 0 1 7.917 14.866Z' stroke-width='2'/%3E%3Cpath d='M4.75 14.8L4.75 10A5.25 5.25 0 0 1 10 4.75L14.8 4.75' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M20.377 4.339A0.46 0.46 0 0 1 20.377 5.161L14.866 7.917A0.46 0.46 0 0 1 14.2 7.506L14.2 1.994A0.46 0.46 0 0 1 14.866 1.583ZM5.161 20.377A0.46 0.46 0 0 1 4.339 20.377L1.583 14.866A0.46 0.46 0 0 1 1.994 14.2L7.506 14.2A0.46 0.46 0 0 1 7.917 14.866Z' fill='black'/%3E%3Cpath d='M4.75 14.8L4.75 10A5.25 5.25 0 0 1 10 4.75L14.8 4.75' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
+html.ft-moving .ft-sel-box .ft-rot-ne:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="ne"], html.ft-moving.ft-turning-ne body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3.623 4.339A0.46 0.46 0 0 0 3.623 5.161L9.134 7.917A0.46 0.46 0 0 0 9.8 7.506L9.8 1.994A0.46 0.46 0 0 0 9.134 1.583ZM18.839 20.377A0.46 0.46 0 0 0 19.661 20.377L22.417 14.866A0.46 0.46 0 0 0 22.006 14.2L16.494 14.2A0.46 0.46 0 0 0 16.083 14.866Z' stroke-width='2'/%3E%3Cpath d='M19.25 14.8L19.25 10A5.25 5.25 0 0 0 14 4.75L9.2 4.75' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M3.623 4.339A0.46 0.46 0 0 0 3.623 5.161L9.134 7.917A0.46 0.46 0 0 0 9.8 7.506L9.8 1.994A0.46 0.46 0 0 0 9.134 1.583ZM18.839 20.377A0.46 0.46 0 0 0 19.661 20.377L22.417 14.866A0.46 0.46 0 0 0 22.006 14.2L16.494 14.2A0.46 0.46 0 0 0 16.083 14.866Z' fill='black'/%3E%3Cpath d='M19.25 14.8L19.25 10A5.25 5.25 0 0 0 14 4.75L9.2 4.75' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
+html.ft-moving .ft-sel-box .ft-rot-se:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="se"], html.ft-moving.ft-turning-se body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3.623 19.661A0.46 0.46 0 0 1 3.623 18.839L9.134 16.083A0.46 0.46 0 0 1 9.8 16.494L9.8 22.006A0.46 0.46 0 0 1 9.134 22.417ZM18.839 3.623A0.46 0.46 0 0 1 19.661 3.623L22.417 9.134A0.46 0.46 0 0 1 22.006 9.8L16.494 9.8A0.46 0.46 0 0 1 16.083 9.134Z' stroke-width='2'/%3E%3Cpath d='M19.25 9.2L19.25 14A5.25 5.25 0 0 1 14 19.25L9.2 19.25' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M3.623 19.661A0.46 0.46 0 0 1 3.623 18.839L9.134 16.083A0.46 0.46 0 0 1 9.8 16.494L9.8 22.006A0.46 0.46 0 0 1 9.134 22.417ZM18.839 3.623A0.46 0.46 0 0 1 19.661 3.623L22.417 9.134A0.46 0.46 0 0 1 22.006 9.8L16.494 9.8A0.46 0.46 0 0 1 16.083 9.134Z' fill='black'/%3E%3Cpath d='M19.25 9.2L19.25 14A5.25 5.25 0 0 1 14 19.25L9.2 19.25' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
+html.ft-moving .ft-sel-box .ft-rot-sw:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="sw"], html.ft-moving.ft-turning-sw body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M20.377 19.661A0.46 0.46 0 0 0 20.377 18.839L14.866 16.083A0.46 0.46 0 0 0 14.2 16.494L14.2 22.006A0.46 0.46 0 0 0 14.866 22.417ZM5.161 3.623A0.46 0.46 0 0 0 4.339 3.623L1.583 9.134A0.46 0.46 0 0 0 1.994 9.8L7.506 9.8A0.46 0.46 0 0 0 7.917 9.134Z' stroke-width='2'/%3E%3Cpath d='M4.75 9.2L4.75 14A5.25 5.25 0 0 0 10 19.25L14.8 19.25' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M20.377 19.661A0.46 0.46 0 0 0 20.377 18.839L14.866 16.083A0.46 0.46 0 0 0 14.2 16.494L14.2 22.006A0.46 0.46 0 0 0 14.866 22.417ZM5.161 3.623A0.46 0.46 0 0 0 4.339 3.623L1.583 9.134A0.46 0.46 0 0 0 1.994 9.8L7.506 9.8A0.46 0.46 0 0 0 7.917 9.134Z' fill='black'/%3E%3Cpath d='M4.75 9.2L4.75 14A5.25 5.25 0 0 0 10 19.25L14.8 19.25' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
+html.ft-moving.ft-scaling .ft-sel-box .ft-handle { cursor: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23f)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.93934 9.93934C8.52513 9.35355 9.47487 9.35355 10.0607 9.93934L11.5607 11.4393C12.1464 12.0251 12.1464 12.9749 11.5607 13.5607L11.1213 14H20.8787L20.4393 13.5607C19.8536 12.9749 19.8536 12.0251 20.4393 11.4393L21.9393 9.93934C22.5251 9.35355 23.4749 9.35355 24.0607 9.93934L28.5607 14.4393C29.1464 15.0251 29.1464 15.9749 28.5607 16.5607L24.0607 21.0607C23.4749 21.6464 22.5251 21.6464 21.9393 21.0607L20.4393 19.5607C19.8536 18.9749 19.8536 18.0251 20.4393 17.4393L20.8787 17H11.1213L11.5607 17.4393C12.1464 18.0251 12.1464 18.9749 11.5607 19.5607L10.0607 21.0607C9.47487 21.6464 8.52513 21.6464 7.93934 21.0607L3.43934 16.5607C2.85355 15.9749 2.85355 15.0251 3.43934 14.4393L7.93934 9.93934Z' fill='white'/%3E%3C/g%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9.35355 10.6464C9.54882 10.8417 9.54882 11.1583 9.35355 11.3536L5.20711 15.5L9.35355 19.6464C9.54882 19.8417 9.54882 20.1583 9.35355 20.3536C9.15829 20.5488 8.84171 20.5488 8.64645 20.3536L4.14645 15.8536C3.95118 15.6583 3.95118 15.3417 4.14645 15.1464L8.64645 10.6464C8.84171 10.4512 9.15829 10.4512 9.35355 10.6464ZM22.6464 10.6464C22.8417 10.4512 23.1583 10.4512 23.3536 10.6464L27.8536 15.1464C28.0488 15.3417 28.0488 15.6583 27.8536 15.8536L23.3536 20.3536C23.1583 20.5488 22.8417 20.5488 22.6464 20.3536C22.4512 20.1583 22.4512 19.8417 22.6464 19.6464L26.7929 15.5L22.6464 11.3536C22.4512 11.1583 22.4512 10.8417 22.6464 10.6464ZM10.8536 12.1464C11.0488 12.3417 11.0488 12.6583 10.8536 12.8536L8.70711 15H23.2929L21.1464 12.8536C20.9512 12.6583 20.9512 12.3417 21.1464 12.1464C21.3417 11.9512 21.6583 11.9512 21.8536 12.1464L24.8536 15.1464C25.0488 15.3417 25.0488 15.6583 24.8536 15.8536L21.8536 18.8536C21.6583 19.0488 21.3417 19.0488 21.1464 18.8536C20.9512 18.6583 20.9512 18.3417 21.1464 18.1464L23.2929 16H8.70711L10.8536 18.1464C11.0488 18.3417 11.0488 18.6583 10.8536 18.8536C10.6583 19.0488 10.3417 19.0488 10.1464 18.8536L7.14645 15.8536C6.95118 15.6583 6.95118 15.3417 7.14645 15.1464L10.1464 12.1464C10.3417 11.9512 10.6583 11.9512 10.8536 12.1464Z' fill='black'/%3E%3Cdefs%3E%3Cfilter id='f' x='0' y='7.5' width='32' height='18' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='1'/%3E%3CfeGaussianBlur stdDeviation='1.5'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") 16 16, ew-resize; }
 /* Figma's spacing: 8 below the selection, 6 either side of the numbers. */
 .ft-size-label {
   position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%);
@@ -723,9 +836,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 [data-ft-still], [data-ft-still] * { transition: none !important; }
 /* A deleted layer (Delete or Backspace) is only hidden: the live page is never taken apart (that breaks a React page). */
 [data-ft-deleted] { display: none !important; }
+/* An ungrouped container (⇧⌘G on a code group) loses its box but stays in the DOM, for the same reason. */
+[data-ft-ungrouped] { display: contents !important; }
 
+/* Clear of the rail (12 in, 50 wide) by 8, so its Copy, Save and Reset stay in reach. */
 .ft-panel {
-  position: fixed; top: 16px; left: 16px; z-index: 2147483647;
+  position: fixed; top: 16px; left: 70px; z-index: 2147483647;
   width: 280px; max-height: calc(100vh - 32px); overflow: auto;
   background: var(--ft-i-bg); color: var(--ft-i-text);
   border: 1px solid var(--ft-i-border); border-radius: 8px;
@@ -790,6 +906,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const b = el("button", cls, text);
     b.type = "button";
     b.addEventListener("click", onClick);
+    // As Figma's chrome: a mouse click doesn't leave the button focused, so a later Space or Enter (meant for
+    // the page) can't press it again. A keyboard press (detail 0) keeps focus; so does a click that moved it on.
+    b.addEventListener("click", (e) => {
+      if (e.detail > 0 && document.activeElement === b) b.blur();
+    });
     return b;
   }
 
@@ -860,7 +981,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   function typing(t) {
-    return !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    // A key typed in a web component's field reaches document with the component as its target:
+    // follow focus down through open shadow roots to the field itself.
+    while (t && t.shadowRoot && t.shadowRoot.activeElement) t = t.shadowRoot.activeElement;
+    return !!t &&(t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
   }
 
   // Icons are Figma UI3's (the UI3 kit's Icons page) unless a comment says otherwise: 24 frames drawn
@@ -966,8 +1090,6 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     lineHeight: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5.5C5 5.22386 5.22386 5 5.5 5H18.5C18.7761 5 19 5.22386 19 5.5C19 5.77614 18.7761 6 18.5 6H5.5C5.22386 6 5 5.77614 5 5.5ZM5 18.5C5 18.2239 5.22386 18 5.5 18H18.5C18.7761 18 19 18.2239 19 18.5C19 18.7761 18.7761 19 18.5 19H5.5C5.22386 19 5 18.7761 5 18.5ZM8.56445 16H9.58008L10.3843 13.7344H13.6196L14.4238 16H15.4395L12.502 8H11.502L8.56445 16ZM13.3145 12.875L12.0332 9.26562H11.9707L10.6894 12.875H13.3145Z" fill="currentColor"/></svg>',
     // text.letter-spacing
     letterSpacing: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.5 6C4.77614 6 5 6.22386 5 6.5L5 17.5C5 17.7761 4.77614 18 4.5 18C4.22386 18 4 17.7761 4 17.5V6.5C4 6.22386 4.22386 6 4.5 6ZM19.5 6C19.7761 6 20 6.22386 20 6.5L20 17.5C20 17.7761 19.7761 18 19.5 18C19.2239 18 19 17.7761 19 17.5L19 6.5C19 6.22386 19.2239 6 19.5 6ZM8.56445 16H9.58008L10.3843 13.7344H13.6196L14.4238 16H15.4395L12.502 8H11.502L8.56445 16ZM13.3145 12.875L12.0332 9.26562H11.9707L10.6894 12.875H13.3145Z" fill="currentColor"/></svg>',
-    // layout-grid-columns
-    columns: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V19H5V5ZM11 5H14V19H11V5ZM20 5H17V19H20V5Z" fill="currentColor"/></svg>',
     // link-connected
     lockRatio: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8V9.5C14 9.77614 14.2239 10 14.5 10C14.7761 10 15 9.77614 15 9.5V8C15 6.34314 13.6569 5 12 5C10.3431 5 9 6.34314 9 8V9.5C9 9.77614 9.22386 10 9.5 10C9.77614 10 10 9.77614 10 9.5V8ZM10 16C10 17.1046 10.8954 18 12 18C13.1046 18 14 17.1046 14 16V14.5C14 14.2239 14.2239 14 14.5 14C14.7761 14 15 14.2239 15 14.5V16C15 17.6569 13.6569 19 12 19C10.3431 19 9 17.6569 9 16V14.5C9 14.2239 9.22386 14 9.5 14C9.77614 14 10 14.2239 10 14.5V16ZM12.5 10C12.5 9.72386 12.2761 9.5 12 9.5C11.7239 9.5 11.5 9.72386 11.5 10V14C11.5 14.2761 11.7239 14.5 12 14.5C12.2761 14.5 12.5 14.2761 12.5 14V10Z" fill="currentColor"/></svg>',
     // link-broken (Constrain proportions off; lockRatio is on)
@@ -976,9 +1098,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     instance: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.8233 6.59105L6.59105 11.8233C6.49342 11.9209 6.49341 12.0792 6.59105 12.1768L11.8233 17.4091C11.9209 17.5067 12.0792 17.5067 12.1768 17.4091L17.4091 12.1768C17.5067 12.0792 17.5067 11.9209 17.4091 11.8233L12.1768 6.59105C12.0792 6.49342 11.9209 6.49341 11.8233 6.59105ZM11.1162 5.88394L5.88394 11.1162C5.39578 11.6043 5.39578 12.3958 5.88394 12.8839L11.1162 18.1162C11.6043 18.6043 12.3958 18.6043 12.8839 18.1162L18.1162 12.8839C18.6043 12.3958 18.6043 11.6043 18.1162 11.1162L12.8839 5.88394C12.3958 5.39578 11.6043 5.39578 11.1162 5.88394Z" fill="currentColor"/></svg>',
     // component.small
     component: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.96966 10.4444L6.59105 11.823C6.49341 11.9207 6.49341 12.079 6.59105 12.1766L7.96977 13.5553C8.06741 13.6529 8.2257 13.6529 8.32333 13.5553L9.70195 12.1767C9.79958 12.0791 9.79958 11.9208 9.70195 11.8231L8.32322 10.4444C8.22559 10.3468 8.0673 10.3468 7.96966 10.4444ZM9.02968 9.73666C8.54147 9.24915 7.7505 9.24937 7.26256 9.73731L5.88394 11.1159C5.39578 11.6041 5.39578 12.3955 5.88394 12.8837L7.26267 14.2624C7.75082 14.7506 8.54228 14.7506 9.03043 14.2624L10.4091 12.8838C10.4093 12.8836 10.4095 12.8833 10.4098 12.8831C10.8972 12.3948 10.897 11.6039 10.4091 11.116L9.03032 9.73731C9.03011 9.73709 9.0299 9.73688 9.02968 9.73666ZM11.1169 13.5902C11.1167 13.5904 11.1164 13.5907 11.1162 13.5909L9.73754 14.9695C9.24939 15.4577 9.24939 16.2491 9.73754 16.7373L11.1162 18.1159C11.6043 18.6041 12.3958 18.6041 12.8839 18.1159L14.2626 16.7373C14.7505 16.2494 14.7507 15.4585 14.2633 14.9703C14.2631 14.97 14.2628 14.9698 14.2626 14.9695L12.8839 13.5909C12.8838 13.5907 12.8836 13.5906 12.8834 13.5904C12.3955 13.103 11.6049 13.1029 11.1169 13.5902ZM9.73679 9.02956C9.737 9.02977 9.73722 9.02999 9.73743 9.0302L11.1162 10.4089C11.1163 10.4091 11.1165 10.4093 11.1167 10.4095C11.6049 10.8971 12.3959 10.8969 12.8839 10.4089L14.2627 9.03019C14.7508 8.54204 14.7508 7.75058 14.2627 7.26242L12.8839 5.88369C12.3958 5.39554 11.6043 5.39554 11.1162 5.88369L9.73743 7.26244C9.24949 7.75038 9.24928 8.54135 9.73679 9.02956ZM10.4445 8.3231L11.8233 9.70182C11.9209 9.79946 12.0792 9.79946 12.1768 9.70182L13.5556 8.32308C13.6532 8.22545 13.6532 8.06716 13.5556 7.96953L12.1768 6.5908C12.0792 6.49317 11.9209 6.49317 11.8233 6.5908L10.4445 7.96954C10.3469 8.06717 10.3469 8.22546 10.4445 8.3231ZM14.9698 9.7373L13.591 11.116C13.1029 11.6042 13.1029 12.3956 13.591 12.8838L14.9697 14.2624C15.4578 14.7506 16.2493 14.7506 16.7374 14.2624L18.1162 12.8837C18.6043 12.3955 18.6043 11.6041 18.1162 11.1159L16.7375 9.7373C16.2494 9.24914 15.4579 9.24914 14.9698 9.7373ZM15.6769 10.4444L14.2981 11.8231C14.2005 11.9208 14.2005 12.0791 14.2981 12.1767L15.6768 13.5553C15.7744 13.653 15.9327 13.653 16.0303 13.5553L17.4091 12.1766C17.5067 12.079 17.5067 11.9207 17.4091 11.823L16.0304 10.4444C15.9328 10.3468 15.7745 10.3468 15.6769 10.4444ZM13.5555 15.6766L12.1768 14.298C12.0792 14.2004 11.9209 14.2004 11.8233 14.298L10.4446 15.6766C10.347 15.7743 10.347 15.9326 10.4446 16.0302L11.8233 17.4088C11.9209 17.5065 12.0792 17.5065 12.1768 17.4088L13.5555 16.0302C13.6531 15.9326 13.6531 15.7743 13.5555 15.6766Z" fill="currentColor"/></svg>',
+    // scale (1:532666), the Scale tool's own glyph
+    scale: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 6.5C5 5.67157 5.67157 5 6.5 5H17.5C18.3284 5 19 5.67157 19 6.5V17.5C19 18.3284 18.3284 19 17.5 19H15.5C15.2239 19 15 19.2239 15 19.5C15 19.7761 15.2239 20 15.5 20H17.5C18.8807 20 20 18.8807 20 17.5V6.5C20 5.11929 18.8807 4 17.5 4H6.5C5.11929 4 4 5.11929 4 6.5V8.5C4 8.77614 4.22386 9 4.5 9C4.77614 9 5 8.77614 5 8.5V6.5ZM11 8.5C11 8.22386 11.2239 8 11.5 8H15.5C15.7761 8 16 8.22386 16 8.5V12.5C16 12.7761 15.7761 13 15.5 13C15.2239 13 15 12.7761 15 12.5V9.70711L8.85355 15.8535C8.65829 16.0488 8.34171 16.0488 8.14645 15.8535C7.95119 15.6583 7.95119 15.3417 8.14645 15.1465L14.2929 9H11.5C11.2239 9 11 8.77614 11 8.5ZM4 11.5C4 10.6716 4.67157 10 5.5 10H10.5C10.7761 10 11 10.2239 11 10.5C11 10.7761 10.7761 11 10.5 11H5.5C5.22386 11 5 11.2239 5 11.5V18.5C5 18.7761 5.22386 19 5.5 19H12.5C12.7761 19 13 18.7761 13 18.5V13.5C13 13.2239 13.2239 13 13.5 13C13.7761 13 14 13.2239 14 13.5V18.5C14 19.3284 13.3284 20 12.5 20H5.5C4.67157 20 4 19.3284 4 18.5V11.5Z" fill="currentColor"/></svg>',
+    // scale.small (1:532691), in front of Scale's factor
+    scaleSmall: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 7C7.22386 7 7 7.22386 7 7.5V9.5C7 9.77614 6.77614 10 6.5 10C6.22386 10 6 9.77614 6 9.5V7.5C6 6.67157 6.67157 6 7.5 6H16.5C17.3284 6 18 6.67157 18 7.5V16.5C18 17.3284 17.3284 18 16.5 18H14.5C14.2239 18 14 17.7761 14 17.5C14 17.2239 14.2239 17 14.5 17H16.5C16.7761 17 17 16.7761 17 16.5V7.5C17 7.22386 16.7761 7 16.5 7H7.5ZM6 12C6 11.4477 6.44771 11 7 11H9.5C9.77614 11 10 11.2239 10 11.5C10 11.7761 9.77614 12 9.5 12H7V17H12V14.5C12 14.2239 12.2239 14 12.5 14C12.7761 14 13 14.2239 13 14.5V17C13 17.5523 12.5523 18 12 18H7C6.44771 18 6 17.5523 6 17V12ZM11.5 9C11.2239 9 11 9.22386 11 9.5C11 9.77614 11.2239 10 11.5 10H13.2929L9.14645 14.1465C8.95119 14.3417 8.95119 14.6583 9.14645 14.8535C9.34171 15.0488 9.65829 15.0488 9.85355 14.8535L14 10.7071V12.5C14 12.7761 14.2239 13 14.5 13C14.7761 13 15 12.7761 15 12.5V9.5C15 9.22386 14.7761 9 14.5 9H11.5Z" fill="currentColor"/></svg>',
     // check
     check: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.2519 8.56819C15.4905 8.70733 15.571 9.01349 15.4319 9.25202L11.9319 15.252C11.8498 15.3928 11.7041 15.4848 11.5416 15.4983C11.3792 15.5119 11.2203 15.4454 11.1159 15.3202L8.6159 12.3202C8.43912 12.108 8.46778 11.7928 8.67992 11.616C8.89206 11.4392 9.20734 11.4679 9.38412 11.68L11.4275 14.1321L14.5681 8.74815C14.7073 8.50962 15.0134 8.42905 15.2519 8.56819Z" fill="currentColor"/></svg>',
     // check, the 16 frame (the checkbox's tick)
+    // The checkbox's check, drawn as one stroke (pathLength 1) so it can draw itself in: the kit's check16 line.
+    checkDraw: '<svg class="ft-ico ft-check-mark" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 7.5L7.45 10.45L11.5 4.4" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/></svg>',
     check16: '<svg class="ft-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.7773 4.084C12.0071 4.23717 12.0692 4.54761 11.916 4.77737L7.91603 10.7774C7.83293 10.902 7.69834 10.9828 7.54927 10.9976C7.4002 11.0123 7.25237 10.9595 7.14645 10.8536L4.14645 7.85358C3.95118 7.65831 3.95118 7.34173 4.14645 7.14647C4.34171 6.95121 4.65829 6.95121 4.85355 7.14647L7.42229 9.7152L11.084 4.22267C11.2372 3.99291 11.5476 3.93082 11.7773 4.084Z" fill="currentColor"/></svg>',
     // plus.small
     plus: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 6C12.2761 6 12.5 6.22386 12.5 6.5V11.5H17.5C17.7761 11.5 18 11.7239 18 12C18 12.2761 17.7761 12.5 17.5 12.5H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H11.5V6.5C11.5 6.22386 11.7239 6 12 6Z" fill="currentColor"/></svg>',
@@ -1110,7 +1238,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     alignTop: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 17.25C10 17.6642 9.66421 18 9.25 18H8.75C8.33579 18 8 17.6642 8 17.25L8 8.75C8 8.33579 8.33579 8 8.75 8H9.25C9.66421 8 10 8.33579 10 8.75V17.25ZM15 13.25C15 13.6642 14.6642 14 14.25 14H13.75C13.3358 14 13 13.6642 13 13.25V8.75C13 8.33579 13.3358 8 13.75 8H14.25C14.6642 8 15 8.33579 15 8.75V13.25Z" fill="currentColor"/><path d="M17.5 6C17.7761 6 18 5.77614 18 5.5C18 5.22386 17.7761 5 17.5 5L5.5 5C5.22386 5 5 5.22386 5 5.5C5 5.77614 5.22386 6 5.5 6L17.5 6Z" fill="currentColor" fill-opacity="0.333"/></svg>',
     // layout-align-vertical-center
     alignVCenter: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 6.75C10 6.33579 9.66421 6 9.25 6H8.75C8.33579 6 8 6.33579 8 6.75V16.25C8 16.6642 8.33579 17 8.75 17H9.25C9.66421 17 10 16.6642 10 16.25V6.75ZM15 8.75C15 8.33579 14.6642 8 14.25 8H13.75C13.3358 8 13 8.33579 13 8.75V14.25C13 14.6642 13.3358 15 13.75 15H14.25C14.6642 15 15 14.6642 15 14.25V8.75Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M17.5 11C17.7761 11 18 11.2239 18 11.5C18 11.7761 17.7761 12 17.5 12H15V11H17.5ZM13 11H10V12H13V11ZM5.5 11H8V12H5.5C5.22386 12 5 11.7761 5 11.5C5 11.2239 5.22386 11 5.5 11Z" fill="currentColor" fill-opacity="0.333"/></svg>',
-    // grid-column (Figma's columns layout grid): the column help card
+    // grid-column (1:535488, Figma's columns layout grid): the column help card, and each row of Layout guide styles,
+    // as Figma marks a layout guide style with it
     gridColumn: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 6C7.77614 6 8 6.22386 8 6.5V7H11.5V6.5C11.5 6.22386 11.7239 6 12 6C12.2761 6 12.5 6.22386 12.5 6.5V7H16V6.5C16 6.22386 16.2239 6 16.5 6C16.7761 6 17 6.22386 17 6.5V7H17.5C17.7761 7 18 7.22386 18 7.5C18 7.77614 17.7761 8 17.5 8H17V16H17.5C17.7761 16 18 16.2239 18 16.5C18 16.7761 17.7761 17 17.5 17H17V17.5C17 17.7761 16.7761 18 16.5 18C16.2239 18 16 17.7761 16 17.5V17H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V17H8V17.5C8 17.7761 7.77614 18 7.5 18C7.22386 18 7 17.7761 7 17.5V17H6.5C6.22386 17 6 16.7761 6 16.5C6 16.2239 6.22386 16 6.5 16H7V8H6.5C6.22386 8 6 7.77614 6 7.5C6 7.22386 6.22386 7 6.5 7H7V6.5C7 6.22386 7.22386 6 7.5 6ZM8 16H11.5V8H8V16ZM12.5 16H16V8H12.5V16Z" fill="currentColor"/></svg>',
     // layout-grid-columns: the help for several columns
     gridColumns: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5 5H8V19H5V5ZM11 5H14V19H11V5ZM20 5H17V19H20V5Z" fill="currentColor"/></svg>',
@@ -1165,6 +1294,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // A shortcut's keys as the tooltip shows them: Mac's symbols on a Mac, words elsewhere.
   const MAC = /Mac|iPhone|iPad/.test(navigator.platform || "");
   const KEYS = { mod: MAC ? "⌘" : "Ctrl+", alt: MAC ? "⌥" : "Alt+", shift: MAC ? "⇧" : "Shift+" };
+  // Two modifiers in each platform's order: Mac's ⌃⌥⇧⌘, elsewhere Ctrl, Alt, Shift (as Figma on Windows writes them).
+  KEYS.shiftMod = MAC ? "⇧⌘" : "Ctrl+Shift+";
+  KEYS.altMod = MAC ? "⌥⌘" : "Ctrl+Alt+";
 
   function hideTip() {
     clearTimeout(tipTimer);
@@ -1185,6 +1317,29 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     target.addEventListener("pointerdown", hideTip);
   }
 
+  // The panel is set in Inter, as Figma's is. A page that has no Inter face of its own gets it once from Google Fonts
+  // (her call, 2026-10-15), so every user sees the panel as designed without loading it themselves. A page that
+  // already has an "Inter" face is left alone; a blocked request just leaves the system font the stack falls back to.
+  function loadInter() {
+    if (document.getElementById("ft-inter")) return;
+    try {
+      for (const f of document.fonts) if (f.family.replace(/["']/g, "").trim() === "Inter") return;
+    } catch (e) {}
+    const link = document.createElement("link");
+    link.id = "ft-inter";
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap";
+    link.setAttribute("data-finetune-ui", "");
+    document.head.appendChild(link);
+  }
+  // A checkbox row just clicked: its check animates (drawn in, or faded out) and its hover darkening flashes out,
+  // staying off until the pointer leaves, as Figma's does.
+  function toggling(row) {
+    row.classList.add("is-toggling", "is-pressed");
+    clearTimeout(row.ftToggleTimer);
+    row.ftToggleTimer = setTimeout(() => row.classList.remove("is-toggling"), 400);
+    row.addEventListener("pointerleave", () => row.classList.remove("is-pressed"), { once: true });
+  }
   function iconButton(svg, tip, onClick) {
     const b = button("ft-icon-btn", null, onClick);
     b.innerHTML = svg;
@@ -1194,13 +1349,42 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return b;
   }
 
+  // A color as the browser computes it: rgb() mostly, but oklch(), lab() and the rest stay as written, and
+  // color-mix() computes to color(srgb …). Found inside a longer value too (a shadow, a drop-shadow()).
+  const COLOR_FN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\((?:[^()]|\([^()]*\))*\)/g;
+  // Any other color is put in sRGB (the panel's hex) by the browser itself, through a relative color on a hidden
+  // probe; out of gamut is clipped to it, as the page fill is sRGB.
+  let colorProbe = null;
+  const srgbSeen = new Map();
+  function inSrgb(c) {
+    if (/^(rgba?|color)\(/.test(c) && !/^color\((?!srgb\s)/.test(c)) return c;
+    if (srgbSeen.has(c)) return srgbSeen.get(c);
+    let out = null;
+    if (window.CSS && CSS.supports("color", "rgb(from red r g b)")) {
+      if (!colorProbe) {
+        colorProbe = document.createElement("i");
+        colorProbe.setAttribute("data-finetune-ui", "");
+        colorProbe.style.display = "none";
+      }
+      if (!colorProbe.isConnected) document.documentElement.appendChild(colorProbe);
+      colorProbe.style.color = "rgb(from " + c + " r g b)";
+      out = getComputedStyle(colorProbe).color;
+      colorProbe.style.color = "";
+    }
+    srgbSeen.set(c, out);
+    return out;
+  }
+
   function toFill(css) {
-    const m = /rgba?\(([^)]+)\)/.exec(css || "");
-    if (!m) return null;
-    const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+    COLOR_FN.lastIndex = 0;
+    const found = COLOR_FN.exec(css || "");
+    const c = found && inSrgb(found[0]);
+    if (!c) return null;
+    const srgb = /^color\(/.test(c);
+    const p = c.slice(c.indexOf("(") + 1, -1).replace(/^srgb\s+/, "").split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
     const a = p.length > 3 ? p[3] : 1;
     if (!(a > 0)) return null;
-    const hex = p.slice(0, 3).map((n) => Math.round(n).toString(16).padStart(2, "0")).join("");
+    const hex = p.slice(0, 3).map((n) => Math.round(Math.min(255, Math.max(0, srgb ? n * 255 : n))).toString(16).padStart(2, "0")).join("");
     return { hex: hex.toUpperCase(), opacity: Math.round(a * 100), visible: true };
   }
 
@@ -1668,8 +1852,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }, true);
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || !layer || typing(e.target)) return;
-      // Handled: the selection's own Escape leaves this one alone.
+      // Handled: the selection's own Escape leaves this one alone, and so does the page's (stopPropagation).
       e.preventDefault();
+      e.stopPropagation();
       if (!menu.hidden) closeMenu();
       else close();
     });
@@ -1701,6 +1886,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   let showInPanel = () => {};
   // Set by the inspector: redraws the selection's numbers after the element changes size.
   let refreshPanel = () => {};
+  // Set by the inspector: the right-click Select layer menu, in the panel's menu, each layer named as its kind line.
+  let openLayerMenu = () => {};
+  // Set by the panel: closes its menu (and lets go of what it previews), for when the UI hides.
+  let closeMenu = () => {};
+  // The Scale tool (K) while it's on: what it scales and the snapshot it scales from (see beginScale), else null.
+  let scaleMode = null;
+  // Set by the inspector: leaves Scale, the layer still selected, and puts Appearance and the rest back.
+  let endScale = () => {};
 
   // Left toolbar, after pen.dev's: Copy the changes for the bake skill, Save them so a reload keeps
   // them, then Reset, which goes back to the code (her call, 2026-10-14: it was in the panel's top row, where
@@ -1711,8 +1904,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const bar = el("div", "ft-toolbar");
     // The left rail: each tool's icon in its box; its name is its tooltip.
     const actions = [
-      ["copy", "Copy", "Copy changes and prompt", copyChanges, KEYS.shift + KEYS.mod + "E"],
-      ["floppyDisk", "Save", "Save changes in this browser", saveNow, KEYS.alt + KEYS.mod + "S"],
+      ["copy", "Copy", "Copy changes and prompt", copyChanges, KEYS.shiftMod + "E"],
+      ["floppyDisk", "Save", "Save changes in this browser", saveNow, KEYS.altMod + "S"],
       ["refresh", "Reset", "Reset to the code's last presets", resetEdits, null],
     ].map(([icon, label, name, onClick, keys]) => {
       const b = button("ft-tool", null, onClick);
@@ -1765,7 +1958,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // Hide UI, as Figma's Minimize UI: the panel, the toolbar, the grid and the selection go at once, leaving
-  // only this button, in a small box where it sat, to bring them back. The hotkey (T), ⌘\ and ⇧⌘\ (Figma's
+  // only this button, in a small box where it sat, to bring them back. The hotkey (D), ⌘\ and ⇧⌘\ (Figma's
   // Show/Hide UI and Minimize UI; Ctrl on Windows) do the same. From fully hidden (open: false,
   // finetune.toggle(false)) it shows everything.
   let minimized = false;
@@ -1789,6 +1982,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     selection.sync();
     hideTip();
     drawUiButton();
+    refreshPanels();
+  }
+  // Every tuner's controls panel follows the inspector, whichever way it was shown or hidden.
+  function refreshPanels() {
+    Object.keys(live).forEach((k) => live[k].refresh && live[k].refresh());
+  }
+  // The Hide UI hotkey, bound once (by the first finetune() call, after the shortcuts that may claim its key)
+  // for every call: two calls sharing a key would otherwise toggle twice and land back where they started.
+  let hideKeyBound = false;
+  function bindHideKey() {
+    if (hideKeyBound) return;
+    hideKeyBound = true;
+    window.addEventListener("keydown", (e) => {
+      // A key one of finetune's shortcuts already used (⇧A on a layer, say, with a Hide UI key of `a`) stays theirs.
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.repeat || typing(e.target)) return;
+      const k = String(e.key).toLowerCase();
+      if (Object.keys(live).some((id) => live[id].key === k)) toggleUi();
+    });
   }
   window.addEventListener("keydown", (e) => {
     if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== "Backslash" || typing(e.target)) return;
@@ -1825,8 +2036,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Text means an element with words of its own, not just inside its children.
   const hasText = (e) => Array.from(e.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim());
   // [data-finetune-ui] marks a page's own controls (its nav, its buttons): never selected, and they keep
-  // working while the inspector is open.
-  const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-tip, .ft-toast, .ft-sel-box, .ft-hover-box, .ft-marquee, [data-finetune-ui]");
+  // working while the inspector is open. A tuner's controls panel (.ft-panel) is finetune's own UI too.
+  const isUi = (t) => !t || !t.closest || !!t.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-tip, .ft-toast, .ft-sel-box, .ft-hover-box, .ft-marquee, .ft-panel, [data-finetune-ui]");
+  // A layer's own layers, as she sees them: a container she already ungrouped draws no box, so its layers count in
+  // its place (the panel's "N items", and what a later ungroup measures and puts back).
+  const layersOf = (t) => Array.from(t.children).filter((c) => !isUi(c))
+    .flatMap((c) => (c.hasAttribute("data-ft-ungrouped") ? layersOf(c) : [c]));
+  // The CSS properties a layer takes from the one holding it unless it sets its own: what an ungrouped wrapper still
+  // gives its layers live, and what the bake has to carry over when it takes the wrapper out of the code.
+  const INHERITED = ["color", "font-family", "font-size", "font-weight", "font-style", "font-stretch", "font-variant",
+    "font-feature-settings", "font-variation-settings", "line-height", "letter-spacing", "word-spacing", "text-align",
+    "text-indent", "text-transform", "text-shadow", "white-space", "word-break", "overflow-wrap", "hyphens",
+    "visibility", "cursor", "direction", "writing-mode", "list-style-type", "-webkit-font-smoothing"];
 
   // Components, as Figma's instances: an element is one when a component in the code renders it as its one
   // outermost element (a React component's single root), or when it's a custom element (a web component). Its
@@ -1843,12 +2064,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return k ? e[k] : null;
   };
   // Where the code wrote this fiber's element: React 18's recorded file, or React 19's creation stack, its first
-  // frame past React's own call. "" when the build doesn't say.
+  // frame past React's own call. "" when the build doesn't say. React's frames are told apart by their function's
+  // name, not by "jsx" anywhere in the line, since a page file can be Hero.jsx; anything in node_modules is a
+  // library's or React's own, so it's passed over too.
+  const REACT_FRAME = /^\s*(?:at\s+)?(?:[\w$.]*\.)?(?:jsxDEV|jsxs?|createElement|fakeJSXCallSite)\b/;
   function writtenAt(f) {
     if (f._debugSource && f._debugSource.fileName) return f._debugSource.fileName;
     const stack = f._debugStack && f._debugStack.stack;
     if (!stack) return "";
-    return stack.split("\n").slice(1).find((l) => !/jsx|createElement|fakeJSXCallSite/.test(l)) || "";
+    return stack.split("\n").slice(1).find((l) => l.trim() && !REACT_FRAME.test(l) && !/node_modules/.test(l)) || "";
   }
   const inPageCode = (where) => !!where && !/node_modules|<anonymous>/.test(where);
   // A component is one layer only when it renders exactly one outermost element (no fragment of several).
@@ -1863,12 +2087,25 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     walk(f.child);
     return n === 1;
   }
-  const components = new WeakMap();
+  // These three are read again whenever the instance cache is (see forgetInstances): React can re-render the same
+  // node with another variant (a tab bar's variant={active ? "default" : "outline"}), and a stale one would keep the
+  // old variant's edit on it.
+  let components = new WeakMap();
+  // The fiber of the component that names an element, so Copy can say where that instance is used in the code.
+  let componentFibers = new WeakMap();
+  // Every page-code component that renders the element as its one root, inner to outer (FeatureCard returns a Card,
+  // so its root is [Card, FeatureCard]): an edit to Card is written in card.tsx, which draws FeatureCard's too, so
+  // the page has to show it there as well. The outermost is the element's name. Each keeps the string props cva reads
+  // (variant, size, intent, tone), as given at that instance.
+  let componentChains = new WeakMap();
+  const CVA_PROPS = ["variant", "size", "intent", "tone"];
   function componentOf(e) {
     if (!e || e.nodeType !== 1) return "";
     if (components.has(e)) return components.get(e);
     let name = "";
-    const fiber = fiberOf(e);
+    const chain = [];
+    // The node can hold the older of React's two copies after an update; the newer one has the props it shows now.
+    const fiber = hostFiber(e);
     let found = false;
     for (let p = fiber && fiber.return; p && !HOST_TAGS.includes(p.tag); p = p.return) {
       if (!COMPONENT_TAGS.includes(p.tag)) continue;
@@ -1878,34 +2115,315 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
       found = true;
       const n = typeName(p.elementType) || typeName(p.type);
-      if (n && oneRoot(p)) name = n;
+      if (n && oneRoot(p)) {
+        name = n;
+        componentFibers.set(e, p);
+        const props = p.memoizedProps && typeof p.memoizedProps === "object" ? p.memoizedProps : {};
+        const link = { name: n, fiber: p };
+        CVA_PROPS.forEach((k) => { if (typeof props[k] === "string") link[k] = props[k]; });
+        chain.push(link);
+      }
     }
-    if (!name && e.localName.includes("-") && window.customElements && customElements.get(e.localName)) name = e.localName;
+    if (!name && e.localName.includes("-") && window.customElements && customElements.get(e.localName)) {
+      name = e.localName;
+      chain.push({ name });
+    }
     components.set(e, name);
+    componentChains.set(e, chain);
     return name;
+  }
+  const chainOf = (e) => (componentOf(e) ? componentChains.get(e) : []);
+
+  // Where the code writes an element, as a repo-relative "file:line[:col]", so a bake opens the right file instead
+  // of searching for the selector. "here" is where this element is written in the page; for a component's root,
+  // where that instance is used, read off the component's own fiber (the tag a dev tagger gave it, or its record).
+  // "def" is where the component writes the element it returns, in its own file. First match wins, most exact
+  // record first. A production build records none, so this gives "" and Copy's lines stay as they were.
+  const SOURCE_FILE = /\.(?:jsx|tsx|js|ts|vue|svelte)$/;
+  function sourcePath(loc) {
+    const m = String(loc || "").trim().match(/^(.*?)(?::(\d+))?(?::(\d+))?$/);
+    let p = m[1].replace(/\\/g, "/").replace(/[?#].*$/, "");
+    const at = m[2] ? ":" + m[2] + (m[3] ? ":" + m[3] : "") : "";
+    if (/node_modules|_next\/static|<anonymous>/.test(p)) return "";
+    p = p.replace(/^webpack-internal:\/\/\/(?:\([^)]*\)\/)?/, "");
+    const served = /^https?:\/\//i.test(p) && !/^https?:\/\/[^/]*\/@fs\//i.test(p);
+    p = p.replace(/^[a-z][\w+.-]*:\/\/[^/]*/i, "").replace(/^\/@fs(?=\/)/, "");
+    try {
+      p = decodeURIComponent(p);
+    } catch (e) {
+      // A stray % stays as it is.
+    }
+    if (served) p = p.replace(/^\/+/, "");
+    else if (/^\/|^[A-Za-z]:\//.test(p)) {
+      // A path on disk: the project's own part starts at its source folder. Without one there's no telling where
+      // the project starts, so no path is better than a wrong one.
+      const i = p.indexOf("/src/");
+      const j = i >= 0 ? i : p.search(/\/(?:app|pages|components)\//);
+      if (j < 0) return "";
+      p = p.slice(j + 1);
+    } else p = p.replace(/^\.\//, "");
+    return SOURCE_FILE.test(p) ? p + at : "";
+  }
+  // A stack frame's file:line:col, in Chrome's form ("at Hero (url:5:5)", "at url:5:5") or Firefox and Safari's
+  // ("Hero@url:5:5"). The URL itself can hold brackets (Next's webpack-internal:///(app-pages-browser)/, a route
+  // group's (marketing)/ folder), so Chrome's is split at the first " (" after the name, never the last "(".
+  function frameLoc(line) {
+    const l = String(line || "").trim();
+    if (!l) return "";
+    if (/^at\s/.test(l)) {
+      const m = l.match(/^at\s+[^(]*?\s\((.*)\)$/);
+      return m ? m[1] : l.replace(/^at\s+/, "");
+    }
+    return l.slice(l.indexOf("@") + 1);
+  }
+  // React 18's recorded place is the file's own line and column. React 19's comes from a creation stack, and the
+  // browser doesn't source-map a stack: its line and column are the dev server's compiled module's, not the file's,
+  // so only the file is given, and the bake finds the element in it by its selector.
+  function fiberSource(f) {
+    if (!f) return "";
+    const d = f._debugSource;
+    if (d && d.fileName) return sourcePath(d.fileName + (d.lineNumber ? ":" + d.lineNumber + (d.columnNumber ? ":" + d.columnNumber : "") : ""));
+    return sourcePath(frameLoc(writtenAt(f))).replace(/(?::\d+){1,2}$/, "");
+  }
+  let sourceCache = new WeakMap();
+  function sourceOf(e, which) {
+    if (!e || e.nodeType !== 1) return "";
+    let c = sourceCache.get(e);
+    if (!c) sourceCache.set(e, (c = {}));
+    if (!(which in c)) c[which] = findSource(e, which);
+    return c[which];
+  }
+  // A dev tagger's place, read off an element's attributes or a fiber's props: Lovable's data-lov-id (or its older
+  // data-component-path and -line), TanStack's data-tsd-source.
+  function tagSource(get) {
+    const path = get("data-component-path");
+    const line = get("data-component-line");
+    for (const t of [get("data-lov-id"), path ? path + (line ? ":" + line : "") : "", get("data-tsd-source")]) {
+      const s = typeof t === "string" && sourcePath(t);
+      if (s) return s;
+    }
+    return "";
+  }
+  const propTag = (f) => (f && f.memoizedProps && typeof f.memoizedProps === "object" ? tagSource((k) => f.memoizedProps[k]) : "");
+  // Where a component's fiber writes the element it returns, in its own file: the element (a memo's is one fiber
+  // further down). A tag there that is the component's own, passed on by a spread, names the place of use, not this
+  // file. Copy reads it for any component in an element's chain, so Card's line names card.tsx even on a FeatureCard.
+  function componentDef(comp) {
+    const c = comp.tag === 14 ? comp.child && comp.child.child : comp.child;
+    if (!c) return "";
+    const tag = propTag(c);
+    return fiberSource(c) || (tag !== propTag(comp) ? tag : "");
+  }
+  function findSource(e, which) {
+    // A component's root carries the tag of whatever wrote it last: the component's own file when it doesn't pass
+    // its props on (FeatureCard's <Card>), so its fiber answers instead, on a tagged build and an untagged one alike.
+    const comp = componentOf(e) ? componentFibers.get(e) : null;
+    if (comp) return which === "here" ? propTag(comp) || fiberSource(comp) : componentDef(comp);
+    if (which === "def") return fiberSource(fiberOf(e));
+    const tag = tagSource((k) => e.getAttribute(k));
+    if (tag) return tag;
+    const js = e[Symbol.for("__jsxSource__")];
+    const s = js && js.fileName && sourcePath(js.fileName + (js.lineNumber ? ":" + js.lineNumber + (js.columnNumber != null ? ":" + js.columnNumber : "") : ""));
+    return s || fiberSource(fiberOf(e));
+  }
+
+  // React keeps its own hold on an element's words unless the code gives them as one string (then React writes the
+  // element's text itself, whatever nodes are there). Where it holds them (words beside an {expression}, a list of
+  // one), a node finetune swaps out is one React later inserts next to, and the page goes blank.
+  const reactProps = (e) => {
+    const k = Object.keys(e).find((key) => key.slice(0, 13) === "__reactProps$");
+    return k ? e[k] : null;
+  };
+  const childrenOf = (e) => (reactProps(e) || fiberOf(e).memoizedProps || {});
+  function reactHeld(e) {
+    if (!e || e.nodeType !== 1 || !fiberOf(e)) return false;
+    const p = childrenOf(e);
+    if (p.dangerouslySetInnerHTML) return false;
+    return typeof p.children !== "string" && typeof p.children !== "number";
+  }
+  // Words React holds as one text node (the code gives a list of one string): they can be retyped, as long as that
+  // very node stays in place.
+  function oneHeldText(e) {
+    if (!reactHeld(e)) return null;
+    const items = [childrenOf(e).children].flat(Infinity).filter((c) => c != null && typeof c !== "boolean");
+    const n = e.childNodes;
+    return items.length === 1 && /^(string|number)$/.test(typeof items[0]) && n.length === 1 && n[0].nodeType === 3 ? n[0] : null;
+  }
+  // Words the code builds from several parts ("Plan {name} pricing"): no one place in the code holds them as typed.
+  const codeBuiltWords = (e) => reactHeld(e) && !oneHeldText(e);
+  // The fiber React drew the element with last. The node keeps the one it was made with, which after an update can be
+  // the older of React's two copies; the newer one's props are the ones on the node.
+  function hostFiber(e) {
+    const f = fiberOf(e);
+    const p = f && reactProps(e);
+    return f && p && f.memoizedProps !== p && f.alternate && f.alternate.memoizedProps === p ? f.alternate : f;
+  }
+  // Where the code writes a fiber's element, line and column included, so the items of one .map() read as one place.
+  const writtenPlace = (f) => {
+    const d = f._debugSource;
+    return (d && d.fileName ? d.fileName + ":" + d.lineNumber + ":" + d.columnNumber : frameLoc(writtenAt(f))) + "|" + propTag(f);
+  };
+  // A list item's React key ("Team" in a .map() of plans): it says which item an edit was made on after the list
+  // changes, where a selector's position can't. Only a list's keys count: siblings of the same component written at
+  // the same place in the code. The walk stays inside what the selector reaches (its first step's parent), so a list
+  // far up the page (a router's routes) isn't taken for this one's.
+  function listItem(t, sel) {
+    let f = t && t.nodeType === 1 ? hostFiber(t) : null;
+    if (!f) return null;
+    let top = t;
+    for (let i = (sel || selectorFor(t)).split(" > ").length; i > 1 && top.parentElement; i--) top = top.parentElement;
+    const scope = top.parentElement || top;
+    for (; f; f = f.return) {
+      const n = f.stateNode;
+      if (HOST_TAGS.includes(f.tag) && n && n.nodeType === 1 && n !== scope && n.contains(scope)) return null;
+      if (f.key == null || !f.return) continue;
+      const kin = [];
+      for (let s = f.return.child; s; s = s.sibling) if (s.key != null && s.elementType === f.elementType && writtenPlace(s) === writtenPlace(f)) kin.push(s);
+      // Keys are unique in a list, so the item is found by its key (React's return pointer can lead to its older copy).
+      if (kin.length > 1) return { key: String(f.key), n: kin.findIndex((s) => s.key === f.key) + 1, of: kin.length };
+    }
+    return null;
   }
   // A component's instances on the page, found once per selection (the selection clears this).
   const instanceCache = new Map();
-  function instancesOf(name) {
-    if (!instanceCache.has(name)) instanceCache.set(name, Array.from(document.querySelectorAll("*")).filter((e) => !isUi(e) && componentOf(e) === name));
-    return instanceCache.get(name);
+  function forgetInstances() {
+    instanceCache.clear();
+    components = new WeakMap();
+    componentFibers = new WeakMap();
+    componentChains = new WeakMap();
+  }
+  // Its two other entries: every component root on the page, and, by name, the variants its instances pass.
+  const ALL_ROOTS = {};
+  const VARIANTED = {};
+  function rootsOnPage() {
+    if (!instanceCache.has(ALL_ROOTS)) instanceCache.set(ALL_ROOTS, Array.from(document.querySelectorAll("*")).filter((e) => !isUi(e) && componentOf(e)));
+    return instanceCache.get(ALL_ROOTS);
+  }
+  // A component edit's key: its name, and when any instance of it on the page passes a string `variant` (a shadcn
+  // Button's outline, ghost, default), the variant too. cva writes each variant's look in its own entry, so an edit
+  // to the outline Button is the outline entry's and the page shows it on those only.
+  // size (and intent, tone) are printed, not keyed: cva's size entries are shared by every variant, so keying by
+  // them would show the edit on fewer buttons than the bake changes. A key saved as a bare name reaches every variant.
+  function variantedNames() {
+    if (!instanceCache.has(VARIANTED)) {
+      const m = new Map();
+      rootsOnPage().forEach((e) => chainOf(e).forEach((c) => {
+        if (c.variant != null) (m.get(c.name) || m.set(c.name, new Set()).get(c.name)).add(c.variant);
+      }));
+      instanceCache.set(VARIANTED, m);
+    }
+    return instanceCache.get(VARIANTED);
+  }
+  // An instance that passes no variant draws the cva's defaultVariants entry, whose name the page doesn't hold. It reads
+  // as "default" only where another instance passes "default" by name (shadcn's, so the two stay one key, as they're
+  // one entry); else as its own "(none)", never a name the cva may not have (a hand-written cva's default "primary").
+  const NO_VARIANT = "(none)";
+  const variantOf = (link) => (link.variant != null ? link.variant
+    : (variantedNames().get(link.name) || new Set()).has("default") ? "default" : NO_VARIANT);
+  const linkKey = (link) => (variantedNames().has(link.name) ? link.name + " variant=" + variantOf(link) : link.name);
+  function parseKey(key) {
+    const m = String(key).match(/^(\S+) variant=(.*)$/);
+    return m ? { name: m[1], variant: m[2] } : { name: String(key), variant: null };
+  }
+  // The key an edit to this element's component goes under: its outermost component's (the one it's named by).
+  function componentKey(e) {
+    const chain = chainOf(e);
+    return chain.length ? linkKey(chain[chain.length - 1]) : "";
+  }
+  // How far out in an element's chain a key's component sits (0 its innermost), -1 when the key doesn't reach it. One
+  // with a variant ranks above a bare name at the same place, as the more exact of the two.
+  function rankOf(e, key) {
+    const k = parseKey(key);
+    const chain = chainOf(e);
+    for (let i = 0; i < chain.length; i++) {
+      if (chain[i].name === k.name && (k.variant == null || variantOf(chain[i]) === k.variant)) return i * 2 + (k.variant == null ? 0 : 1);
+    }
+    return -1;
+  }
+  // Every element a key's edit reaches: the instances of that component (of that variant), its renders inside other
+  // components included.
+  function instancesOf(key) {
+    if (!instanceCache.has(key)) instanceCache.set(key, rootsOnPage().filter((e) => rankOf(e, key) >= 0));
+    return instanceCache.get(key);
+  }
+  // What a component line in Copy adds after its count: how many of its renders sit inside another component (the
+  // bake's edit to its file changes those too: "; 3 inside FeatureCard"), and the sizes (intents, tones) its
+  // instances are given, which cva keeps in entries every variant shares ("; sizes lg, default"). "" when neither.
+  // A bare key on a component whose instances pass variants (a save from before they were told apart) also lists the
+  // variants it reached, since each variant's entry sets its own colours and the bake has to write into those.
+  function reachNote(key) {
+    const inside = new Map();
+    const given = {};
+    const k = parseKey(key);
+    const printed = CVA_PROPS.filter((p) => p !== "variant" || (k.variant == null && variantedNames().has(k.name)));
+    instancesOf(key).forEach((e) => {
+      const chain = chainOf(e);
+      const i = rankOf(e, key) >> 1;
+      const outer = i < chain.length - 1 ? chain[i + 1].name : "";
+      if (outer) inside.set(outer, (inside.get(outer) || 0) + 1);
+      printed.forEach((p) => (given[p] = given[p] || []).push(p === "variant" ? variantOf(chain[i]) : chain[i][p]));
+    });
+    const parts = Array.from(inside, ([n, c]) => c + " inside " + n);
+    printed.forEach((p) => {
+      if (given[p] && given[p].some((v) => v != null)) parts.push(p + "s " + Array.from(new Set(given[p].map((v) => (v != null ? v : "default")))).join(", "));
+    });
+    return parts.map((s) => "; " + s).join("");
+  }
+  // Writes the component edits that reach an element onto it again: what the code wrote inline first, then each key's
+  // styles from the innermost component out, then the instance's own edits. In the code an outer component's class
+  // passed in comes after the inner one's and tailwind-merge keeps the later class, so FeatureCard's rounded-[40px]
+  // drops Card's rounded-tl-[4px]. Written in that order, the outer shorthand resets the inner longhands here too;
+  // weighed one property at a time, which one won hung on the order the keys were saved in. props are ones an edit
+  // just took off (or every component prop, after a re-render), so they go back to the code's own where none reaches.
+  function paintComps(t, props, comps, own) {
+    const all = comps || edits.components;
+    own = own || (edits.elements[keyOf(t)] || { styles: {} }).styles;
+    const keys = Object.keys(all).map((k) => [rankOf(t, k), k]).filter((r) => r[0] >= 0).sort((a, b) => a[0] - b[0]).map((r) => r[1]);
+    const touched = new Set();
+    const touch = (p) => [p].concat(longhandsOf(p)).forEach((q) => touched.add(q));
+    (props || []).forEach(touch);
+    keys.forEach((k) => Object.keys(all[k].styles).forEach(touch));
+    if (!touched.size) return;
+    const o = originalOf(t);
+    touched.forEach((q) => { if (!(q in o.styles)) o.styles[q] = t.style.getPropertyValue(q); });
+    // Shorthands first, so a longhand the code wrote on its own is put back after them; one a code shorthand covers is
+    // left as that shorthand set it (a var() in it gives its longhands no value of their own to put back).
+    const shorts = Array.from(touched).filter((q) => longhandsOf(q).length);
+    shorts.forEach((q) => (o.styles[q] ? t.style.setProperty(q, o.styles[q]) : t.style.removeProperty(q)));
+    touched.forEach((q) => {
+      if (shorts.includes(q)) return;
+      if (o.styles[q]) t.style.setProperty(q, o.styles[q]);
+      else if (!shorts.some((s) => o.styles[s] && longhandsOf(s).includes(q))) t.style.removeProperty(q);
+    });
+    keys.forEach((k) => Object.keys(all[k].styles).forEach((p) => t.style.setProperty(p, all[k].styles[p])));
+    // An instance's override holds over every component's look, a shorthand of it over their longhands too.
+    Object.keys(own).forEach((p) => { if (touched.has(p) || longhandsOf(p).some((q) => touched.has(q))) t.style.setProperty(p, own[p]); });
+    tidyStyle(t);
+  }
+  // The nearest component a layer sits inside, when that component is on the page more than once; "" otherwise.
+  function hostComponent(t) {
+    for (let a = t.parentElement; a && a !== document.body; a = a.parentElement) {
+      const n = componentOf(a);
+      if (n) return instancesOf(n).length > 1 ? n : "";
+    }
+    return "";
   }
   // Where an edit to a component instance goes, as in Figma: to every instance (the component's own look), unless
   // she overrode this one, or it places this one (a move, a turn, a flip), which is always this one's. Design only.
   const PLACEMENT = ["translate", "rotate", "scale", "transform-box", "transform-origin"];
   function sharedComponent(t, prop) {
     if (document.documentElement.classList.contains("ft-motion") || PLACEMENT.includes(prop)) return "";
-    const name = componentOf(t);
+    const name = componentKey(t);
     return name && !edits.overrides.includes(selectorFor(t)) ? name : "";
   }
 
   // Figma's layout guide, columns: bands stretched between margins, or packed to a side (or the middle)
   // at a set width, an offset from that side.
   const GUIDE_ALIGN = [["stretch", "Stretch"], ["left", "Left"], ["center", "Center"], ["right", "Right"]];
-  // The usual layout: 12 stretched columns, 40 margin, 20 gutter; Figma's red at 10%.
+  // The usual layout: 8 stretched columns, 200 margin, 20 gutter (her default); Figma's red at 10%.
   const newGuide = () => ({
     type: "columns", visible: true, color: { hex: "FF0000", opacity: 10, visible: true },
-    count: 12, align: "stretch", width: 0, offset: 40, gutter: 20,
+    count: 8, align: "stretch", width: 0, offset: 200, gutter: 20,
   });
   // The grid the call declares (`layout`: the site's decided grid, { count, gutter, margin }, or align / offset /
   // width for a packed one), read as a guide's fields; null when the call has none.
@@ -1931,10 +2449,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const styleName = (g) => g.count + " col · " + g.gutter + " gutter · " + (g.align === "stretch" ? g.offset + " margin"
     : g.width + " wide · " + (g.align === "center" ? "centered" : g.align + " " + g.offset));
 
+  // The page the edits (and this page's styles) belong to. A single-page app that moves to another page and calls
+  // finetune() there switches it (see switchPage), so a Save never lands under the last page's key.
+  let editsPath = location.pathname;
   // Her horizontal-layout styles, for every page or just this one. A style library, not a page edit:
   // kept in the browser the moment she saves one, not with Save.
   const STYLES_ALL = "finetune:styles";
-  const STYLES_PAGE = "finetune:styles:" + location.pathname;
+  const stylesPage = () => "finetune:styles:" + editsPath;
   function loadStyles(key) {
     try {
       const raw = JSON.parse(localStorage.getItem(key));
@@ -1967,28 +2488,29 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const isShadow = (fx) => fx.type === "drop" || fx.type === "inner";
   // Figma's new effect: a drop shadow, 0 4, blur 4, black at 25%.
   const newEffect = () => ({ type: "drop", visible: true, x: 0, y: 4, blur: 4, spread: 0, hex: "000000", opacity: 25 });
-  const EDITS_KEY = "finetune:edits:" + location.pathname;
+  const editsKey = () => "finetune:edits:" + editsPath;
   // Reset's Undo (see resetEdits): what it threw away, and what to load once instead of what Save stored.
-  const RESET_KEY = "finetune:reset-undo:" + location.pathname;
-  const RESTORE_KEY = "finetune:restore:" + location.pathname;
+  const resetKey = () => "finetune:reset-undo:" + editsPath;
+  const restoreKey = () => "finetune:restore:" + editsPath;
   let restored = false;
+  const blankRecord = () => ({ page: null, elements: {}, guides: [], groups: [], autoLayout: [], keyframes: {}, waapi: {}, newKeyframes: {}, components: {}, overrides: [] });
   let edits = loadEdits();
 
   // Anything stored in a shape this file no longer writes is dropped, not trusted.
   function loadEdits() {
-    const out = { page: null, elements: {}, guides: [], groups: [], keyframes: {}, waapi: {}, newKeyframes: {}, components: {}, overrides: [] };
+    const out = blankRecord();
     let raw = null;
     try {
       // Reset's Undo loads what showed before it, once; otherwise what Save stored.
       let undone = null;
       try {
-        undone = sessionStorage.getItem(RESTORE_KEY);
-        if (undone != null) sessionStorage.removeItem(RESTORE_KEY);
+        undone = sessionStorage.getItem(restoreKey());
+        if (undone != null) sessionStorage.removeItem(restoreKey());
       } catch (e) {
         undone = null;
       }
       restored = undone != null;
-      raw = JSON.parse(undone != null ? undone : localStorage.getItem(EDITS_KEY));
+      raw = JSON.parse(undone != null ? undone : localStorage.getItem(editsKey()));
     } catch (e) {
       return out;
     }
@@ -1996,6 +2518,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (Array.isArray(raw.page) && raw.page.length && raw.page.every((l) =>
       l && /^[0-9A-F]{6}$/.test(l.hex) && isNum(l.opacity) && typeof l.visible === "boolean")) {
       out.page = raw.page.map((l) => ({ hex: l.hex, opacity: l.opacity, visible: l.visible }));
+      if (raw.pageView && typeof raw.pageView === "object") {
+        const view = readView(raw.pageView, {});
+        if ("vw" in view) out.pageView = view;
+      }
     }
     // One horizontal layout at a time.
     if (Array.isArray(raw.guides)) out.guides = raw.guides.filter(validGuide).slice(0, 1);
@@ -2037,6 +2563,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (Array.isArray(raw.groups)) {
       out.groups = raw.groups.filter((g) => Array.isArray(g) && g.length > 1 && g.every((sel) => typeof sel === "string"));
     }
+    // A group's auto layout, kept only while a group with the same layers is kept too. Saves from before it load as
+    // they were.
+    if (Array.isArray(raw.autoLayout)) {
+      raw.autoLayout.forEach((l) => {
+        const ok = validLayout(l, out.groups);
+        if (ok && !out.autoLayout.some((k) => sameSet(k.sels, ok.sels))) out.autoLayout.push(ok);
+      });
+    }
     // Component edits (every instance's), by the component's name, and the instances she overrode, by selector.
     if (raw.components && typeof raw.components === "object") {
       Object.keys(raw.components).forEach((name) => {
@@ -2044,7 +2578,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (!c || typeof c.styles !== "object" || !c.styles) return;
         const styles = {};
         Object.keys(c.styles).forEach((p) => { if (typeof c.styles[p] === "string" && c.styles[p]) styles[p] = c.styles[p]; });
-        if (Object.keys(styles).length) out.components[name] = { styles };
+        const comp = readMeta(c, { styles });
+        if (Object.keys(styles).length) out.components[name] = comp;
       });
     }
     if (Array.isArray(raw.overrides)) out.overrides = raw.overrides.filter((sel) => typeof sel === "string");
@@ -2056,7 +2591,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         Object.keys(e.styles).forEach((p) => { if (typeof e.styles[p] === "string") styles[p] = e.styles[p]; });
         const entry = { styles };
         if (typeof e.html === "string") entry.html = e.html;
+        // The page rewrote her words after the edit: they're built in code (see watchWords).
+        if (e.htmlComputed === true && entry.html != null) entry.htmlComputed = true;
         if (e.deleted === true) entry.deleted = true;
+        if (e.ungrouped === true) entry.ungrouped = true;
+        // Which element the edit was made on (see fingerprint). A save without one skips the check, as before.
+        const at = e.at;
+        if (at && typeof at === "object" && typeof at.tag === "string" && /^[\w-]+$/.test(at.tag)
+          && ["src", "key", "text"].every((k) => at[k] == null || typeof at[k] === "string")) {
+          entry.at = { tag: at.tag };
+          ["src", "key", "text"].forEach((k) => { if (typeof at[k] === "string") entry.at[k] = at[k]; });
+        }
         // Spacing's share of the translate on a free-flow container (see nudge), so a change of Flow can take back
         // just that share; any other shape is dropped.
         if (e.sim && isNum(e.sim.x) && isNum(e.sim.y)) entry.sim = { x: e.sim.x, y: e.sim.y };
@@ -2067,41 +2612,147 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           Object.keys(e.inferred).forEach((p) => { if (/^(padding|margin)-/.test(p) && typeof e.inferred[p] === "string") inferred[p] = e.inferred[p]; });
           if (Object.keys(inferred).length) entry.inferred = inferred;
         }
-        if (e.adjust && typeof e.adjust === "object") {
-          const adjust = Object.assign({}, NO_ADJUST);
-          Object.keys(NO_ADJUST).forEach((k) => { if (isNum(e.adjust[k])) adjust[k] = e.adjust[k]; });
-          entry.adjust = adjust;
+        // A K scale's notes for Copy (its factor on the layer scaled, the animated values it left), and the one
+        // attribute it writes (an <svg>'s viewBox).
+        if (typeof e.scaled === "string" && /^\d*\.?\d+$/.test(e.scaled)) entry.scaled = e.scaled;
+        if (typeof e.scaleSkipped === "string" && e.scaleSkipped) entry.scaleSkipped = e.scaleSkipped;
+        if (typeof e.scalePseudo === "string" && e.scalePseudo) entry.scalePseudo = e.scalePseudo;
+        if (e.attrs && typeof e.attrs.viewBox === "string") entry.attrs = { viewBox: e.attrs.viewBox };
+        // A resize's notes for Copy (resizeLayer's noteWhy): the value each was written with and why.
+        if (e.why && typeof e.why === "object") {
+          const why = {};
+          Object.keys(e.why).forEach((p) => {
+            const w = e.why[p];
+            if (w && typeof w.value === "string" && typeof w.note === "string") why[p] = { value: w.value, note: w.note };
+          });
+          if (Object.keys(why).length) entry.why = why;
         }
-        const paint = (c) => !!c && /^[0-9A-F]{6}$/.test(c.hex) && isNum(c.opacity) && typeof c.visible === "boolean";
-        // null is a stroke she removed from the page's own.
-        if (e.stroke === null) entry.stroke = null;
-        else if (paint(e.stroke) && STROKE_AT.some(([at]) => at === e.stroke.position) && isNum(e.stroke.weight)) {
-          entry.stroke = { hex: e.stroke.hex, opacity: e.stroke.opacity, visible: e.stroke.visible, position: e.stroke.position, weight: e.stroke.weight };
-        }
-        if (Array.isArray(e.effects)) {
-          entry.effects = e.effects.filter((fx) => paint(fx) && EFFECT_TYPES.some(([t]) => t === fx.type)
-            && ["x", "y", "blur", "spread"].every((k) => isNum(fx[k])))
-            .map((fx) => ({ type: fx.type, visible: fx.visible, x: fx.x, y: fx.y, blur: fx.blur, spread: fx.spread, hex: fx.hex, opacity: fx.opacity }));
-        }
+        readMeta(e, entry);
         if (e.src && typeof e.src.name === "string" && /^data:image\//.test(e.src.data)) {
           entry.src = { name: e.src.name, data: e.src.data };
+        }
+        // The columns an Align or Make wide to columns put it on (see noteColumns), for Copy's comment.
+        const c = e.cols;
+        if (c && typeof c === "object" && ["first", "last", "count"].every((k) => Number.isInteger(c[k]) && c[k] >= 1)
+          && ["gutter", "vw", "left", "width"].every((k) => isNum(c[k])) && ["left", "hcenter", "right", "width"].includes(c.how)
+          && GUIDE_ALIGN.some(([a]) => a === c.align) && typeof c.source === "string") {
+          const cols = {};
+          ["first", "last", "count", "how", "gutter", "align", "source", "vw", "left", "width"].forEach((k) => { cols[k] = c[k]; });
+          ["margin", "offset", "colWidth"].forEach((k) => { if (isNum(c[k])) cols[k] = c[k]; });
+          entry.cols = cols;
         }
         out.elements[sel] = entry;
       });
     }
     return out;
+    // The window an edit was made in (see stampView): a width, and the page's theme when it has one; and each
+    // property's own, kept apart so Copy can say which of a line's properties were made elsewhere.
+    function readView(e, entry) {
+      if (isNum(e.vw) && e.vw > 0) entry.vw = e.vw;
+      if (typeof e.theme === "string" && /^[\w-]{1,24}$/.test(e.theme)) entry.theme = e.theme;
+      if (e.views && typeof e.views === "object") {
+        const views = {};
+        Object.keys(e.views).forEach((k) => {
+          const v = e.views[k] && typeof e.views[k] === "object" ? readView({ vw: e.views[k].vw, theme: e.views[k].theme }, {}) : {};
+          if ("vw" in v) views[k] = v;
+        });
+        if (Object.keys(views).length) entry.views = views;
+      }
+      return entry;
+    }
+    // What the panel shows beside the CSS (see META), on a layer or a component.
+    function readMeta(e, entry) {
+      readView(e, entry);
+      if (e.adjust && typeof e.adjust === "object") {
+        const adjust = Object.assign({}, NO_ADJUST);
+        Object.keys(NO_ADJUST).forEach((k) => { if (isNum(e.adjust[k])) adjust[k] = e.adjust[k]; });
+        entry.adjust = adjust;
+      }
+      const paint = (c) => !!c && /^[0-9A-F]{6}$/.test(c.hex) && isNum(c.opacity) && typeof c.visible === "boolean";
+      // A hidden fill's color (it writes transparent).
+      if (paint(e.fill) && !e.fill.visible) entry.fill = { hex: e.fill.hex, opacity: e.fill.opacity, visible: false };
+      // null is a stroke she removed from the page's own.
+      if (e.stroke === null) entry.stroke = null;
+      else if (paint(e.stroke) && STROKE_AT.some(([at]) => at === e.stroke.position) && isNum(e.stroke.weight)) {
+        entry.stroke = { hex: e.stroke.hex, opacity: e.stroke.opacity, visible: e.stroke.visible, position: e.stroke.position, weight: e.stroke.weight };
+      }
+      if (Array.isArray(e.effects)) {
+        entry.effects = e.effects.filter((fx) => paint(fx) && EFFECT_TYPES.some(([t]) => t === fx.type)
+          && ["x", "y", "blur", "spread"].every((k) => isNum(fx[k])))
+          .map((fx) => ({ type: fx.type, visible: fx.visible, x: fx.x, y: fx.y, blur: fx.blur, spread: fx.spread, hex: fx.hex, opacity: fx.opacity }));
+      }
+      return entry;
+    }
   }
 
   // An action that can be undone says so in a toast with Undo, for 10 seconds.
   const undoToast = (text, run) => toast(text, { label: "Undo", run }, 10000);
+  // An edit's toast (⌘G, Delete, ⇧A...): its Undo takes back the step that edit made, so it's committed now, and the
+  // toast closes once a newer step lands or an undo moves off it (Undo there would take back something else).
+  let stepToast = null;
+  function actionToast(text) {
+    if (history.timer) commitStep();
+    const mark = { now: history.now, depth: history.past.length };
+    stepToast = mark;
+    undoToast(text, () => {
+      // An edit still settling is a newer step: it lands first, and then this one isn't the newest.
+      if (history.timer) commitStep();
+      if (stepToast === mark && history.now === mark.now && history.past.length === mark.depth) undo();
+    });
+    mark.seq = toastSeq;
+  }
+  // Called when the step showing changes: an edit's toast that no longer names the newest step goes.
+  function dropStepToast() {
+    if (!stepToast || history.now === stepToast.now) return;
+    const showing = stepToast.seq === toastSeq;
+    stepToast = null;
+    if (!showing) return;
+    clearTimeout(toastTimer);
+    if (toastEl) toastEl.hidden = true;
+  }
+
+  // The page's own grid as the panel took it up (see makeInspector), hidden. Left as it came it's the code's
+  // default, not an edit: Save leaves it out and Reset has nothing to put back, so a later change to the code's grid
+  // shows. A layout on its numbers that she showed or recolored is kept marked fromPage, and its numbers follow the
+  // code's grid on the next load.
+  let pageDefault = null;
+  const GUIDE_NUMS = ["type", "align", "count", "width", "offset", "gutter"];
+  const sameNums = (a, b) => !!a && !!b && GUIDE_NUMS.every((k) => a[k] === b[k]);
+  const untouchedGrid = (g) => sameNums(g, pageDefault) && !g.visible
+    && ["hex", "opacity", "visible"].every((k) => g.color[k] === pageDefault.color[k]);
+  const guideEdited = () => edits.guides.some((g) => !untouchedGrid(g));
+  function savable() {
+    // At a width with no grid the guide is set aside (followPage), still on the page's last numbers: it saves as one
+    // that follows the page, and is left out when untouched, as the page's own grid would be.
+    const p = !edits.guides.length && parkedGuide();
+    if (p) {
+      const def = newGuide().color;
+      const untouched = !p.visible && ["hex", "opacity", "visible"].every((k) => p.color[k] === def[k]);
+      return Object.assign({}, edits, { guides: untouched ? [] : [Object.assign({}, p, { fromPage: true })] });
+    }
+    const guides = edits.guides.filter((g) => !untouchedGrid(g))
+      .map((g) => (sameNums(g, pageDefault) ? Object.assign({}, g, { fromPage: true }) : g));
+    return Object.assign({}, edits, { guides });
+  }
 
   // Nothing is saved until she presses Save; a reload before that drops the unsaved edits. Its Undo puts back what
   // the browser had stored before (nothing, or the last save); the edits on the page stay as they are.
   function saveNow() {
+    // Words still being typed count, as they do for undo.
+    finishTyping();
     let before = null;
+    // With no edit at all, Save stores nothing (so Reset stays greyed), and only says so when nothing was stored.
+    const keep = savable();
+    const blank = blankEdits(keep);
     try {
-      before = localStorage.getItem(EDITS_KEY);
-      localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+      before = localStorage.getItem(editsKey());
+      if (blank && storedBlank(before)) {
+        if (before != null) localStorage.removeItem(editsKey());
+        historyChanged();
+        return toast("No changes to save");
+      }
+      if (blank) localStorage.removeItem(editsKey());
+      else localStorage.setItem(editsKey(), JSON.stringify(keep));
     } catch (e) {
       // Storage blocked or full (a large swapped-in image): edits still show, they just won't survive a reload.
       return toast("Couldn't save: storage is blocked or full");
@@ -2110,8 +2761,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     historyChanged();
     undoToast(n ? "Saved " + n + (n === 1 ? " change" : " changes") : "Saved", () => {
       try {
-        if (before == null) localStorage.removeItem(EDITS_KEY);
-        else localStorage.setItem(EDITS_KEY, before);
+        if (before == null) localStorage.removeItem(editsKey());
+        else localStorage.setItem(editsKey(), before);
       } catch (e) {
         // Storage blocked: the save stands.
       }
@@ -2121,6 +2772,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   function copyChanges() {
+    finishTyping();
     const n = editCount();
     if (!n) return toast("No changes to copy");
     copyText(changesText()).then((ok) => {
@@ -2132,19 +2784,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // controls, its own storage) hears "finetune:reset" on window first, so one Reset clears everything.
   // Reset keeps what it throws away (what Save stored, and what showed, saved or not) for the next load in this
   // tab, so the toast after the reload can offer Undo. Undo hands it back: what Save stored goes back in storage,
-  // and what showed loads once more (RESTORE_KEY), so unsaved edits come back unsaved.
+  // and what showed loads once more (restoreKey()), so unsaved edits come back unsaved.
   function resetEdits() {
+    finishTyping();
     window.dispatchEvent(new CustomEvent("finetune:reset"));
     try {
       // Anything to bring back: an edit (a layout grid included) or something Save stored.
-      const saved = localStorage.getItem(EDITS_KEY);
-      const had = saved != null || editCount() > 0 || edits.guides.length > 0;
-      sessionStorage.setItem(RESET_KEY, JSON.stringify({ saved, live: snapshot(), had }));
+      const saved = localStorage.getItem(editsKey());
+      const had = !storedBlank(saved) || editCount() > 0 || !blankEdits(savable());
+      sessionStorage.setItem(resetKey(), JSON.stringify({ saved, live: JSON.stringify(edits), had }));
     } catch (e) {
       // No session storage: Reset still works, just without Undo.
     }
     try {
-      localStorage.removeItem(EDITS_KEY);
+      localStorage.removeItem(editsKey());
     } catch (e) {
       // Nothing stored to clear.
     }
@@ -2152,11 +2805,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
   // Whether Reset has anything to put back: an edit on the page now, or something Save stored.
   function canReset() {
-    if (editCount() > 0) return true;
+    if (editCount() > 0 || guideEdited()) return true;
     try {
-      return localStorage.getItem(EDITS_KEY) != null;
+      return !storedBlank(localStorage.getItem(editsKey()));
     } catch (e) {
       return false;
+    }
+  }
+  // An edits record with nothing in it: every list empty, every map empty (or holding only empty maps).
+  function blankEdits(v) {
+    if (v == null) return true;
+    if (Array.isArray(v)) return v.length === 0;
+    if (typeof v === "object") return Object.keys(v).every((k) => blankEdits(v[k]));
+    return false;
+  }
+  // What Save stored is nothing to keep when it's missing, unreadable or a blank record.
+  function storedBlank(s) {
+    if (s == null) return true;
+    try {
+      return blankEdits(JSON.parse(s));
+    } catch (e) {
+      return true;
     }
   }
   // After the load: Reset's toast, with Undo for 10 seconds; or, after Undo, that the edits are back.
@@ -2164,8 +2833,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (restored) return toast("Your edits are back");
     let stash = null;
     try {
-      stash = JSON.parse(sessionStorage.getItem(RESET_KEY));
-      sessionStorage.removeItem(RESET_KEY);
+      stash = JSON.parse(sessionStorage.getItem(resetKey()));
+      sessionStorage.removeItem(resetKey());
     } catch (e) {
       return;
     }
@@ -2176,8 +2845,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       label: "Undo",
       run() {
         try {
-          if (stash.saved != null) localStorage.setItem(EDITS_KEY, stash.saved);
-          sessionStorage.setItem(RESTORE_KEY, stash.live);
+          if (stash.saved != null) localStorage.setItem(editsKey(), stash.saved);
+          sessionStorage.setItem(restoreKey(), stash.live);
         } catch (e) {
           return toast("Couldn't undo: storage is blocked");
         }
@@ -2193,16 +2862,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }, 10400);
   }
 
-  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0) + edits.groups.length + Object.keys(edits.keyframes).length + Object.keys(edits.waapi).length + Object.keys(edits.components).length;
+  const editCount = () => Object.keys(edits.elements).length + (edits.page ? 1 : 0) + edits.groups.length + edits.autoLayout.length + Object.keys(edits.keyframes).length + Object.keys(edits.waapi).length + Object.keys(edits.components).length;
+
+  // The classes Motion's Play added (page state a reload takes away), per element, so no selector is built on one.
+  const playClasses = new WeakMap();
 
   // A short selector that finds the element again after a reload: as few steps as stay
-  // unique, each a tag, its first class, and a position when siblings share both.
+  // unique, each a tag, its first class, and a position when siblings share both. An id
+  // the page uses twice (an SVG exported twice, a component rendered twice) isn't unique.
   function selectorFor(t) {
-    if (t.id) return "#" + CSS.escape(t.id);
+    if (t.id && document.querySelectorAll("#" + CSS.escape(t.id)).length === 1) return "#" + CSS.escape(t.id);
     const steps = [];
-    for (let e = t; e && e !== document.body && e !== document.documentElement; e = e.parentElement) {
+    // A layer React has since taken off the page has no parent at its top: the walk ends there instead of throwing.
+    for (let e = t; e && e.parentElement && e !== document.body && e !== document.documentElement; e = e.parentElement) {
       let step = e.tagName.toLowerCase();
-      if (e.classList.length) step += "." + CSS.escape(e.classList[0]);
+      const played = playClasses.get(e);
+      const cls = Array.from(e.classList).find((c) => !(played && played.has(c)));
+      if (cls) step += "." + CSS.escape(cls);
       const kin = Array.from(e.parentElement.children).filter((s) => s.tagName === e.tagName);
       if (kin.filter((s) => s.matches(step)).length > 1) step += ":nth-of-type(" + (kin.indexOf(e) + 1) + ")";
       steps.unshift(step);
@@ -2216,8 +2892,51 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // so undoing past the first edit puts back exactly what was there.
   const originals = {};
   function originalOf(t) {
-    const sel = selectorFor(t);
+    const sel = keyOf(t);
     return originals[sel] || (originals[sel] = { styles: {} });
+  }
+  // The key an element's edit is saved under. Keys never change once saved, so a layer an edit was found on again
+  // after the page moved it (see resolve) keeps the key it was saved under, not the selector it has now.
+  const refound = new WeakMap();
+  // The element each saved edit is on now, and why one is on none (see resolve).
+  const applied = new Map();
+  const lostAt = new Map();
+  function keyOf(t) {
+    const k = refound.get(t);
+    if (k && edits.elements[k]) return k;
+    // Its selector's saved edit can be another element's: the one it was made on, found again elsewhere after the
+    // page changed, or one judged gone from the page. An edit to this one would merge into it and Copy would put both
+    // on this element, so this one gets a key of its own: its selector and a CSS comment, which still finds it.
+    const sel = selectorFor(t);
+    for (let n = 1, key = sel; ; key = sel + " /* " + ++n + " */") {
+      const was = applied.get(key);
+      if (!edits.elements[key] || (was && was.isConnected ? was === t : lostAt.get(key) !== "moved")) return key;
+    }
+  }
+  // A key as a selector to print: without the comment that sets apart a second edit on the same selector.
+  const bareKey = (k) => k.replace(/ \/\* \d+ \*\/$/, "");
+
+  // An element's inner HTML as the code would hold it: the layers inside it with their own inline styles and
+  // image sources put back and finetune's data-ft-* marks off. Their edits are their own lines, so the words
+  // never carry them (and a reload or redo doesn't bring back one she has since changed).
+  function codeHtml(t) {
+    const copy = t.cloneNode(true);
+    const live = t.querySelectorAll("*");
+    copy.querySelectorAll("*").forEach((c, i) => {
+      const o = live[i] && originals[keyOf(live[i])];
+      if (o) {
+        Object.keys(o.styles).forEach((p) => (o.styles[p] ? c.style.setProperty(p, o.styles[p]) : c.style.removeProperty(p)));
+        if (!c.getAttribute("style")) c.removeAttribute("style");
+        if ("src" in o) {
+          ["src", "srcset"].forEach((a) => (o[a] != null ? c.setAttribute(a, o[a]) : c.removeAttribute(a)));
+        }
+        if (o.attrs) Object.keys(o.attrs).forEach((a) => (o.attrs[a] != null ? c.setAttribute(a, o.attrs[a]) : c.removeAttribute(a)));
+      }
+      // A dev build's source tags (Lovable's data-lov-* and data-component-*, TanStack's data-tsd-source) aren't in
+      // the code either: the build adds them, so words copied with them would bake them in.
+      Array.from(c.attributes).forEach((a) => { if (/^data-(?:ft-|lov-|component-|tsd-source$)/.test(a.name)) c.removeAttribute(a.name); });
+    });
+    return copy.innerHTML;
   }
 
   // Undo and redo, as in Figma. A step is the whole set of edits once a change settles (a drag, a scrub
@@ -2225,10 +2944,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // the inspector, which puts the page and the panel where it had them.
   const history = { past: [], future: [], now: null, timer: 0, quiet: 0 };
   let applyEdits = () => {};
+  let switchPage = () => {};
   let historyChanged = () => {};
   let finishTyping = () => {};
-  const snapshot = () => JSON.stringify(edits);
+  // The layout guide set aside at a width with no grid (followPage). A step taken there still carries it, so an undo
+  // back at a width with a grid lands on a step that has it rather than one that removes it.
+  let parkedGuide = () => null;
+  const snapshot = () => {
+    const p = parkedGuide();
+    return JSON.stringify(p && !edits.guides.length ? Object.assign({}, edits, { guides: [p] }) : edits);
+  };
+  // Counts every change, quiet ones too, so a group's auto layout can tell an edit (reflow its layers) from a scroll
+  // (leave them be) without comparing the whole set of edits. flowTick is the count its last reflow saw.
+  let editTick = 0;
+  let flowTick = 0;
   function noteChange() {
+    editTick++;
     if (history.quiet || history.now == null) return;
     clearTimeout(history.timer);
     history.timer = setTimeout(commitStep, 250);
@@ -2242,6 +2973,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       history.past.push(history.now);
       history.now = now;
       history.future = [];
+      dropStepToast();
     }
     historyChanged();
   }
@@ -2260,6 +2992,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     history.quiet++;
     applyEdits(JSON.parse(history.now));
     history.quiet--;
+    // Scale's W, H and factor skip their refresh while quiet, so they're read again now the step has landed.
+    if (scaleMode) refreshPanel();
+    dropStepToast();
     historyChanged();
   }
   // Right after a Reset (while its toast shows), Undo, ⌘Z included, undoes the Reset: there's nothing before it in
@@ -2268,18 +3003,221 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const undo = () => (undoReset && !history.past.length ? undoReset() : step(history.past, history.future));
   const redo = () => step(history.future, history.past);
 
+  // The page's own theme when it has a switch for one ("dark", "light", or a data-theme's own name); "" when it has
+  // none. Copy names it, since a value seen in one theme may belong to that theme's token only. Read from what
+  // themes switch on: a class or data attribute on html or body, an inline color-scheme, else the page's
+  // prefers-color-scheme rules, answered by the system's setting. finetune's own data-ft-theme is the panel's.
+  function pageTheme() {
+    const roots = [document.documentElement, document.body].filter(Boolean);
+    for (const r of roots) {
+      if (r.classList.contains("dark")) return "dark";
+      if (r.classList.contains("light")) return "light";
+    }
+    for (const r of roots) {
+      for (const a of ["data-theme", "data-mode", "data-color-scheme"]) {
+        const v = (r.getAttribute(a) || "").trim().toLowerCase();
+        if (/dark/.test(v)) return "dark";
+        if (/light/.test(v)) return "light";
+        if (/^[\w-]{1,24}$/.test(v)) return v;
+      }
+    }
+    for (const r of roots) {
+      const v = r.style.colorScheme.trim();
+      if (v === "dark" || v === "light") return v;
+    }
+    const kind = themeSwitch();
+    if (kind === "media") return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    // A .dark or [data-theme] rule with nothing set on html or body: the switch is there, and off.
+    return kind === "class" ? "light" : "";
+  }
+  // Whether the page's styles switch theme by the system's setting ("media") or by a class or attribute ("class"),
+  // read once per set of stylesheets, since every edit asks.
+  let themeScan = { n: -1, kind: "" };
+  function themeSwitch() {
+    const n = document.styleSheets.length;
+    if (themeScan.n === n) return themeScan.kind;
+    let kind = "";
+    const walk = (rules) => {
+      for (const r of rules) {
+        if (r.media && /prefers-color-scheme/.test(r.media.mediaText)) return void (kind = "media");
+        // .dark\:bg-x is a utility's name, not the switch: the escape after it rules it out.
+        if (r.selectorText && /\.dark(?![\w\\-])|\[data-(?:theme|mode|color-scheme)\b/.test(r.selectorText)) kind = "class";
+        if (r.cssRules) walk(r.cssRules);
+        if (kind === "media") return;
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      if (sheet.ownerNode && /^finetune-/.test(sheet.ownerNode.id || "")) continue;
+      try {
+        if (sheet.media && /prefers-color-scheme/.test(sheet.media.mediaText)) kind = "media";
+        else walk(sheet.cssRules);
+      } catch (e) {
+        // Another origin's sheet can't be read.
+      }
+      if (kind === "media") break;
+    }
+    themeScan = { n, kind };
+    return kind;
+  }
+  // The window an edit was made in (its width, and the page's theme when it has one), kept on the edit so Copy can
+  // say when it was made at another width or theme than the header's: a bake then writes it for that breakpoint or
+  // theme only. Each property keeps its own (views), given what the entry held before the change: one set at 1440
+  // keeps 1440 when another is changed at 390. The entry's own vw and theme are its last change's, for what has no
+  // property (a delete, an ungroup).
+  const viewKeys = (entry) => Object.assign({}, entry.styles, entry.html != null ? { text: entry.html } : {});
+  function stampView(entry, before) {
+    const view = { vw: window.innerWidth };
+    const theme = pageTheme();
+    if (theme) view.theme = theme;
+    if (before) {
+      const views = entry.views || {};
+      // An edit saved before properties had their own: what it already held keeps the window it was made in.
+      const old = isNum(entry.vw) ? Object.assign({ vw: entry.vw }, entry.theme ? { theme: entry.theme } : {}) : null;
+      const now = viewKeys(entry);
+      Object.keys(now).forEach((k) => {
+        if (now[k] !== before[k]) views[k] = view;
+        else if (!views[k] && old) views[k] = old;
+      });
+      Object.keys(views).forEach((k) => { if (!(k in now)) delete views[k]; });
+      if (Object.keys(views).length) entry.views = views;
+      else delete entry.views;
+    }
+    entry.vw = view.vw;
+    if (theme) entry.theme = theme;
+    else delete entry.theme;
+  }
+
+  // Which element an edit was made on, kept with it (entry.at), since its selector can come to point at another one: a
+  // list item added before it, a section put above it. In a dev build the place the code writes it and its list key
+  // say which, and its words (the first 40 characters) tell apart the elements one file writes; with neither, the
+  // words alone do.
+  const query = (sel) => {
+    try {
+      const t = document.querySelector(sel);
+      return t && !isUi(t) ? t : null;
+    } catch (e) {
+      return null;
+    }
+  };
+  const firstWords = (s) => String(s || "").replace(/\s+/g, " ").trim().slice(0, 40).trim();
+  // The layers she retyped words in, with the code's words, read once per lookup: a lookup reads many elements' words.
+  const retyped = () => Object.keys(originals).filter((s) => "html" in originals[s]).map((s) => [query(s), originals[s].html])
+    .filter(([n]) => n);
+  function codeWords(t, list) {
+    // Words she retyped inside it read as the code's, so an edit to words never makes its layer (or one holding it)
+    // look like another element.
+    const edited = (list || retyped()).filter(([n]) => t.contains(n));
+    if (!edited.length) return firstWords(t.textContent);
+    const all = [t].concat(Array.from(t.querySelectorAll("*")));
+    const copy = t.cloneNode(true);
+    const twins = [copy].concat(Array.from(copy.querySelectorAll("*")));
+    edited.forEach(([n, html]) => { twins[all.indexOf(n)].innerHTML = html; });
+    return firstWords(copy.textContent);
+  }
+  function fingerprint(t, sel) {
+    const at = { tag: t.localName };
+    const src = sourceOf(t, "here");
+    const item = listItem(t, sel);
+    if (src) at.src = src;
+    if (item) at.key = item.key;
+    // A list key says which item on its own. Without one the words go too: React 19 names only the file, which every
+    // element of that tag in the component shares, and a dev build's line moves whenever a line is added above it.
+    if (!item) at.text = codeWords(t);
+    return at;
+  }
+  const fileOf = (s) => String(s || "").replace(/(?::\d+){1,2}$/, "");
+  // An element of the same kind from the same place: its tag, its file and its list key. One that differs in any of
+  // these is another element. Its line and its words are weaker: a line added above it moves the line, and a count-up,
+  // a rotating word or a price toggle changes the words by themselves.
+  function sameKind(t, at, sel) {
+    if (t.localName !== at.tag) return false;
+    if (at.src != null && fileOf(sourceOf(t, "here")) !== fileOf(at.src)) return false;
+    return at.key == null || (listItem(t, sel) || {}).key === at.key;
+  }
+  // And nothing about it moved on: the same line, the same words.
+  const sameAt = (t, at, sel, words) => sameKind(t, at, sel) && (at.src == null || sourceOf(t, "here") === at.src)
+    && (at.text == null || words(t) === at.text);
+  // How close two runs of words are: the words they share, as a share of the longer one's.
+  function nearWords(a, b) {
+    const set = (s) => new Set(String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean));
+    const x = set(a);
+    const y = set(b);
+    if (!x.size || !y.size) return 0;
+    let n = 0;
+    x.forEach((w) => { if (y.has(w)) n++; });
+    return n / Math.max(x.size, y.size);
+  }
+  // The element an edit belongs on now: the one it's on, while that's still on the page; else what its selector finds,
+  // when nothing about it moved on; else the one element that matches it exactly, or whose words clearly come closest;
+  // else what its selector finds, while that's the same kind from the same place (a moved line or changed words say
+  // nothing against it, so it isn't left off for them). None: the page changed since the edit, and it's left off
+  // rather than put on another element. lostAt says why, for Copy and the load's toast: "moved" when the selector now
+  // finds another element, "missing" when it finds none; "changed" when it's on the selector's element, whose words
+  // aren't the ones it was made on.
+  // within: the layers the page just added (the page watcher's batch). A fresh copy can only be among them, and
+  // searching the whole page every frame would cost too much on a page that keeps adding nodes.
+  // The element each edit was put on for its place alone (see below). Its words are checked again at each lookup,
+  // since a rotating word or a count-up keeps changing them, so Copy notes it exactly while they differ.
+  const byPlace = new Map();
+  function resolve(sel, entry, within) {
+    const e = entry || edits.elements[sel];
+    const t = query(sel);
+    lostAt.delete(sel);
+    if (!e || !e.at) return t;
+    const at = e.at;
+    // Read only when needed: the page watcher calls this for every edit, every frame the page adds layers.
+    let list = null;
+    const words = (c) => codeWords(c, list || (list = retyped()));
+    const was = applied.get(sel);
+    let r = was && was.isConnected && !isUi(was) ? was : t && sameAt(t, at, sel, words) ? t : null;
+    if (r && r === byPlace.get(sel) && at.text != null && words(r) !== at.text) lostAt.set(sel, "changed");
+    if (!r) {
+      const pool = within ? within.flatMap((n) => (n.localName === at.tag ? [n] : []).concat(Array.from(n.getElementsByTagName(at.tag))))
+        : Array.from(document.getElementsByTagName(at.tag));
+      const kin = Array.from(new Set(pool)).filter((c) => c !== t && !isUi(c) && sameKind(c, at, sel));
+      const exact = kin.filter((c) => sameAt(c, at, sel, words));
+      if (exact.length === 1) r = exact[0];
+      else if (at.text) {
+        // Most of its words, more than the selector's own element has, and no tie: the edit's element, its words
+        // edited in the code since.
+        const own = t && sameKind(t, at, sel) ? nearWords(words(t), at.text) : 0;
+        const near = kin.map((c) => [c, nearWords(words(c), at.text)]).sort((a, b) => b[1] - a[1]);
+        if (near.length && near[0][1] >= 0.5 && near[0][1] > own && !(near[1] && near[1][1] === near[0][1])) r = near[0][0];
+      }
+      if (!r && t && sameKind(t, at, sel)) {
+        r = t;
+        byPlace.set(sel, t);
+        if (at.text != null && words(t) !== at.text) lostAt.set(sel, "changed");
+      }
+    }
+    if (r !== byPlace.get(sel)) byPlace.delete(sel);
+    if (r) refound.set(r, sel);
+    else lostAt.set(sel, t ? "moved" : "missing");
+    return r;
+  }
+
   function record(target, change) {
-    const sel = selectorFor(target);
+    const sel = keyOf(target);
     const entry = edits.elements[sel] || { styles: {} };
+    // Read once, at the entry's first change, while the element is the one she changed.
+    if (!entry.at) entry.at = fingerprint(target, sel);
+    const before = viewKeys(entry);
     change(entry);
-    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects || entry.deleted) edits.elements[sel] = entry;
+    stampView(entry, before);
+    if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects || entry.fill || entry.deleted || entry.ungrouped
+      || entry.attrs || entry.scaled || entry.scaleSkipped || entry.scalePseudo) edits.elements[sel] = entry;
     else delete edits.elements[sel];
+    // The element it's on, so the page watcher (see watchPage) can tell a fresh copy of it from the one it's on.
+    applied.set(sel, target);
     noteChange();
   }
 
   // A layer with data-ft-still (and what's inside it) runs no transitions, so an edit made while reading or
   // dragging lands at once. Counted, so a read inside a drag doesn't switch it off early.
   const stills = new Map();
+  // An inline style emptied by a read or an edit taken back leaves style="" on the element; it goes, so the page's
+  // DOM is as the code made it.
+  const tidyStyle = (el) => { if (el.style && !el.style.length && el.getAttribute("style") === "") el.removeAttribute("style"); };
   function still(t, on) {
     const n = (stills.get(t) || 0) + (on ? 1 : -1);
     if (n > 0) {
@@ -2328,6 +3266,39 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (!isNum(n)) return NaN;
     return s.endsWith("ms") ? n : s.endsWith("s") ? n * 1000 : n;
   }
+
+  // Stroke, effects, adjustments and a hidden fill are kept as the panel shows them, beside the CSS they write (a
+  // hidden fill writes transparent, so its color would be lost). On a component instance that CSS reaches every
+  // instance, so they're kept once, on the component, as Figma's main component holds them; else on the layer.
+  const META = ["fill", "stroke", "effects", "adjust"];
+  const sharedName = (t) => sharedComponent(t, "outline");
+  const keepComp = (c) => Object.keys(c.styles).length > 0 || META.some((k) => k in c);
+  function metaOf(t) {
+    const name = sharedName(t);
+    return name ? edits.components[name] : edits.elements[keyOf(t)];
+  }
+  function recordMeta(t, change) {
+    const name = sharedName(t);
+    if (!name) return record(t, change);
+    const c = edits.components[name] || { styles: {} };
+    const before = viewKeys(c);
+    change(c);
+    stampView(c, before);
+    if (keepComp(c)) edits.components[name] = c;
+    else delete edits.components[name];
+    noteChange();
+  }
+  // Her fill hidden, or shown again: its color is kept only while it's hidden.
+  const recordFill = (t, layer) => recordMeta(t, (m) => {
+    if (layer.visible) delete m.fill;
+    else m.fill = { hex: layer.hex, opacity: layer.opacity, visible: false };
+  });
+  const hiddenFill = (t) => {
+    const m = metaOf(t);
+    return m && m.fill ? Object.assign({}, m.fill) : null;
+  };
+  // Whose adjustments a filter carries: the layer's, or its component's.
+  const toneKey = (t) => (sharedName(t) ? "component " + sharedName(t) : keyOf(t));
 
   // Exposure, Contrast and Saturation are CSS
   // filters; Temperature, Tint, Highlights and Shadows have none, so they run through an SVG
@@ -2386,13 +3357,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   function adjustOf(target) {
-    const entry = edits.elements[selectorFor(target)];
+    const entry = metaOf(target);
     return Object.assign({}, NO_ADJUST, entry && entry.adjust);
   }
 
   function setAdjust(target, a) {
-    setToneFilter(toneId(selectorFor(target)), a);
-    record(target, (entry) => {
+    setToneFilter(toneId(toneKey(target)), a);
+    recordMeta(target, (entry) => {
       if (Object.keys(a).some((k) => a[k])) entry.adjust = Object.assign({}, a);
       else delete entry.adjust;
     });
@@ -2429,28 +3400,43 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     setStyle(t, prop, own && own !== "none" ? "none" : "");
   }
 
-  const entryOf = (t) => edits.elements[selectorFor(t)];
+  const entryOf = (t) => edits.elements[keyOf(t)];
   const figmaBlur = (cssBlur) => Math.round(parseFloat(cssBlur) * 2 * 10) / 10;
 
-  // One filter carries the adjustments and Layer blur. Without either it goes back to the page's own,
-  // unless that one blurs and she's been editing the effects (she took its blur out).
+  // A filter's functions, in order.
+  const filterFns = (v) => (!v || v === "none" ? [] : v.match(/[\w-]+\((?:[^()]|\([^()]*\))*\)/g) || []);
+  // Hers among the page's own: the functions the panel shows (shown) give way to hers, which go where the first of
+  // them was, or last; every other function (grayscale(), the code's saturate(), a url()) keeps its place. The
+  // page's own value again hands the property back to the page; nothing left is none.
+  function amongOwn(own, shown, mine) {
+    const at = own.findIndex(shown);
+    const kept = own.filter((f) => !shown(f));
+    kept.splice(at < 0 ? kept.length : at, 0, ...mine);
+    const css = kept.join(" ");
+    return css === own.join(" ") ? "" : css || "none";
+  }
+
+  // One filter carries the adjustments and Layer blur, among the page's own functions. Once she's edited the
+  // effects, the page's blur (and an SVG's drop-shadow) are the rows she sees, so hers replace them; a box's
+  // drop-shadow() in its filter isn't one of its effects (those are box-shadow), so it stays as the code has it.
   function writeFilter(t) {
-    const sel = selectorFor(t);
-    const entry = edits.elements[sel];
-    const a = Object.assign({}, NO_ADJUST, entry && entry.adjust);
-    const on = ((entry && entry.effects) || []).filter((fx) => fx.visible);
+    const m = metaOf(t);
+    const a = Object.assign({}, NO_ADJUST, m && m.adjust);
+    const fxs = m && m.effects;
+    const on = (fxs || []).filter((fx) => fx.visible);
+    const svg = t instanceof SVGElement;
     // On anything SVG (the outer <svg> too) drop shadows are filter functions, so they follow the drawing's
     // shape, not its box; they go before the blur, so the blur takes them with it.
-    const drops = t instanceof SVGElement ? on.filter((fx) => fx.type === "drop").map((fx) => "drop-shadow(" + fx.x + "px " + fx.y + "px " + fx.blur / 2 + "px " + rgba(fx) + ")") : [];
+    const drops = svg ? on.filter((fx) => fx.type === "drop").map((fx) => "drop-shadow(" + fx.x + "px " + fx.y + "px " + fx.blur / 2 + "px " + rgba(fx) + ")") : [];
     const blurs = on.filter((fx) => fx.type === "layer").map((fx) => "blur(" + fx.blur / 2 + "px)");
-    const css = [adjustFilter(toneId(sel), a)].concat(drops, blurs).filter(Boolean).join(" ");
-    if (css || !(entry && entry.effects) || !/blur\(|drop-shadow\(/.test(ownValue(t, "filter"))) setStyle(t, "filter", css);
-    else setStyle(t, "filter", "none");
+    const mine = [adjustFilter(toneId(toneKey(t)), a)].concat(drops, blurs).filter(Boolean);
+    const shown = (f) => !!fxs && (/^blur\(/.test(f) || (svg && /^drop-shadow\(/.test(f)));
+    setStyle(t, "filter", amongOwn(filterFns(ownValue(t, "filter")), shown, mine));
   }
 
   // The stroke the panel shows: hers, or the page's own outline.
   function strokeOf(t) {
-    const entry = entryOf(t);
+    const entry = metaOf(t);
     if (entry && "stroke" in entry) return entry.stroke && Object.assign({}, entry.stroke);
     if (inSvg(t)) {
       const p = svgPaint(t, "stroke");
@@ -2468,7 +3454,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   function setStroke(t, st) {
     if (inSvg(t)) {
       const own = ownValue(t, "stroke");
-      record(t, (entry) => {
+      recordMeta(t, (entry) => {
         if (st) entry.stroke = Object.assign({}, st);
         else if (own !== "none") entry.stroke = null;
         else delete entry.stroke;
@@ -2483,7 +3469,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return;
     }
     const pageHas = ownValue(t, "outline", "outline-style") !== "none";
-    record(t, (entry) => {
+    recordMeta(t, (entry) => {
       if (st) entry.stroke = Object.assign({}, st);
       else if (pageHas) entry.stroke = null;
       else delete entry.stroke;
@@ -2517,7 +3503,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // The effects the panel shows: hers, or the page's own shadows and blurs.
   function effectsOf(t) {
-    const entry = entryOf(t);
+    const entry = metaOf(t);
     if (entry && entry.effects) return entry.effects.map((fx) => Object.assign({}, fx));
     const cs = getComputedStyle(t);
     const out = [];
@@ -2525,7 +3511,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // drop-shadow()'s blur reaches twice as far as box-shadow's, so Figma's number is double it.
       (cs.filter.match(/drop-shadow\((?:[^()]|\([^()]*\))*\)/g) || []).forEach((one) => {
         const c = toFill(one);
-        const n = (one.replace(/rgba?\([^)]*\)/g, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
+        const n = (one.replace(COLOR_FN, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
         if (c && n.length >= 2) out.push(Object.assign(newEffect(), { x: n[0], y: n[1], blur: figmaBlur(n[2] || 0), hex: c.hex, opacity: c.opacity }));
       });
       const blur = /(?:^|\s)blur\(([\d.]+)px\)/.exec(cs.filter);
@@ -2535,7 +3521,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (cs.boxShadow !== "none") {
       splitTop(cs.boxShadow).forEach((one) => {
         const c = toFill(one);
-        const n = (one.replace(/rgba?\([^)]*\)/g, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
+        const n = (one.replace(COLOR_FN, "").match(/-?[\d.]+px/g) || []).map(parseFloat);
         if (!c || n.length < 2) return;
         out.push(Object.assign(newEffect(), { type: /\binset\b/.test(one) ? "inner" : "drop", x: n[0], y: n[1], blur: n[2] || 0, spread: n[3] || 0, hex: c.hex, opacity: c.opacity }));
       });
@@ -2552,7 +3538,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const svg = t instanceof SVGElement;
     const pageHas = svg ? /blur\(|drop-shadow\(/.test(ownValue(t, "filter"))
       : ownValue(t, "box-shadow") !== "none" || /blur\(/.test(ownValue(t, "filter")) || ownValue(t, "backdrop-filter") !== "none";
-    record(t, (entry) => {
+    recordMeta(t, (entry) => {
       if (list.length || pageHas) entry.effects = list.map((fx) => Object.assign({}, fx));
       else delete entry.effects;
     });
@@ -2561,10 +3547,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const shadows = on.filter(isShadow).map((fx) => (fx.type === "inner" ? "inset " : "") + fx.x + "px " + fx.y + "px " + fx.blur + "px " + fx.spread + "px " + rgba(fx));
     setOrNone(t, "box-shadow", shadows.join(", "));
     writeFilter(t);
-    const back = on.filter((fx) => fx.type === "background").map((fx) => "blur(" + fx.blur / 2 + "px)").join(" ");
+    // Background blur is the blur() in backdrop-filter, among the page's own functions (a glass's saturate() and
+    // brightness() keep theirs).
+    const back = on.filter((fx) => fx.type === "background").map((fx) => "blur(" + fx.blur / 2 + "px)");
+    const css = amongOwn(filterFns(ownValue(t, "backdrop-filter")), (f) => /^blur\(/.test(f), back);
     // The prefixed one first, the standard one last: a build that merges the pair keeps the last.
-    setOrNone(t, "-webkit-backdrop-filter", back);
-    setOrNone(t, "backdrop-filter", back);
+    setStyle(t, "-webkit-backdrop-filter", css);
+    setStyle(t, "backdrop-filter", css);
   }
 
   // Every style the panel changes goes through here, so it shows live and is remembered.
@@ -2595,13 +3584,64 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     .some((e) => getComputedStyle(e).stroke !== "none" && parseFloat(getComputedStyle(e).strokeWidth) > 0);
   const isVector = (t) => inSvg(t) && !hasText(t) && SHAPES.test(t.tagName);
 
-  // A move on screen, in the units a translate on t is counted in: px for the page, but inside an SVG the user
-  // units of its parent, which a viewBox can scale (a 256 viewBox drawn at 24px makes a unit about a tenth of a px).
+  // How much bigger or smaller than its CSS px the page draws what's inside t's parent: a scale on the parent or
+  // further out (a prototype scaled to fit its frame). Read off the nearest box above it, drawn size against CSS
+  // size, as drawnScaled does. 1 under a turn or a skew, which a rect can't measure.
+  function scaleAbove(t) {
+    let p = t.parentElement;
+    while (p && p !== document.documentElement && !(p instanceof HTMLElement && p.offsetWidth && p.offsetHeight)) p = p.parentElement;
+    if (!p || p === document.documentElement) return [1, 1];
+    for (let a = p; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      if (cs.rotate !== "none" || !/^(none|matrix\([^,]+, 0, 0,)/.test(cs.transform)) return [1, 1];
+    }
+    const r = p.getBoundingClientRect();
+    // Offsets are whole px, so a box drawn within 1px of them isn't scaled.
+    if (Math.abs(r.width - p.offsetWidth) <= 1 && Math.abs(r.height - p.offsetHeight) <= 1) return [1, 1];
+    return [r.width / p.offsetWidth || 1, r.height / p.offsetHeight || 1];
+  }
+
+  // A move on screen, in the units a translate on t is counted in: px for the page (a scaled page around it draws
+  // them bigger or smaller, so a move still follows the pointer), but inside an SVG the user units of its parent,
+  // which a viewBox can scale (a 256 viewBox drawn at 24px makes a unit about a tenth of a px).
   function localDelta(t, dx, dy) {
-    const p = inSvg(t) && t.parentNode && t.parentNode.getScreenCTM ? t.parentNode.getScreenCTM() : null;
+    if (!inSvg(t)) {
+      const [sx, sy] = scaleAbove(t);
+      return [dx / sx, dy / sy];
+    }
+    const p = t.parentNode && t.parentNode.getScreenCTM ? t.parentNode.getScreenCTM() : null;
     const det = p ? p.a * p.d - p.b * p.c : 0;
     if (!det) return [dx, dy];
     return [(p.d * dx - p.c * dy) / det, (-p.b * dx + p.a * dy) / det];
+  }
+
+  // A layer's turn as it's drawn, the one angle Figma shows: its rotate, plus a turn its transform gives it
+  // (transform: rotate(), Tailwind's rotate-*). The transform comes after the scale, so a flip there turns it the
+  // other way. A transform that mirrors or skews has no one turn to read, so it counts for none.
+  function transformTurn(t) {
+    const cs = getComputedStyle(t);
+    if (!cs.transform || cs.transform === "none") return 0;
+    const m = new DOMMatrixReadOnly(cs.transform);
+    if (Math.abs(m.a - m.d) > 1e-3 || Math.abs(m.b + m.c) > 1e-3 || m.a * m.d - m.b * m.c <= 0) return 0;
+    const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
+    const mirror = (sc[0] < 0) !== ((sc.length > 1 ? sc[1] : sc[0]) < 0);
+    const deg = (Math.atan2(m.b, m.a) * 180) / Math.PI;
+    return Math.round((mirror ? -deg : deg) * 1000) / 1000;
+  }
+  function turnOf(t) {
+    const cs = getComputedStyle(t);
+    return (cs.rotate === "none" ? 0 : parseFloat(cs.rotate) || 0) + transformTurn(t);
+  }
+  // Turns a layer to deg as drawn: the rotate written is what's left after the transform's turn, so the bake's
+  // rotate and the code's transform add up to it.
+  function setTurn(t, deg) {
+    const code = transformTurn(t);
+    let d = Math.round(((((deg - code) % 360) + 360) % 360) * 10) / 10;
+    // Beside a turn in the code, the smaller way round reads better in Copy (-35deg, not 325deg).
+    if (code && d > 180) d = Math.round((d - 360) * 10) / 10;
+    boxed(t);
+    turnInPlace(t);
+    setStyle(t, "rotate", d ? d + "deg" : "");
   }
 
   // A shape inside an SVG turns and flips around its own middle, as in Figma, not the SVG's corner.
@@ -2629,6 +3669,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const r = t.getBoundingClientRect();
     return { w: t.offsetWidth != null ? t.offsetWidth : r.width, h: t.offsetHeight != null ? t.offsetHeight : r.height };
   }
+  // The same size unrounded, as Scale needs it (offsetWidth and offsetHeight are whole px, so a 171.55 wide layer
+  // would read 172): an element's computed width and height, plus its padding and border where they sit outside
+  // them; else its box on screen over any scale above it; a vector's geometry.
+  function exactSize(t) {
+    if (isVector(t) || !(t instanceof HTMLElement)) return sizeOf(t);
+    const cs = getComputedStyle(t);
+    const n = (v) => parseFloat(v) || 0;
+    if (cs.display !== "contents" && (cs.display !== "inline" || REPLACED.test(t.tagName)) && /px$/.test(cs.width) && /px$/.test(cs.height)) {
+      const out = cs.boxSizing !== "border-box";
+      return {
+        w: n(cs.width) + (out ? n(cs.paddingLeft) + n(cs.paddingRight) + n(cs.borderLeftWidth) + n(cs.borderRightWidth) : 0),
+        h: n(cs.height) + (out ? n(cs.paddingTop) + n(cs.paddingBottom) + n(cs.borderTopWidth) + n(cs.borderBottomWidth) : 0),
+      };
+    }
+    const r = t.getBoundingClientRect();
+    const k = scaleAbove(t);
+    return { w: r.width / k[0], h: r.height / k[1] };
+  }
 
   // Sets that size as the code would: a vector's geometry, an element's width and height. null leaves one as is.
   function setSize(t, w, h) {
@@ -2638,8 +3696,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     boxed(t);
     const [cw, ch] = boxCss(t, w || 0, h || 0);
-    if (w != null) setStyle(t, "width", Math.round(cw * 10) / 10 + "px");
-    if (h != null) setStyle(t, "height", Math.round(ch * 10) / 10 + "px");
+    // Two decimals, as Figma's fields: a size kept as it was (389.25) is written as it was, not 389.3.
+    if (w != null) setStyle(t, "width", Math.round(cw * 100) / 100 + "px");
+    if (h != null) setStyle(t, "height", Math.round(ch * 100) / 100 + "px");
   }
 
   // A vector's size on screen before its own rotation: its geometry through everything that draws it.
@@ -2652,6 +3711,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   const round1 = (n) => Math.round(n * 10) / 10;
+  const round2 = (n) => Math.round(n * 100) / 100;
   // A vector's new size on screen, written as the code would: a rect's width and height, a circle's r, an
   // ellipse's rx and ry; any other shape scales, its stroke kept at its weight. Its top-left stays put.
   function setVectorSize(t, w, h) {
@@ -2708,14 +3768,51 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     setStyle(t, prop + "-opacity", "");
   }
 
-  function setStyle(target, prop, value) {
-    const shared = sharedComponent(target, prop);
+  // mine: this layer only, never its component (a K scale is an instance's own, as in Figma).
+  // The longhands a shorthand sets (outline: its color, style and width), none for a longhand.
+  const LONGS = new Map();
+  function longhandsOf(prop) {
+    if (!LONGS.has(prop)) {
+      const st = document.createElement("div").style;
+      st.setProperty(prop, "initial");
+      const l = Array.from(st);
+      LONGS.set(prop, l.length && !(l.length === 1 && l[0] === prop) ? l : []);
+    }
+    return LONGS.get(prop);
+  }
+  function setStyle(target, prop, value, mine) {
+    const shared = !mine && sharedComponent(target, prop);
     if (shared) return setComponentStyle(shared, prop, value);
     const o = originalOf(target);
+    // The code's own translate (inline or the stylesheet's), kept before her first one hides it: a move adds to it.
+    if (prop === "translate" && !(prop in o.styles)) o.codeTr = getComputedStyle(target).translate;
     if (!(prop in o.styles)) o.styles[prop] = target.style.getPropertyValue(prop);
+    // One declaration per part: a longhand written over her shorthand (K's outline-width over Stroke's outline)
+    // splits the shorthand into its parts, and a shorthand drops the parts it resets, so Copy and a reload never
+    // hang on the order of the two. A shorthand holding a var() has no parts to read, so it stays.
+    const own = entryOf(target);
+    const parts = {};
+    const split = own ? Object.keys(own.styles).filter((sh) => sh !== prop && longhandsOf(sh).includes(prop)
+      && longhandsOf(sh).every((lh) => target.style.getPropertyValue(lh))) : [];
+    split.forEach((sh) => longhandsOf(sh).forEach((lh) => {
+      parts[lh] = target.style.getPropertyValue(lh);
+      if (!(lh in o.styles)) {
+        const st = document.createElement("div").style;
+        if (o.styles[sh]) st.setProperty(sh, o.styles[sh]);
+        o.styles[lh] = st.getPropertyValue(lh);
+      }
+    }));
     if (value) target.style.setProperty(prop, value);
-    else target.style.removeProperty(prop);
+    else {
+      target.style.removeProperty(prop);
+      tidyStyle(target);
+    }
     record(target, (entry) => {
+      split.forEach((sh) => {
+        delete entry.styles[sh];
+        longhandsOf(sh).forEach((lh) => { if (lh !== prop) entry.styles[lh] = parts[lh]; });
+      });
+      longhandsOf(prop).forEach((lh) => delete entry.styles[lh]);
       if (value) entry.styles[prop] = value;
       else delete entry.styles[prop];
       // Her moves (a drag, the arrows, X and Y) add to the translate, so Spacing's share inside it (nudge) still
@@ -2724,20 +3821,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
   }
 
-  // An edit to a component: on every instance of it (but one that overrides that property), recorded once.
+  // An edit to a component: on every instance of it (but one that overrides that property), recorded once. Recorded
+  // first, so each instance takes what the component edits now give it (an outer component's value holds over it,
+  // and taking this one off falls back to an inner one's).
   function setComponentStyle(name, prop, value) {
-    instancesOf(name).forEach((t) => {
-      if ((edits.elements[selectorFor(t)] || { styles: {} }).styles[prop] != null) return;
-      const o = originalOf(t);
-      if (!(prop in o.styles)) o.styles[prop] = t.style.getPropertyValue(prop);
-      if (value) t.style.setProperty(prop, value);
-      else t.style.removeProperty(prop);
-    });
     const entry = edits.components[name] || { styles: {} };
+    const before = viewKeys(entry);
     if (value) entry.styles[prop] = value;
     else delete entry.styles[prop];
-    if (Object.keys(entry.styles).length) edits.components[name] = entry;
+    stampView(entry, before);
+    if (keepComp(entry)) edits.components[name] = entry;
     else delete edits.components[name];
+    instancesOf(name).forEach((t) => {
+      // Has the component's look now, so the page watcher leaves it be.
+      appliedComp.add(t);
+      paintComps(t, [prop]);
+    });
     noteChange();
   }
 
@@ -2746,46 +3845,193 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     edits.newKeyframes = {};
     paintNewKeyframes(added);
     edits.newKeyframes = added;
+    // Words first: new words are new layers inside, so the edits of a layer in them land after.
     Object.keys(edits.elements).forEach((sel) => {
-      let t = null;
-      try {
-        t = document.querySelector(sel);
-      } catch (e) {
-        return;
-      }
-      if (!t || isUi(t)) return;
-      const entry = edits.elements[sel];
-      const o = originalOf(t);
-      if (entry.html != null && !("html" in o)) o.html = t.innerHTML;
-      if (entry.src && !("src" in o)) Object.assign(o, { src: t.getAttribute("src"), srcset: t.getAttribute("srcset") });
-      Object.keys(entry.styles).forEach((p) => { if (!(p in o.styles)) o.styles[p] = t.style.getPropertyValue(p); });
-      if (entry.html != null) t.innerHTML = entry.html;
-      if (entry.src) {
-        t.removeAttribute("srcset");
-        t.src = entry.src.data;
-      }
-      if (entry.adjust) setToneFilter(toneId(sel), entry.adjust);
-      Object.keys(entry.styles).forEach((p) => t.style.setProperty(p, entry.styles[p]));
-      if (entry.deleted) t.setAttribute("data-ft-deleted", "");
+      const t = edits.elements[sel].html != null && resolve(sel);
+      if (t) applyWords(sel, t);
     });
-    // Saved component edits, on every instance but where one overrides that property.
+    // An edit whose selector now finds another element is left off it (see resolve), and said once.
+    let moved = 0;
+    Object.keys(edits.elements).forEach((sel) => {
+      const t = resolve(sel);
+      if (t) applyEntry(sel, t);
+      else if (lostAt.get(sel) === "moved") moved++;
+    });
+    // Saved component edits, on every instance but where one overrides that property. Each instance is written once,
+    // with every key that reaches it, so the order the keys were saved in doesn't matter (see paintComps).
+    const reached = new Set();
     Object.keys(edits.components).forEach((name) => {
-      const styles = edits.components[name].styles;
-      instancesOf(name).forEach((t) => {
-        const own = (edits.elements[selectorFor(t)] || { styles: {} }).styles;
-        const o = originalOf(t);
-        Object.keys(styles).forEach((p) => {
-          if (own[p] != null) return;
-          if (!(p in o.styles)) o.styles[p] = t.style.getPropertyValue(p);
-          t.style.setProperty(p, styles[p]);
-        });
-      });
+      if (edits.components[name].adjust) setToneFilter(toneId("component " + name), edits.components[name].adjust);
+      instancesOf(name).forEach((t) => reached.add(t));
     });
+    reached.forEach((t) => applyComp(t));
     // Saved keyframe edits, written over what the code had (kept first).
     const saved = edits.keyframes;
     edits.keyframes = {};
     paintKeyframes(saved);
     edits.keyframes = saved;
+    if (moved) toast(moved + (moved === 1 ? " saved edit no longer matches" : " saved edits no longer match") + " the page", null, 4000);
+  }
+  // Her words, written in by React's rule (see reactHeld): plain words go into the one text node React holds, so its
+  // hold on it stays good; where React builds them from several parts nothing is written, and this says false.
+  function writeWords(t, html) {
+    if (t.innerHTML === html) return true;
+    if (fiberOf(t)) {
+      const tpl = document.createElement("template");
+      tpl.innerHTML = html;
+      const only = t.childNodes.length === 1 && t.firstChild.nodeType === 3 ? t.firstChild : null;
+      if (only && !tpl.content.querySelector("*")) {
+        only.data = tpl.content.textContent;
+        return true;
+      }
+      if (reactHeld(t)) return false;
+    }
+    t.innerHTML = html;
+    return true;
+  }
+  // Saved words React wouldn't let in (see writeWords), by selector, so Copy says they don't show.
+  const wordsHeld = new Set();
+  function applyWords(sel, t) {
+    const o = originalOf(t);
+    if (!("html" in o)) o.html = t.innerHTML;
+    if (writeWords(t, edits.elements[sel].html)) {
+      wordsHeld.delete(sel);
+      watchWords(t);
+    } else wordsHeld.add(sel);
+  }
+  // One element's saved edit (all but its words, above), on the element it belongs on now.
+  function applyEntry(sel, t) {
+    const entry = edits.elements[sel];
+    const o = originalOf(t);
+    if (entry.src && !("src" in o)) Object.assign(o, { src: t.getAttribute("src"), srcset: t.getAttribute("srcset") });
+    if ("translate" in entry.styles && !("translate" in o.styles)) o.codeTr = getComputedStyle(t).translate;
+    Object.keys(entry.styles).forEach((p) => { if (!(p in o.styles)) o.styles[p] = t.style.getPropertyValue(p); });
+    if (entry.src) {
+      t.removeAttribute("srcset");
+      t.src = entry.src.data;
+    }
+    if (entry.adjust) setToneFilter(toneId(sel), entry.adjust);
+    Object.keys(entry.styles).forEach((p) => t.style.setProperty(p, entry.styles[p]));
+    if (entry.deleted) t.setAttribute("data-ft-deleted", "");
+    if (entry.ungrouped) t.setAttribute("data-ft-ungrouped", "");
+    if (entry.attrs) Object.keys(entry.attrs).forEach((a) => {
+      o.attrs = o.attrs || {};
+      if (!(a in o.attrs)) o.attrs[a] = t.getAttribute(a);
+      t.setAttribute(a, entry.attrs[a]);
+    });
+    applied.set(sel, t);
+  }
+  // The saved component looks on one instance, but for what that instance overrides, every key that reaches it at once
+  // (see paintComps).
+  const appliedComp = new WeakSet();
+  function applyComp(t, props) {
+    paintComps(t, props);
+    appliedComp.add(t);
+  }
+
+  // React (and other scripts) can swap a layer for a fresh copy of it: a re-render that remounts it, a route coming
+  // back. Its edits would be gone from the page, so one watcher puts them on the new one, as a reload would: element
+  // edits, deletes, ungroups, words (by React's rule) and a component's look on its new instances. Not an edit of
+  // hers, so no undo step. Batched to a frame, and blind to finetune's own layers; its own writes land on the
+  // elements the edits are already on, so they never start it over.
+  let pageWatch = null;
+  // finetune's layers carry ft- classes. html and body carry some too (ft-moving), so the walk stops below body.
+  const ownNode = (n) => {
+    if (isUi(n)) return true;
+    for (let p = n; p && p !== document.body; p = p.parentElement) if (/(^|\s)ft-/.test(p.getAttribute("class") || "")) return true;
+    return false;
+  };
+  function watchPage() {
+    if (pageWatch || !window.MutationObserver || !document.body) return;
+    let added = [];
+    // Elements whose class the page changed: React re-rendering the same node with another variant changes its class,
+    // so the variant edits that reach it can change with it.
+    let restyled = [];
+    let frame = 0;
+    pageWatch = new MutationObserver((records) => {
+      records.forEach((r) => {
+        if (r.type === "attributes") {
+          if (Object.keys(edits.components).length && !ownNode(r.target)) restyled.push(r.target);
+        } else r.addedNodes.forEach((n) => { if (n.nodeType === 1 && !ownNode(n)) added.push(n); });
+      });
+      if ((!added.length && !restyled.length) || frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const fresh = added.filter((n) => n.isConnected);
+        const changed = restyled.filter((n) => n.isConnected);
+        added = [];
+        restyled = [];
+        if (fresh.length) reapply(fresh);
+        if (changed.length) reapplyComps(changed);
+      });
+    });
+    pageWatch.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  }
+  // The component edits on elements the page re-rendered in place: each takes what the keys that reach it now give it,
+  // and the code's own back for what a key that no longer reaches it had set.
+  function reapplyComps(changed) {
+    const roots = changed.filter((t) => !isUi(t) && (appliedComp.has(t) || componentOf(t)));
+    if (!roots.length) return;
+    forgetInstances();
+    const props = Object.keys(edits.components).flatMap((k) => Object.keys(edits.components[k].styles));
+    roots.forEach((t) => {
+      if (!appliedComp.has(t) && !Object.keys(edits.components).some((k) => rankOf(t, k) >= 0)) return;
+      applyComp(t, props);
+    });
+  }
+  function reapply(fresh) {
+    forgetInstances();
+    const sels = Object.keys(edits.elements);
+    const stale = (sel) => {
+      const t = resolve(sel, null, fresh);
+      return t && t !== applied.get(sel) ? t : null;
+    };
+    sels.forEach((sel) => {
+      const t = edits.elements[sel].html != null && stale(sel);
+      if (t) applyWords(sel, t);
+    });
+    sels.forEach((sel) => {
+      const t = stale(sel);
+      if (t) applyEntry(sel, t);
+    });
+    if (!Object.keys(edits.components).length) return;
+    fresh.forEach((n) => [n].concat(Array.from(n.querySelectorAll("*"))).forEach((t) => {
+      if (appliedComp.has(t) || isUi(t) || !componentOf(t)) return;
+      if (Object.keys(edits.components).some((key) => rankOf(t, key) >= 0)) applyComp(t);
+    }));
+  }
+
+  // Words the page rewrites after she retyped them (React's {expression}, a script's counter) are built in code: the
+  // bake can't retype them as words, so the edit says so (entry.htmlComputed, in Copy and under the panel's kind
+  // line). finetune's own writes put back what the entry holds, so only a write that doesn't counts, and words
+  // inside it with an edit of their own are theirs.
+  const wordWatch = new WeakSet();
+  function watchWords(t) {
+    if (wordWatch.has(t) || !window.MutationObserver) return;
+    wordWatch.add(t);
+    const mo = new MutationObserver((records) => {
+      if (t.hasAttribute("data-ft-editing") || t.querySelector("[data-ft-editing]")) return;
+      const sel = keyOf(t);
+      const e = edits.elements[sel];
+      if (!e || e.html == null || e.htmlComputed || applied.get(sel) !== t) return stop();
+      const theirs = (n) => {
+        for (let p = n.nodeType === 1 ? n : n.parentElement; p && p !== t; p = p.parentElement) {
+          if ((edits.elements[keyOf(p)] || {}).html != null) return true;
+        }
+        return false;
+      };
+      if (records.every((r) => theirs(r.target)) || codeHtml(t) === e.html) return;
+      e.htmlComputed = true;
+      stop();
+      // Not her edit, so not an undo step: the step showing takes it in.
+      if (!history.timer && history.now != null) history.now = snapshot();
+      refreshPanel();
+    });
+    const stop = () => {
+      mo.disconnect();
+      wordWatch.delete(t);
+    };
+    mo.observe(t, { characterData: true, childList: true, subtree: true });
   }
 
   // The page's fill is what paints behind everything: the body, unless a wrapper with a background
@@ -2802,6 +4048,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     return document.body;
   }
+  // The page wrapper as it is now: React can replace the one read at load with a fresh copy (a remount), and a fill
+  // or a Copy on the old one would land on nothing.
+  const livePage = () => (pageEl && pageEl.isConnected ? pageEl : (pageEl = pageCanvas()));
 
   // The page fill as one CSS background: the top layer first, the bottom one as the color.
   function pageBackground(layers) {
@@ -2813,39 +4062,281 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // The list the bake skill reads: the file, then one line per changed element.
   function changesText() {
     const lines = [];
+    // The window Copy is made in, for the header. An edit made at another width or theme says so under its line, so
+    // the bake writes it for that breakpoint or theme, not for every one.
+    const view = { vw: window.innerWidth, theme: pageTheme() };
+    // A theme switches colours (its tokens), so it's named only for a value that carries one: an opacity or a size
+    // seen in light holds in dark too. A filter carries colour unless all it does is blur.
+    const colourKey = (k, v) => k === "page" || k === "adjust" || k.startsWith("--") || /color|background|shadow/.test(k)
+      || /^(fill|stroke|border(-(top|right|bottom|left|block|inline)(-(start|end))?)?|outline|text-decoration|column-rule)$/.test(k)
+      || (/filter$/.test(k) && /(^|[\s)])(?!blur\()[a-z-]+\(/.test(String(v)));
+    // keys: the properties the line lists, each read at its own window (see stampView), the entry's for one without;
+    // none for a line with no property (a delete, an ungroup). When every one of them was made at the same other
+    // window the note is the line's; when only some were, it names them.
+    const viewNote = (name, e, keys) => {
+      if (!e) return;
+      const ks = keys && keys.length ? keys : [""];
+      const groups = new Map();
+      ks.forEach((k) => {
+        const v = (k && e.views && e.views[k]) || e;
+        const diff = [];
+        if (isNum(v.vw) && v.vw !== view.vw) diff.push("at " + v.vw + "px wide");
+        if (k && colourKey(k, e.styles && e.styles[k]) && v.theme && view.theme && v.theme !== view.theme) diff.push("in " + v.theme);
+        if (!diff.length) return;
+        const d = diff.join(", ");
+        if (!groups.has(d)) groups.set(d, []);
+        groups.get(d).push(k);
+      });
+      groups.forEach((list, d) => {
+        const whose = groups.size === 1 && list.length === ks.length ? "" : list.join(", ") + " ";
+        lines.push(["/* " + name + ": " + whose + "changed " + d + " */", null]);
+      });
+    };
+    // Where the code writes it, when the dev build says (see sourceOf): the file the bake opens.
+    const at = (where) => (where ? " @ " + where : "");
     // A wrapper that paints the page is named, so the bake writes its background, not the body's.
-    const pageName = pageEl && pageEl !== document.body ? "page (" + selectorFor(pageEl) + ")" : "page";
-    if (edits.page) lines.push([pageName, "background: " + pageBackground(edits.page)]);
-    // A component's own look, changed on every instance of it: named, with the element it renders and how many.
+    const page = livePage();
+    const pageName = page && page !== document.body ? "page (" + selectorFor(page) + ")" : "page";
+    if (edits.page) {
+      lines.push([pageName, "background: " + pageBackground(edits.page)]);
+      viewNote(pageName, edits.pageView, ["page"]);
+    }
+    // A component's own look, changed on every instance of it: named, with the element it renders and how many,
+    // and the component's own file, where it writes that element.
     Object.keys(edits.components).forEach((name) => {
       const styles = edits.components[name].styles;
       const all = instancesOf(name);
-      const root = all[0] ? " (" + all[0].localName + (all[0].classList.length ? "." + all[0].classList[0] : "") + ", " + all.length + " on the page)" : "";
-      lines.push(["component " + name + root, Object.keys(styles).map((p) => p + ": " + styles[p]).join("; ")]);
+      const root = all[0] ? " (" + all[0].localName + (all[0].classList.length ? "." + all[0].classList[0] : "") + ", " + all.length + " on the page" + reachNote(name) + ")" : "";
+      // The file is this component's own, even where its first render sits inside another (a Card in a FeatureCard).
+      const link = all[0] && chainOf(all[0])[rankOf(all[0], name) >> 1];
+      const def = link && link.fiber ? componentDef(link.fiber) : all[0] ? sourceOf(all[0], "def") : "";
+      const before = lines.length;
+      if (Object.keys(styles).length) lines.push(["component " + name + root + at(def), Object.keys(styles).map((p) => p + ": " + styles[p]).join("; ")]);
+      const adj = edits.components[name].adjust;
+      if (adj && hasTone(adj)) lines.push(["component " + name + " svg", toneMarkup(toneId("component " + name), adj)]);
+      if (lines.length > before) viewNote("component " + name, edits.components[name], Object.keys(styles).concat(adj && hasTone(adj) ? ["adjust"] : []));
     });
+    // A layer in a group's auto layout carries no translate of its own: the group's line places it (and an ignored
+    // one's own line), so the bake never adds a move the new element's flex would add again.
+    const laidOut = new Set(edits.autoLayout.flatMap((l) => l.sels));
+    // The selector a line names an element by: the one it has now, where its edit was found again elsewhere (see
+    // resolve) or is a second edit on its selector (see keyOf); else the key as saved. Every line that names a layer
+    // (its own, its group's, a scale's) names it the same way.
+    const named = (key, t) => (t && (query(key) !== t || bareKey(key) !== key) ? selectorFor(t) : bareKey(key));
+    // One whose code has a translate gets translate: none instead, or the code's would land on top of the layout.
+    const codeMoved = new Set([...laidOut].filter((sel) => {
+      const t = groupMembers([sel])[0];
+      return t && !/^(none)?$/.test(ownValue(t, "translate"));
+    }));
+    codeMoved.forEach((sel) => { if (!edits.elements[sel]) lines.push([sel, "translate: none"]); });
+    // What an ungrouped wrapper still hands its layers live (display: contents keeps it in the DOM, so they inherit
+    // from it) and the bake would lose with it: her own edits to an inherited property (she sees them on the layers),
+    // and any inherited value it sets that differs from its parent's and that a layer of it still reads. Custom
+    // properties from the code can't be listed from the page, so the bake checks those in the code.
+    const carried = (sel, e) => {
+      const t = q(sel);
+      const out = Object.keys(e.styles).filter((p) => p.startsWith("--") || INHERITED.includes(p)).map((p) => p + ": " + e.styles[p]);
+      if (!t || !t.parentElement) return out;
+      const cs = getComputedStyle(t);
+      const ps = getComputedStyle(t.parentElement);
+      const kids = layersOf(t).map((c) => getComputedStyle(c));
+      INHERITED.filter((p) => !(p in e.styles)).forEach((p) => {
+        const v = cs.getPropertyValue(p);
+        if (v !== ps.getPropertyValue(p) && kids.some((k) => k.getPropertyValue(p) === v)) out.push(p + ": " + v);
+      });
+      return out;
+    };
+    // A K scale's comment comes before the lines of every layer inside it, an edit made before the scale included.
+    // An edit's element is the one it was made on (see resolve), looked up once per Copy.
+    const qs = new Map();
+    const q = (sel) => {
+      if (!qs.has(sel)) qs.set(sel, edits.elements[sel] ? resolve(sel) : query(sel));
+      return qs.get(sel);
+    };
+    // A scale made inside another one comes after the outer layer's own lines, so each comment heads only the layers
+    // its layer holds.
+    const roots = Object.keys(edits.elements).filter((sel) => edits.elements[sel].scaled && q(sel));
+    // The nearest scaled layer holding sel (not sel itself), and every one holding it, nearest first.
+    const holders = (sel) => {
+      const t = q(sel);
+      return t ? roots.filter((r) => r !== sel && q(r).contains(t)).sort((a, b) => (q(b).contains(q(a)) ? -1 : 1)) : [];
+    };
+    const kids = new Map();
+    const tops = [];
     Object.keys(edits.elements).forEach((sel) => {
-      const e = edits.elements[sel];
-      if (e.deleted) return lines.push([sel, "delete"]);
-      const parts = Object.keys(e.styles).map((p) => p + ": " + e.styles[p]);
-      if (e.html != null) parts.push("text: " + e.html);
-      if (e.src) parts.push('src: new image "' + e.src.name + '", chosen from her computer');
-      // On a component instance, the layer's own edits are this instance's only (an override, a move, its words).
-      let t = null;
-      try {
-        t = document.querySelector(sel);
-      } catch (e) {
-        t = null;
-      }
-      const comp = t ? componentOf(t) : "";
-      if (parts.length) lines.push([comp ? sel + " (this " + comp + " only)" : sel, parts.join("; ")]);
-      // The SVG filter its url() points at, for the bake to put in the page.
-      if (e.adjust && hasTone(e.adjust)) lines.push([sel + " svg", toneMarkup(toneId(sel), e.adjust)]);
+      const h = holders(sel)[0];
+      if (!h) return tops.push(sel);
+      if (!kids.has(h)) kids.set(h, []);
+      kids.get(h).push(sel);
     });
-    // A group: the layers the bake wraps in one new layer in the code.
-    edits.groups.forEach((g, i) => lines.push(["group " + (i + 1), g.join(", ")]));
+    const order = [];
+    const emit = (sel) => {
+      order.push(sel);
+      const k = kids.get(sel) || [];
+      k.filter((x) => !roots.includes(x)).forEach((x) => order.push(x));
+      k.filter((x) => roots.includes(x)).forEach(emit);
+    };
+    tops.forEach((sel) => (roots.includes(sel) ? emit(sel) : order.push(sel)));
+    const edit = (key) => {
+      const e = edits.elements[key];
+      // Not on the element it was made on, since the page changed. Where its selector finds none (gone, or not shown
+      // right now), its line follows as usual; where it finds another element, its lines follow commented out (see
+      // below), so the bake has the values once she names the element.
+      if (e.at && !q(key)) {
+        const was = e.at.key != null ? e.at.key : e.at.text || e.at.src || e.at.tag;
+        lines.push(["/* " + bareKey(key) + ': not found, the page changed since this edit (was "' + was + '") */', null]);
+      }
+      // Found again after the page moved it (see resolve): its lines name it as it is now, so the bake edits it and not
+      // the element the saved key points at today. The key itself stays as saved.
+      const sel = named(key, q(key));
+      // On the selector's element for its place alone: its words aren't the ones the edit was made on (a count-up, a
+      // rotating word, or another element now), so the bake checks it's the one she meant.
+      if (lostAt.get(key) === "changed") lines.push(["/* " + sel + ': its words were "' + e.at.text + '" when this edit was made; check it is the same element */', null]);
+      // A .map() item says which one: its key, and where it is in the list.
+      const item = q(key) && listItem(q(key), key);
+      const itemTag = item ? ' (item "' + item.key + '", ' + item.n + " of " + item.of + ")" : "";
+      if (e.deleted) {
+        lines.push([sel + itemTag + at(sourceOf(q(key), "here")), "delete"]);
+        return viewNote(sel, e);
+      }
+      // The wrapper goes and its layers take its place in the code; their own moves are on their own lines.
+      if (e.ungrouped) {
+        lines.push([sel + itemTag + at(sourceOf(q(key), "here")), "ungroup"]);
+        const carry = carried(key, e);
+        if (carry.length) lines.push([sel, "carry to children: " + carry.join("; ")]);
+        return viewNote(sel, e);
+      }
+      const keys = Object.keys(e.styles).filter((p) => !(p === "translate" && laidOut.has(key)));
+      const parts = keys.map((p) => p + ": " + e.styles[p]);
+      if (codeMoved.has(key)) parts.unshift("translate: none");
+      if (e.html != null) keys.push("text");
+      if (e.src) keys.push("src");
+      if (e.attrs) keys.push("attributes");
+      const t = q(key);
+      // The words stay on their line. Where the element collapses white space (the usual), the source's line breaks
+      // and indents are one space, as the browser shows them; where it keeps them (white-space: pre and kin), a line
+      // break is written \n.
+      if (e.html != null) {
+        const cs = t && getComputedStyle(t);
+        const keeps = cs && (cs.whiteSpaceCollapse ? cs.whiteSpaceCollapse !== "collapse" : /pre|break-spaces/.test(cs.whiteSpace));
+        parts.push("text: " + (keeps ? e.html.replace(/\r\n?|\n/g, "\\n") : e.html.replace(/\s+/g, " ").trim()));
+      }
+      if (e.src) parts.push('src: new image "' + e.src.name + '", chosen from her computer');
+      // An attribute on the markup, not CSS: a K scale's viewBox on an <svg> that had none.
+      if (e.attrs) Object.keys(e.attrs).forEach((a) => parts.push("attribute " + a + ': "' + e.attrs[a] + '"'));
+      // A K scale says its factor once, over the layer it was made on, for the bake's calc() on tokens; the values
+      // a running animation holds, which it left, are listed for her.
+      // One inside another scaled layer also gives the factor its values carry, every holder's multiplied in.
+      if (e.scaled) {
+        const h = holders(key);
+        const total = Number(h.reduce((f, r) => f * parseFloat(edits.elements[r].scaled), parseFloat(e.scaled)).toPrecision(8));
+        const names = h.map((r) => named(r, q(r)) + "'s").join(" and ");
+        lines.push(["/* " + sel + " scaled " + e.scaled + "x (K)" + (h.length ? ", " + total + "x with " + names : "") + " */", null]);
+      }
+      if (e.scaleSkipped) lines.push(["/* " + sel + ": animated " + e.scaleSkipped + " not scaled (K) */", null]);
+      // A ::before or ::after has no inline style to write, so its px lengths stay; each is listed for the bake.
+      if (e.scalePseudo) e.scalePseudo.split("; ").forEach((x) => lines.push(["/* " + sel + x + " not scaled (K) */", null]));
+      // On a component instance, the layer's own edits are this instance's only (an override, a move, its words).
+      const comp = t ? componentOf(t) : "";
+      // A layer inside an instance of a component used more than once changed on this instance only (as an edit
+      // inside an instance is in Figma), so it's named: the rule that styles it is the component's, shared by all.
+      const host = !comp && t ? hostComponent(t) : "";
+      const tag = comp ? " (this " + comp + " only)" : host ? " (inside this " + host + " only)" : "";
+      // Where it's written. Inside an instance that's the component's file, so the place that instance is used
+      // comes too: an edit to one instance is written there, through what it's given.
+      const here = sourceOf(t, "here");
+      let where = at(here);
+      const instanceAround = (name) => {
+        let inst = t.parentElement;
+        while (inst && componentOf(inst) !== name) inst = inst.parentElement;
+        return inst;
+      };
+      if (where && host) {
+        const used = sourceOf(instanceAround(host), "here");
+        if (used) where += ", this one at " + used;
+      }
+      // An instance used inside another component that's on the page more than once is used on a line all of those
+      // share, so that outer instance's place comes too: the bake passes the change in through it. Only when this
+      // one is used in the outer one's own file (or that can't be told): one handed in as children is used elsewhere.
+      const outer = comp && where ? hostComponent(t) : "";
+      if (outer) {
+        const file = (s) => s.replace(/(?::\d+){1,2}$/, "");
+        const inst = instanceAround(outer);
+        const def = file(sourceOf(inst, "def"));
+        const used = sourceOf(inst, "here");
+        if (used && (!def || def === file(here))) where += ", inside this " + outer + " at " + used;
+      }
+      if (parts.length) {
+        lines.push([sel + tag + itemTag + where, parts.join("; ")]);
+        viewNote(sel, e, keys);
+      }
+      // Words the code builds: the page rewrote them after the edit (see watchWords), or they're made of several parts,
+      // so React wouldn't take them (see writeWords). The bake changes the expression, not the words.
+      if (e.html != null && e.htmlComputed) lines.push(["/* " + sel + ": these words are built in code (the page rewrote them); change the expression, ask first */", null]);
+      else if (e.html != null && wordsHeld.has(key)) lines.push(["/* " + sel + ": these words are built in code from several parts, so the page doesn't show this edit; change the expression, ask first */", null]);
+      // The columns an Align or Make wide to columns put it on, while it still sits there (an arrow key since then,
+      // or another width, and it's px again).
+      const c = e.cols;
+      const r = c && t && t.getBoundingClientRect();
+      if (r && Math.abs(r.left + window.scrollX - c.left) <= 0.5 && (c.how !== "width" || Math.abs(r.width - c.width) <= 0.5)) {
+        // A grid in the code is named by its classes, which more than one element can have, and a layer that isn't
+        // one of its items can't be placed with it (a grid-column on it lands in whatever grid holds it), so that's
+        // said and the bake writes the px. Its parent through any display: contents wrapper is what lays it out.
+        let p = t.parentElement;
+        while (p && p !== document.body && getComputedStyle(p).display === "contents") p = p.parentElement;
+        let item = false;
+        try {
+          item = !!p && /grid/.test(getComputedStyle(p).display) && p.matches(c.source);
+        } catch (err) {
+          // "layout" (the call's declared grid) or an old name that isn't a selector: no grid element to be in.
+        }
+        const grid = c.source === "layout" ? c.source : c.source !== "guide" ? c.source + (item ? "" : ", not its item")
+          : "guide " + styleName({ count: c.count, gutter: c.gutter, align: c.align, offset: c.align === "stretch" ? c.margin : c.offset, width: c.colWidth });
+        const how = { left: "aligned left", hcenter: "centered", right: "aligned right", width: "full span" }[c.how];
+        // A fluid grid (auto-fit, auto-fill) has no rule or variant that holds this count, so the bake writes px. And
+        // the preview moves the layer within its row, while a grid-column starting before its own column makes the
+        // grid's auto-placement put it on the next row: said, so the bake asks rather than bake what she didn't see.
+        const fluid = item && fluidGrid(p);
+        const at = item && !fluid && getComputedStyle(t).gridRowStart === "auto" ? itemColumn(t, p) : 0;
+        lines.push(["/* " + sel + ": " + (c.first === c.last ? "column " + c.first : "columns " + c.first + "-" + c.last) + " of " + c.count
+          + " (" + grid + "), " + how + (fluid ? ", fluid columns" : "") + ", at " + c.vw + "px wide"
+          + (at > c.first ? ", before its column " + at + " so the grid moves it to the next row" : "") + " */", null]);
+      }
+      // Why a resize wrote a value she didn't type (a pinned axis, an image's fill, a stretch let go), while it holds.
+      if (e.why) Object.keys(e.why).forEach((p) => {
+        if (e.styles[p] === e.why[p].value) lines.push(["/* " + sel + ": " + p + ": " + e.why[p].value + " " + e.why[p].note + " */", null]);
+      });
+      // The SVG filter its url() points at, for the bake to put in the page.
+      if (e.adjust && hasTone(e.adjust)) lines.push([sel + " svg", toneMarkup(toneId(key), e.adjust)]);
+    };
+    // An edit whose selector now finds another element keeps its lines, commented out: as lines they'd send the bake
+    // to that element, and without them the bake would have nothing to write once she says which element she meant.
+    order.forEach((key) => {
+      const from = lines.length;
+      edit(key);
+      if (lostAt.get(key) !== "moved") return;
+      for (let i = from; i < lines.length; i++) if (lines[i][1] != null) lines[i] = ["/* " + lines[i][0] + "  " + lines[i][1] + " */", null];
+    });
+    // A group: the layers the bake wraps in one new layer in the code, listed in the code's order (not the order she
+    // picked them; with auto layout, the order its flex places them), then the new layer's CSS, then each layer that
+    // ignores the layout.
+    edits.groups.forEach((g, i) => {
+      const name = "group " + (i + 1);
+      const L = layoutOf(g);
+      const found = g.map((sel) => ({ sel, t: groupMembers([sel])[0] || null }));
+      const order = found.filter((m) => m.t).sort((a, b) => domOrder(a.t, b.t)).concat(found.filter((m) => !m.t));
+      lines.push([name, order.map((m) => named(m.sel, m.t)).join(", ")]);
+      if (!L) return;
+      const f = alGeometry(L);
+      const bake = alBake(L, f);
+      lines.push([name + " auto layout", alDeclarations(L, f, bake.wrap)]);
+      bake.layers.forEach(([sel, decl, t]) => lines.push([name + " " + named(sel, t), decl.join("; ")]));
+    });
     // A keyframe she changed, in the page's @keyframes: every animation using them changes with it.
-    // A @keyframes she added from the generic list: new to the code, so it's listed whole (her edits included).
-    Object.keys(edits.newKeyframes).forEach((name) => {
+    // A @keyframes she added from the generic list: new to the code, so it's listed whole (her edits included), when
+    // a layer still runs it.
+    const runs = namesRun();
+    Object.keys(edits.newKeyframes).filter((name) => runs.has(name)).forEach((name) => {
       const rule = pageKeyframes().get(name);
       const body = rule ? Array.from(rule.cssRules).map((k) => k.cssText).join(" ") : edits.newKeyframes[name].body;
       lines.push(["@keyframes " + name + " (new)", body]);
@@ -2875,15 +4366,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const where = (w.sels.length > 1 ? w.sels[0] + " and " + (w.sels.length - 1) + " more" : w.sels[0] || "?") + (w.hint ? ", called from " + w.hint + "()" : "");
       lines.push(["animate() " + w.label, "on " + where + ": " + parts.join("; ")]);
     });
-    const width = Math.max.apply(null, lines.map((l) => l[0].length)) + 2;
-    return "finetune changes · " + decodeURIComponent(location.pathname) + "\n"
-      + lines.map(([sel, decl]) => sel.padEnd(width) + decl).join("\n");
+    // A comment line (decl null) stands alone, so it doesn't widen the column.
+    const width = Math.max.apply(null, lines.filter((l) => l[1] != null).map((l) => l[0].length)) + 2;
+    // The header: the page, the window's size (the width picks the breakpoint the edits were seen at), and the
+    // page's theme when it has a switch for one.
+    return "finetune changes · " + decodeURIComponent(editsPath) + " · " + view.vw + "×" + window.innerHeight + (view.theme ? " · " + view.theme : "") + "\n"
+      + lines.map(([sel, decl]) => (decl == null ? sel : sel.padEnd(width) + decl)).join("\n");
   }
 
   let toastEl = null;
   let toastTimer = 0;
+  // Counts toasts, so an edit's toast is closed only while it's still the one showing (see dropStepToast).
+  let toastSeq = 0;
   // action: a button on the toast ({ label, run }); ms: how long it stays (1.8 seconds unless said). It fades out.
   function toast(text, action, ms, center) {
+    toastSeq++;
     if (!toastEl) {
       toastEl = el("div", "ft-toast");
       document.body.appendChild(toastEl);
@@ -2892,11 +4389,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (typeof text === "string") toastEl.textContent = text;
     else toastEl.replaceChildren(text);
     toastEl.classList.toggle("is-center", !!center);
-    // One action (Undo) or several, each the same plain button (neither stands out), then the close.
-    const acts = !action ? [] : Array.isArray(action) ? action : [action];
-    toastEl.classList.toggle("has-action", acts.length > 0);
+    // One action (Undo) or several, each the same plain button (neither stands out), then the close. "close" is
+    // the close alone, for a note she may want to read longer than the toast stays.
+    const acts = !action || action === "close" ? [] : Array.isArray(action) ? action : [action];
+    toastEl.classList.toggle("has-action", !!action);
     toastEl.classList.remove("is-fading");
-    if (acts.length) {
+    if (action) {
       const actions = el("div", "ft-toast-actions");
       const close = button("ft-toast-close", null, () => {
         clearTimeout(toastTimer);
@@ -2945,6 +4443,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   function makeSelection() {
     const hoverBox = el("div", "ft-hover-box");
     const selBox = el("div", "ft-sel-box");
+    // The rotation zones outside the corners first, so the corners' own targets sit over them; then the edge handles,
+    // so the corners sit over their ends.
+    const rotZones = ["nw", "ne", "sw", "se"].map((c) => selBox.appendChild(el("span", "ft-rot ft-rot-" + c)));
+    ["ft-n", "ft-s", "ft-e", "ft-w"].forEach((c) => selBox.appendChild(el("span", "ft-handle ft-edge " + c)));
     ["ft-nw", "ft-ne", "ft-sw", "ft-se"].forEach((c) => selBox.appendChild(el("span", "ft-handle " + c)));
     // Figma's size label under the selection.
     const sizeLabel = el("span", "ft-size-label");
@@ -2979,8 +4481,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     const active = () => !!inspector && !inspector.hidden;
     // The page itself (the body, or the wrapper that paints the page) is the canvas, as in Figma: clicking
-    // it selects nothing and shows the Page panel.
-    const pickable = (t) => (t && t !== document.body && t !== document.documentElement && t !== pageEl && !isUi(t) ? t : null);
+    // it selects nothing and shows the Page panel. So is a wrapper that only holds the page (as big as the
+    // window) and draws nothing of its own, an app's #root, so its empty space draws a marquee.
+    const windowSized = (r) => r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1;
+    const holdsPage = (t) => windowSized(t.getBoundingClientRect()) && drawsNothing(t);
+    const pickable = (t) => (t && t !== document.body && t !== document.documentElement && t !== pageEl && !isUi(t) && !holdsPage(t) ? t : null);
 
     // Groups are the code's own containers, 1:1, so a page keeps the structure its code has. A click picks the
     // outermost layer under the pointer below the level she's in: the page, until she double-clicks into a
@@ -2992,31 +4497,36 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (e === pageEl) return true;
       if (getComputedStyle(e).display === "contents") return true;
       const r = e.getBoundingClientRect();
-      if (r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1) return true;
+      if (windowSized(r)) return true;
       return invisible(e, r);
     };
     // Layers that draw nothing of their own are passed through too, so code full of wrappers doesn't cost a click per
     // wrapper: a box with no size (one that only holds positioned layers), or one the same size and place as its only
     // child. Anything with a look of its own stays a layer (a fill, border, shadow, outline, filter, blend, opacity,
-    // transform, clip or mask, a ::before / ::after, its own words), as do images, vectors, controls, links and
-    // components (their outline and name are how she finds them).
+    // transform, clip or mask, rounded corners that clip, a ::before / ::after, its own words), as do images,
+    // vectors, controls, links and components (their outline and name are how she finds them).
     const OWN_LOOK = /^(A|BUTTON|IMG|PICTURE|VIDEO|CANVAS|IFRAME|INPUT|TEXTAREA|SELECT|LABEL)$/;
     const noPseudo = (e, which) => {
       const c = getComputedStyle(e, which).content;
       return c === "none" || c === "normal";
     };
-    function invisible(e, r) {
+    // A rounded clip (overflow other than visible with a corner radius) rounds what it holds: a look of its own.
+    const roundClip = (cs) => (cs.overflowX !== "visible" || cs.overflowY !== "visible")
+      && ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].some((c) => parseFloat(cs["border" + c + "Radius"]) > 0);
+    function drawsNothing(e) {
       if (!(e instanceof HTMLElement) || OWN_LOOK.test(e.tagName) || hasText(e) || componentOf(e)) return false;
       const cs = getComputedStyle(e);
-      const bare = cs.backgroundColor === "rgba(0, 0, 0, 0)" && cs.backgroundImage === "none"
+      return cs.backgroundColor === "rgba(0, 0, 0, 0)" && cs.backgroundImage === "none"
         && ["Top", "Right", "Bottom", "Left"].every((side) => cs["border" + side + "Style"] === "none" || parseFloat(cs["border" + side + "Width"]) === 0)
         && cs.boxShadow === "none" && cs.outlineStyle === "none" && cs.filter === "none"
         && (cs.backdropFilter || cs.webkitBackdropFilter || "none") === "none"
         && cs.opacity === "1" && cs.mixBlendMode === "normal" && cs.transform === "none"
         && cs.translate === "none" && cs.rotate === "none" && cs.scale === "none"
-        && cs.clipPath === "none" && (cs.maskImage || cs.webkitMaskImage || "none") === "none"
+        && cs.clipPath === "none" && (cs.maskImage || cs.webkitMaskImage || "none") === "none" && !roundClip(cs)
         && noPseudo(e, "::before") && noPseudo(e, "::after");
-      if (!bare) return false;
+    }
+    function invisible(e, r) {
+      if (!drawsNothing(e)) return false;
       if (r.width < 1 || r.height < 1) return true;
       const shown = Array.from(e.children).filter((c) => {
         const cr = c.getBoundingClientRect();
@@ -3074,19 +4584,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
 
     function place() {
-      selBox.classList.toggle("no-resize", motion() || !(selected && resizable(selected)));
+      // In Scale every layer it's on has handles (several share the box around them).
+      const scaling = !!scaleMode && !motion();
+      selBox.classList.toggle("no-resize", motion() || !(scaling ? current().length : selected && resizable(selected)));
+      // A turned layer still turns by its corners (it only loses its resize handles), so a turn can be dragged again.
+      selBox.classList.toggle("can-rotate", !motion() && !scaling && !editing && !!selected);
       if (selected) {
-        frameRect(selBox, selected.getBoundingClientRect());
-        // offsetWidth is the size before any rotation, as Figma shows it; SVG elements have none.
-        const r = selected.getBoundingClientRect();
-        const w = selected.offsetWidth != null ? selected.offsetWidth : r.width;
-        const h = selected.offsetHeight != null ? selected.offsetHeight : r.height;
+        const sr = selected.getBoundingClientRect();
+        selBox.classList.toggle("is-small", Math.min(sr.width, sr.height) < 30);
+        frameRect(selBox, sr);
+        placeTurnZones(selected, sr);
+        // The size before any rotation, as Figma shows it: the same numbers as Dimensions (a vector's geometry).
+        const { w, h } = sizeOf(selected);
         sizeLabel.textContent = Math.round(w) + " × " + Math.round(h);
       } else if (many.length) {
-        const u = unionRect(many);
+        // A group with auto layout is its frame, padding included, so the box and its size match the bake's element.
+        const u = boxOf(many, group);
+        selBox.classList.toggle("is-small", Math.min(u.width, u.height) < 30);
         frameRect(selBox, u);
         sizeLabel.textContent = Math.round(u.width) + " × " + Math.round(u.height);
       }
+      // Scale's size reads as its fields do, to two decimals (97 × 134.18).
+      if (scaling && current().length) sizeLabel.textContent = fmt2(scaleMode.base.w * scaleMode.f) + " × " + fmt2(scaleMode.base.h * scaleMode.f);
       // Motion's selection has no label: the size is Design's.
       sizeLabel.hidden = motion();
       const comp = !motion() && selected ? componentOf(selected) : "";
@@ -3094,6 +4613,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       compLabel.hidden = !comp;
       if (comp) compName.textContent = comp;
       placeColumn();
+    }
+    // Each rotate zone sits just outside its corner as drawn. On a turned layer that's the turned corner, not the
+    // corner of the box around it, as Figma's zones follow the layer: the zone goes 10px out along both of the
+    // corner's sides, turned with it. (A turned rectangle's bounding box shares its middle, whatever the origin.)
+    // Unturned, the stylesheet places them.
+    function placeTurnZones(t, sr) {
+      const deg = t && !motion() ? turnOf(t) : 0;
+      if (!deg) return rotZones.forEach((z) => { if (z.style.cssText) z.style.cssText = ""; delete z.dataset.glyph; });
+      const s = sizeOf(t);
+      const k = t instanceof HTMLElement ? scaleAbove(t) : [1, 1];
+      const a = (deg * Math.PI) / 180;
+      ["nw", "ne", "sw", "se"].forEach((c, i) => {
+        const lx = (c[1] === "e" ? 1 : -1) * ((s.w * k[0]) / 2 + 10);
+        const ly = (c[0] === "s" ? 1 : -1) * ((s.h * k[1]) / 2 + 10);
+        const x = sr.width / 2 + lx * Math.cos(a) - ly * Math.sin(a);
+        const y = sr.height / 2 + lx * Math.sin(a) + ly * Math.cos(a);
+        rotZones[i].style.cssText = "left:" + (x - 10) + "px;top:" + (y - 10) + "px;right:auto;bottom:auto;rotate:" + deg + "deg";
+        // The glyph goes by where the corner now sits on screen, not by its name: turned past 45° the nw corner is
+        // no longer top left, and its own glyph would bend into the selection instead of away from it.
+        rotZones[i].dataset.glyph = (y < sr.height / 2 ? "n" : "s") + (x < sr.width / 2 ? "w" : "e");
+      });
     }
     function placeColumn() {
       const cols = column ? column.cols : [];
@@ -3104,9 +4644,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
       colBoxes.forEach((b, k) => {
         const r = k < cols.length && columnRect(cols[k]);
-        b.hidden = !r;
+        // Hide UI keeps the picked columns but not their boxes (sync).
+        b.hidden = !r || minimized;
         if (r) frameRect(b, r);
       });
+    }
+    // The outermost layer under the pointer that doesn't span the whole guide that shows (see shift-click). Inside a
+    // layer she drilled into, the search starts below it, so the click stays at her level as levelPick's would.
+    function fitsColumns(target) {
+      const g = shownGuide();
+      const deepest = pickable(target);
+      if (!g || !deepest) return null;
+      const chain = levelOf(deepest);
+      const i = scope ? chain.indexOf(scope) : -1;
+      return chain.slice(i + 1).find((e) => !spansGuide(e.getBoundingClientRect(), g)) || null;
     }
     // The column of the layout that shows under x, as { i }: Design only, and only on a column, not a gutter.
     function columnAt(x) {
@@ -3155,9 +4706,42 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     ["transitionrun", "animationstart"].forEach((type) => document.addEventListener(type, (e) => {
       if (current().some((t) => t === e.target || t.contains(e.target))) follow();
     }, true));
+    // Anything else that moves the selected layers (a sibling growing, an image loading, an ancestor animating, a
+    // script): their boxes are read each frame while something is selected, so the selection stays on them, and the
+    // panel's numbers catch up when they land.
+    let watching = 0;
+    let watched = "";
+    function watch() {
+      if (watching) return;
+      let landed = true;
+      const tick = () => {
+        if (!active() || !current().length) {
+          watching = 0;
+          watched = "";
+          return;
+        }
+        const now = current().map((t) => {
+          const r = t.getBoundingClientRect();
+          return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10)).join();
+        }).join(";");
+        if (now !== watched) {
+          if (watched) {
+            place();
+            landed = false;
+          }
+          watched = now;
+        } else if (!landed) {
+          landed = true;
+          refreshPanel();
+        }
+        watching = requestAnimationFrame(tick);
+      };
+      watching = requestAnimationFrame(tick);
+    }
 
     function show(one, list, g, col) {
-      instanceCache.clear();
+      forgetInstances();
+      sourceCache = new WeakMap();
       stopEditing();
       current().forEach((t) => sizes.unobserve(t));
       selected = one;
@@ -3171,12 +4755,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (now.length) place();
       else placeColumn();
       if (busy()) follow();
+      watched = "";
+      if (now.length) watch();
       showInPanel(selected || (many.length ? many : null), group ? "group" : "selected", column);
     }
     // Layers, and a column with them when she's picked one: a group if the layers are exactly one.
     function choose(list, col) {
       if (list.length === 1) return show(list[0], [], null, col);
-      const sels = list.map(selectorFor);
+      const sels = list.map(keyOf);
       const g = list.length ? edits.groups.find((gr) => gr.length === sels.length && gr.every((x) => sels.includes(x))) : null;
       show(null, list, g || null, col);
     }
@@ -3195,7 +4781,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const col = liveColumns();
       if (one) show(one, [], null, col);
       else if (list.length) {
-        const sels = list.map(selectorFor);
+        const sels = list.map(keyOf);
         show(null, list, edits.groups.find((g) => g.length === sels.length && g.every((x) => sels.includes(x))) || null, col);
       } else if (col) show(null, [], null, col);
       else showInPanel(null);
@@ -3217,9 +4803,46 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const now = current();
       if (sameColumn(col, column) && next.length === now.length && next.every((t) => now.includes(t))) return;
       if (col) return choose(next, col);
-      const sels = next.map(selectorFor);
+      const sels = next.map(keyOf);
       const g = edits.groups.find((gr) => gr.length === sels.length && gr.every((s) => sels.includes(s)));
       selectMany(next, g);
+    }
+
+    // The layers one level inside a layer (or the page, document.body), in the code's order: its outermost ones that
+    // aren't passed through, the level a click picks at once she's inside it.
+    function levelChildren(parent) {
+      const layers = [];
+      const walk = (p) => {
+        for (const e of p.children) {
+          if (isUi(e) || e.closest(".ft-guides, .ft-marks")) continue;
+          const cs = getComputedStyle(e);
+          if (cs.display === "none") continue;
+          const shows = cs.visibility !== "hidden";
+          if (shows && !passThrough(e)) {
+            if (pickable(e)) layers.push(e);
+          } else if (e.children.length) walk(e);
+          else if (shows && pickable(e)) layers.push(e);
+        }
+      };
+      walk(parent);
+      return layers;
+    }
+    // What a marquee can pick: the layers a click picks on the page (the outermost ones that aren't passed through),
+    // a group as one, so a drag and a click agree.
+    function marqueeUnits() {
+      return unitsOf(levelChildren(document.body));
+    }
+    function unitsOf(layers) {
+      const units = [];
+      const taken = new Set();
+      layers.forEach((t) => {
+        if (taken.has(t)) return;
+        const unit = unitOf(t);
+        const list = unit ? unit.list : [t];
+        list.forEach((m) => taken.add(m));
+        units.push(list);
+      });
+      return units;
     }
 
     // Figma's marquee: a drag that starts on the page draws a box and selects every layer it touches
@@ -3230,18 +4853,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const base = e.shiftKey ? current().slice() : [];
       const baseCol = e.shiftKey ? column : null;
       let dragging = false;
+      let units = null;
       const move = (ev) => {
         if (!dragging && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 3) return;
         if (!dragging) {
           dragging = true;
           inside = null;
           hoverBox.hidden = true;
+          units = marqueeUnits();
         }
         const r = { left: Math.min(x0, ev.clientX), top: Math.min(y0, ev.clientY), right: Math.max(x0, ev.clientX), bottom: Math.max(y0, ev.clientY) };
         frameRect(marquee, { left: r.left, top: r.top, width: r.right - r.left, height: r.bottom - r.top });
         marquee.hidden = false;
         const touches = (b) => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
-        const hit = pageUnits().filter((u) => u.some((t) => touches(t.getBoundingClientRect()))).flat();
+        const hit = units.filter((u) => u.some((t) => touches(t.getBoundingClientRect()))).flat();
         pick(base.concat(hit.filter((h) => !base.includes(h))), baseCol);
       };
       const up = () => {
@@ -3280,15 +4905,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           list.forEach(boxed);
           // A layer with a transition would trail the pointer; it follows it instead.
           list.forEach((t) => still(t, true));
-          starts = list.map((t) => String(t.style.translate || "").trim().split(/\s+/).map(parseFloat));
+          // From the translate she sees, the code's included, so a layer the code already moves doesn't jump.
+          starts = list.map(trNow);
         }
         const dx = ev.clientX - x0;
         const dy = ev.clientY - y0;
         list.forEach((t, i) => {
           const [lx, ly] = localDelta(t, dx, dy);
-          const tx = Math.round(((starts[i][0] || 0) + lx) * 10) / 10;
-          const ty = Math.round(((starts[i][1] || 0) + ly) * 10) / 10;
-          setStyle(t, "translate", tx || ty ? tx + "px " + ty + "px" : "");
+          const s0 = starts[i];
+          writeTranslate(t, [{ px: s0[0].px + lx, pct: s0[0].pct }, { px: s0[1].px + ly, pct: s0[1].pct }, s0[2]]);
         });
         moved();
       };
@@ -3301,25 +4926,33 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         list.forEach((t) => still(t, false));
         history.quiet--;
         noteChange();
+        // A layer a group's auto layout places goes back to its place, as Figma's can't be moved freely. A whole
+        // group moved as one is already in place, so nothing moves.
+        reflowFor(list);
+        moved();
       };
       document.addEventListener("mousemove", move, true);
       document.addEventListener("mouseup", up, true);
     }
 
-    // Figma's resize: drag a corner of the selected layer. The opposite corner stays put, Shift keeps the
-    // proportions (an image always keeps them), and the new size is written as the code would (its width and
-    // height, or a vector's geometry). The drag is one undo step.
-    function startResize(e, handle) {
-      const t = selected;
-      if (!t || !resizable(t)) return;
-      const corner = ["nw", "ne", "sw", "se"].find((c) => handle.classList.contains("ft-" + c));
-      const west = corner[1] === "w";
-      const north = corner[0] === "n";
+    // Scale's drag, as Figma's K: a handle scales the layer (or the layers) and everything inside around the opposite
+    // point, which becomes the panel's anchor; a corner follows whichever axis the pointer has pulled further, an edge
+    // its own. The axis that leads lands on a whole px (97 x 134.18). The drag is one undo step.
+    function startScaleDrag(e, handle) {
+      const list = current();
+      if (!scaleMode || !list.length) return;
+      const name = ["nw", "ne", "sw", "se", "n", "s", "e", "w"].find((c) => handle.classList.contains("ft-" + c));
+      const hx = /w/.test(name) ? 0 : /e/.test(name) ? 1 : 0.5;
+      const hy = /n/.test(name) ? 0 : /s/.test(name) ? 1 : 0.5;
+      const a = [1 - hx, 1 - hy];
+      const from = scaleFrom(a);
+      const m = scaleMode;
+      const r0 = from.r;
+      // The handle's own point, so the press itself is 1x wherever on the handle it lands.
+      const hp = { x: r0.left + r0.width * hx, y: r0.top + r0.height * hy };
       const x0 = e.clientX;
       const y0 = e.clientY;
-      const start = sizeOf(t);
-      const r0 = t.getBoundingClientRect();
-      const anchor = { x: west ? r0.right : r0.left, y: north ? r0.bottom : r0.top };
+      const least = scaleLeast(m);
       let started = false;
       const move = (ev) => {
         if (!started) {
@@ -3327,23 +4960,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           started = moving = true;
           hoverBox.hidden = true;
           history.quiet++;
-          still(t, true);
-          // A corner drag is Fixed on both axes, as in Figma: inside auto layout, grow, shrink and stretch let go
-          // once here, so the size the drag writes holds.
-          if (layoutParentOf(t)) ["w", "h"].forEach((axis) => fixAxis(t, axis, null));
+          list.forEach((t) => still(t, true));
+          m.anchor = a;
         }
-        let w = Math.max(1, start.w + (west ? -1 : 1) * (ev.clientX - x0));
-        let h = Math.max(1, start.h + (north ? -1 : 1) * (ev.clientY - y0));
-        if (ev.shiftKey || t.tagName === "IMG") {
-          const k = Math.max(w / start.w, h / start.h);
-          w = start.w * k;
-          h = start.h * k;
-        }
-        setSize(t, Math.round(w), Math.round(h));
-        const r = t.getBoundingClientRect();
-        const dx = anchor.x - (west ? r.right : r.left);
-        const dy = anchor.y - (north ? r.bottom : r.top);
-        if (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05) nudge(t, dx, dy);
+        if (scaleMode !== m) return;
+        const kx = hx === 0.5 || !r0.width ? null : (hx > a[0] ? 1 : -1) * (hp.x + ev.clientX - x0 - from.A.x) / r0.width;
+        const ky = hy === 0.5 || !r0.height ? null : (hy > a[1] ? 1 : -1) * (hp.y + ev.clientY - y0 - from.A.y) / r0.height;
+        const byW = ky == null || (kx != null && kx >= ky);
+        const k = byW ? kx : ky;
+        const f = byW ? Math.round(m.base.w * from.f * k) / m.base.w : Math.round(m.base.h * from.f * k) / m.base.h;
+        applyScale(Math.max(least, f), from);
         moved();
       };
       const up = () => {
@@ -3352,9 +4978,175 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (!started) return;
         moving = false;
         flush();
+        list.forEach((t) => still(t, false));
+        history.quiet--;
+        noteChange();
+        // In a group's auto layout the others make room (or close up) for the new size.
+        reflowFor(list);
+        if (scaleMode) scaleSeal(scaleMode);
+        moved();
+      };
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", up, true);
+    }
+
+    // Figma's resize: drag a corner or a side of the selected layer. The opposite corner or side stays put (in auto
+    // layout the layout places it). A side sizes its own axis only and a corner both, freely, as resizeLayer sizes
+    // them: the lock (Constrain proportions) or Shift on a corner keeps the proportions. The new size is written as
+    // the code would (its width and height, or a vector's geometry). The drag is one undo step.
+    function startResize(e, handle) {
+      if (scaleMode) return startScaleDrag(e, handle);
+      const t = selected;
+      if (!t || !resizable(t)) return;
+      const name = ["nw", "ne", "sw", "se", "n", "s", "e", "w"].find((c) => handle.classList.contains("ft-" + c));
+      const west = /w/.test(name);
+      const north = /n/.test(name);
+      const sizesW = /[we]/.test(name);
+      const sizesH = /[ns]/.test(name);
+      const x0 = e.clientX;
+      const y0 = e.clientY;
+      const start = sizeOf(t);
+      const exact = exactSize(t);
+      // What's inside, as it was, so a wider or narrower layer can wrap it (resizeLayer).
+      const fit = fitBefore(t);
+      // An element's size is CSS px, which a scaled page around it draws bigger or smaller, and so does a scale on the
+      // layer itself (transform: scale(0.5), or scale: 0.5): the corner follows the pointer on screen. The layer's own
+      // scale is read off its transform and scale (a turn or a skew in them can't be split out, so it's left at 1).
+      // Its translate sits outside both, so the anchor nudge below needs only the scale above.
+      const k = t instanceof HTMLElement ? scaleAbove(t) : [1, 1];
+      if (t instanceof HTMLElement) {
+        const cs = getComputedStyle(t);
+        const m = /^matrix\(([^,]+), ([^,]+), ([^,]+), ([^,]+),/.exec(cs.transform);
+        const sc = cs.scale === "none" ? [1, 1] : cs.scale.split(" ").map(parseFloat);
+        if (sc.length === 1) sc.push(sc[0]);
+        if (m && !+m[2] && !+m[3] && +m[1] > 0 && +m[4] > 0) { k[0] *= +m[1]; k[1] *= +m[4]; }
+        if (sc[0] > 0 && sc[1] > 0) { k[0] *= sc[0]; k[1] *= sc[1]; }
+      }
+      const r0 = t.getBoundingClientRect();
+      const anchor = { x: west ? r0.right : r0.left, y: north ? r0.bottom : r0.top };
+      // In auto layout (a flex or grid in the code) the layout places it, as in Figma: only its size changes.
+      const lp0 = layoutParentOf(t);
+      const placedByLayout = !!(lp0 || {}).inFlow;
+      let started = false;
+      // The edits as they were, for a drag that ends where it started (up).
+      let snap0 = null;
+      const move = (ev) => {
+        if (!started) {
+          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 2) return;
+          started = moving = true;
+          hoverBox.hidden = true;
+          history.quiet++;
+          still(t, true);
+          snap0 = snapshot();
+          // A dragged axis is Fixed, as in Figma: inside auto layout, grow, shrink and stretch let go once here, so
+          // the size the drag writes holds.
+          if (lp0) ["w", "h"].forEach((axis) => { if (axis === "w" ? sizesW : sizesH) fixAxis(t, axis, null); });
+        }
+        let w = sizesW ? Math.max(1, exact.w + ((west ? -1 : 1) * (ev.clientX - x0)) / k[0]) : null;
+        let h = sizesH ? Math.max(1, exact.h + ((north ? -1 : 1) * (ev.clientY - y0)) / k[1]) : null;
+        if (sizesW && sizesH && (ev.shiftKey || ratioLocked(t))) {
+          const f = Math.max(w / exact.w, h / exact.h);
+          w = exact.w * f;
+          h = exact.h * f;
+        }
+        // Whole px, as Figma's drag, but back within half a px of where it started is the size it started at (a
+        // 389.25 stays 389.25), so a drag that comes back changes nothing.
+        const px = (v, e0) => (v == null ? null : Math.abs(v - e0) < 0.5 ? e0 : Math.round(v));
+        resizeLayer(t, px(w, exact.w), px(h, exact.h), { from: start, exact, fit, fixed: true, locked: ratioLocked(t) });
+        const r = t.getBoundingClientRect();
+        const dx = anchor.x - (west ? r.right : r.left);
+        const dy = anchor.y - (north ? r.bottom : r.top);
+        if (!placedByLayout && (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05)) nudge(t, dx, dy);
+        moved();
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", up, true);
+        if (!started) return;
+        moving = false;
+        flush();
+        // Back where it started (size and place): the drag's writes (a Fixed, a kept axis, an align-self) would
+        // change nothing on the page but still show in Copy, so the edits go back to how they were.
+        const e1 = exactSize(t);
+        const r1 = t.getBoundingClientRect();
+        if (snap0 && Math.abs(e1.w - exact.w) < 0.05 && Math.abs(e1.h - exact.h) < 0.05 && Math.abs(r1.left - r0.left) < 0.05 && Math.abs(r1.top - r0.top) < 0.05) {
+          applyEdits(JSON.parse(snap0));
+        }
         still(t, false);
         history.quiet--;
         noteChange();
+        // In a group's auto layout the others make room (or close up) for the new size.
+        reflowFor([t]);
+        moved();
+      };
+      document.addEventListener("mousemove", move, true);
+      document.addEventListener("mouseup", up, true);
+    }
+
+    // Figma's rotation: drag in the zone just outside a corner and the layer turns about its pivot, by the angle the
+    // pointer sweeps round it. It writes what the Rotation field writes (setTurn), so Copy and the bake read the same.
+    // Shift snaps the turn to 15° steps. The drag is one undo step.
+    function startRotate(e, zone) {
+      const t = selected;
+      if (!t || editing || motion() || scaleMode) return;
+      // The glyph the zone showed on hover (its screen corner on a turned layer), so the drag keeps the same one.
+      const corner = zone.dataset.glyph || ["nw", "ne", "sw", "se"].find((c) => zone.classList.contains("ft-rot-" + c));
+      const r0 = t.getBoundingClientRect();
+      // A turn about the middle leaves the middle of the box on screen where it is, so it's read once.
+      const c = { x: r0.left + r0.width / 2, y: r0.top + r0.height / 2 };
+      // CSS turns a layer about its transform-origin, which the code may have moved off the middle (0 0, a corner):
+      // there the angle is read about that point instead, so the layer turns with the pointer rather than swinging
+      // away from it. The origin is where the middle would be, less the middle's offset from it, turned.
+      if (t instanceof HTMLElement) {
+        const s = sizeOf(t);
+        // Inline text (a span) has no box to put an origin on, so its computed one reads 0px 0px; the first turn makes
+        // it inline-block (boxed), where the code's origin applies, the middle unless the code says otherwise. So it's
+        // read as the code gives it (a % against the box the turn will have), else the middle.
+        const o = getComputedStyle(t).display === "inline"
+          ? codeValue(t, "transform-origin").split(" ").slice(0, 2).map((v, i) => (/%$/.test(v) ? (parseFloat(v) / 100) * (i ? s.h : s.w) : /px$/.test(v) ? parseFloat(v) : i ? s.h / 2 : s.w / 2))
+          : getComputedStyle(t).transformOrigin.split(" ").map(parseFloat);
+        if (o.length < 2) o.splice(0, 2, s.w / 2, s.h / 2);
+        const k = scaleAbove(t);
+        const dx = (s.w / 2 - (o[0] || 0)) * k[0];
+        const dy = (s.h / 2 - (o[1] || 0)) * k[1];
+        if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5) {
+          const a = (turnOf(t) * Math.PI) / 180;
+          c.x -= dx * Math.cos(a) - dy * Math.sin(a);
+          c.y -= dx * Math.sin(a) + dy * Math.cos(a);
+        }
+      }
+      const a0 = Math.atan2(e.clientY - c.y, e.clientX - c.x);
+      const turn0 = turnOf(t);
+      const x0 = e.clientX;
+      const y0 = e.clientY;
+      const html = document.documentElement;
+      let started = false;
+      const move = (ev) => {
+        if (!started) {
+          if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 2) return;
+          started = moving = true;
+          hoverBox.hidden = true;
+          history.quiet++;
+          still(t, true);
+          html.classList.add("ft-turning-" + corner);
+        }
+        // Screen y runs down, so a growing angle is clockwise, which is positive in CSS and in the Rotation field.
+        let deg = turn0 + ((Math.atan2(ev.clientY - c.y, ev.clientX - c.x) - a0) * 180) / Math.PI;
+        deg = ev.shiftKey ? Math.round(deg / 15) * 15 : Math.round(deg * 10) / 10;
+        setTurn(t, deg);
+        moved();
+      };
+      const up = () => {
+        document.removeEventListener("mousemove", move, true);
+        document.removeEventListener("mouseup", up, true);
+        if (!started) return;
+        moving = false;
+        html.classList.remove("ft-turning-" + corner);
+        flush();
+        still(t, false);
+        history.quiet--;
+        noteChange();
+        moved();
       };
       document.addEventListener("mousemove", move, true);
       document.addEventListener("mouseup", up, true);
@@ -3362,41 +5154,125 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     // ⌘G: the selected layers become one group (a layer in one group at a time, so grouping takes
     // it out of any other). ⌘⇧G: the group goes, its layers stay selected.
-    function groupSelection() {
+    // silent: ⇧A groups the layers first and says so in its own toast.
+    function groupSelection(silent) {
       const list = current();
-      if (list.length < 2) return toast("Select two or more layers to group");
-      const sels = list.map(selectorFor);
+      if (list.length < 2) return toast("Select two or more layers to group.");
+      // The bake wraps a group in one new element, which can't hold a layer and the layer around it.
+      if (list.some((t) => list.some((o) => o !== t && o.contains(t)))) return toast("One of these layers holds another, so they can't be grouped.");
+      const sels = list.map(keyOf);
       edits.groups = edits.groups.map((g) => g.filter((s) => !sels.includes(s))).filter((g) => g.length > 1);
       edits.groups.push(sels);
+      // A group that lost layers to this one is a different group now, so its auto layout goes.
+      edits.autoLayout = edits.autoLayout.filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
       inside = null;
       show(null, list, sels);
       noteChange();
-      undoToast("Grouped " + list.length + " layers", undo);
+      if (!silent) actionToast("Grouped " + list.length + " layers");
     }
+    // A ⌘G group: its auto layout goes with it. The layers keep their moves as plain ones, so nothing moves, as in
+    // Figma. A layer that holds others in the code (the panel's "Group") ungroups as its own kind, below.
     function ungroup() {
-      if (!group) return toast("Select a group to ungroup");
+      if (!group) {
+        const t = selected;
+        if (t instanceof HTMLElement && t !== document.body && t !== pageEl && !hasText(t) && Array.from(t.children).some((c) => !isUi(c))) return ungroupContainer(t);
+        return toast("Select a group to ungroup.");
+      }
+      const L = layoutOf(group);
+      edits.autoLayout = edits.autoLayout.filter((l) => l !== L);
       edits.groups = edits.groups.filter((g) => g !== group);
       const list = many.slice();
       show(null, list, null);
       noteChange();
-      undoToast("Ungrouped " + list.length + " layers", undo);
+      actionToast("Ungrouped " + list.length + " layers");
+    }
+    // Figma's ungroup on a layer that holds others in the code (a card's <div>): its box goes and its layers stay
+    // where they are on screen. Live, the wrapper only stops drawing a box (display: contents; taking it out of the
+    // DOM breaks a React page), and a layer that moved or resized when the box went is put back with ordinary
+    // edits, measured before and after. Copy lists the wrapper as "ungroup" for the bake to take out of the code.
+    function ungroupContainer(t) {
+      // A link's box is what its layers are clicked through, so it stays; nothing changes.
+      if (t.matches("a[href], area[href], [role='link']")) return toast("This group is a link and cannot be ungrouped here.", "close", 6000);
+      // Its layers, with any it holds through a container already ungrouped (those draw, the container doesn't).
+      const kids = layersOf(t);
+      // What lays it out: the nearest holder that still draws a box. Its other layers can move too when the box goes
+      // (in a grid or a flex row the layers take cells or slots of their own and push the rest along; in plain flow
+      // the wrapper's padding goes), and so can its size, which moves what comes after it on the page.
+      let p = t.parentElement;
+      while (p && p.hasAttribute("data-ft-ungrouped")) p = p.parentElement;
+      const around = p ? layersOf(p).filter((c) => c !== t && !t.contains(c)) : [];
+      const pin = p && p !== document.body && p !== document.documentElement ? p : null;
+      const measure = (list) => list.map((c) => ({ c, r: c.getBoundingClientRect() })).filter(({ r }) => r.width || r.height);
+      const before = measure(kids);
+      const others = measure(around);
+      const box = pin && pin.getBoundingClientRect();
+      // No transitions while the box goes, so what's measured after is where the layers land. All in one task, so a
+      // running animation can't move anything between the two readings.
+      const moving = kids.concat(around, pin ? [pin] : []);
+      moving.forEach((c) => still(c, true));
+      record(t, (entry) => { entry.ungrouped = true; });
+      t.setAttribute("data-ft-ungrouped", "");
+      flush();
+      // A size it had before is kept as its own: the wrapper gave it (a width: 100%, a stretch), or a grid track or
+      // flex share changed. One that was drawn and now reads 0 (an empty stretched box) takes its measured size,
+      // since there's nothing to scale from. Fixed, as Figma's: in a flex row a px width alone still shrinks to fit.
+      const keepSize = (c, r) => {
+        const a = c.getBoundingClientRect();
+        const now = exactSize(c);
+        const w = Math.abs(a.width - r.width) > 0.25 ? (a.width ? now.w * r.width / a.width : r.width) : null;
+        const h = Math.abs(a.height - r.height) > 0.25 ? (a.height ? now.h * r.height / a.height : r.height) : null;
+        if (w != null) fixAxis(c, "w", w);
+        if (h != null) fixAxis(c, "h", h);
+      };
+      // The holder first: its size sets the grid's tracks and the space the rest share, and pinned back it keeps
+      // the page after it where it was.
+      if (pin) keepSize(pin, box);
+      flush();
+      before.concat(others).forEach(({ c, r }) => keepSize(c, r));
+      flush();
+      // Twice, so a move that reflowed text or rounded to a tenth of a px is caught.
+      for (let pass = 0; pass < 2; pass++) before.concat(others).forEach(({ c, r }) => {
+        const a = c.getBoundingClientRect();
+        if (Math.abs(r.left - a.left) < 0.05 && Math.abs(r.top - a.top) < 0.05) return;
+        nudge(c, r.left - a.left, r.top - a.top);
+        flush();
+      });
+      moving.forEach((c) => still(c, false));
+      // The wrapper leaves any ⌘G group it was in, as a deleted layer does.
+      const sel = keyOf(t);
+      edits.groups = edits.groups.map((g) => g.filter((s) => s !== sel)).filter((g) => g.length > 1);
+      edits.autoLayout = edits.autoLayout.filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
+      inside = scope = null;
+      hoverBox.hidden = true;
+      selectMany(before.map(({ c }) => c), null);
+      noteChange();
+      actionToast("Ungrouped " + before.length + (before.length === 1 ? " layer" : " layers"));
     }
 
     // Delete / Backspace: the selected layers are hidden and listed as "delete" for the bake to take out of the code.
     // A deleted layer leaves any ⌘G group it was in.
     function deleteSelection() {
       const list = current().slice();
-      const sels = list.map(selectorFor);
+      const sels = list.map(keyOf);
       list.forEach((t) => {
         record(t, (entry) => { entry.deleted = true; });
         t.setAttribute("data-ft-deleted", "");
       });
       edits.groups = edits.groups.map((g) => g.filter((s) => !sels.includes(s))).filter((g) => g.length > 1);
+      // A group's auto layout keeps going while its group does, and the layers left close up as its flex would.
+      const touched = [];
+      edits.autoLayout = edits.autoLayout.map((l) => {
+        if (!l.sels.some((s) => sels.includes(s))) return l;
+        const next = Object.assign({}, l, { sels: l.sels.filter((s) => !sels.includes(s)), ignore: l.ignore.filter((s) => !sels.includes(s)) });
+        touched.push(next);
+        return next;
+      }).filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
+      touched.filter((l) => edits.autoLayout.includes(l)).forEach(flowGroup);
       inside = scope = null;
       hoverBox.hidden = true;
       select(null);
       noteChange();
-      undoToast("Deleted " + list.length + (list.length === 1 ? " layer" : " layers"), undo);
+      actionToast("Deleted " + list.length + (list.length === 1 ? " layer" : " layers"));
     }
 
     // Figma's ⇧A and ⌥⇧A on one layer that holds others. Adding reads the auto layout from how the layers sit
@@ -3406,11 +5282,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const holdsLayers = (t) => !(t instanceof SVGElement) && !hasText(t) && t.children.length > 0;
     function addAutoLayout() {
       const list = current();
-      // Several layers at once are a ⌘G group's auto layout, which isn't here yet. Until it is, no toast offers
-      // "two or more layers" as a way in.
-      if (list.length > 1) return toast("Select one layer with layers inside");
+      // Several layers, or a ⌘G group, get a group's auto layout.
+      if (list.length > 1 || group) return addGroupLayout(list);
       const t = list[0];
-      if (!t || !holdsLayers(t)) return toast("Select a layer with layers inside");
+      // An SVG's shapes are layers too, but a flex can't arrange them: the same answer as several shapes get.
+      if (t instanceof SVGElement) return toast("Auto layout works on HTML layers");
+      if (!t || !holdsLayers(t)) return toast("Select a layer with layers inside, or two or more layers");
       if (/flex|grid/.test(getComputedStyle(t).display)) return toast("Already auto layout");
       // Layers placed with position: absolute are out of any flow, so there's nothing for a flow to arrange.
       if (!flowChildren(t).length) {
@@ -3422,16 +5299,54 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (inf.reason) return toast("Some of its layers can't be measured, so auto layout would move them. Pick a Flow to apply it anyway.");
       if (history.timer) commitStep();
       history.quiet++;
-      applyInferred(t);
+      const done = applyInferred(t);
       history.quiet--;
       noteChange();
       reshow();
-      undoToast("Added auto layout" + (inf.moves ? " · layers moved" : ""), undo);
+      actionToast("Added auto layout" + (done.moves ? " · layers moved" : ""));
+    }
+    // ⇧A on two or more layers or on a group. Plain layers are grouped first, in the same undo step. The layout is
+    // read from where they sit, so nothing moves where they already sit evenly in the code's order; where they
+    // don't, the toast says what moved. Layers one new element in the code couldn't hold are refused, as they sit.
+    function addGroupLayout(list) {
+      if (group && layoutOf(group)) return toast("Already auto layout");
+      const why = groupLayoutRefusal(list);
+      if (why) return toast(why);
+      const inf = inferGroup(list);
+      // Measured, not only inferred: a margin or a rounded gap can move a layer the reading says stays.
+      const was = list.map((t) => t.getBoundingClientRect());
+      if (history.timer) commitStep();
+      history.quiet++;
+      if (!group) groupSelection(true);
+      edits.autoLayout.push({ sels: group.slice().sort(), flow: inf.flow, gap: inf.gap, pad: [0, 0, 0, 0], main: "start", cross: inf.cross, ignore: [] });
+      flowGroup(layoutOf(group));
+      history.quiet--;
+      noteChange();
+      reshow();
+      const moved = inf.moves || list.some((t, i) => {
+        const r = t.getBoundingClientRect();
+        return Math.abs(r.left - was[i].left) > 0.5 || Math.abs(r.top - was[i].top) > 0.5;
+      });
+      // The group is only drawn here, so layers after it in the code's flow don't make room for it until the bake
+      // wraps it in a real element. Said once, here, since a later Gap or Padding can overlap them.
+      const inFlow = list.some((t) => !/^(absolute|fixed)$/.test(getComputedStyle(t).position));
+      // A swap says why; it's also the move, so "layers moved" would only repeat it.
+      actionToast("Added auto layout" + (inf.reordered ? " · layers follow their order in the code" : moved ? " · layers moved" : "")
+        + (inFlow ? " · layers after it make room once it's in the code" : ""));
     }
     // Back to Freeform, as the Flow row's Freeform. Her padding stays: it's the box's, as in Figma.
+    // On a group, its auto layout goes and the group stays. Its layers keep their moves as plain ones, so nothing moves.
     function removeAutoLayout() {
       const list = current();
-      if (list.length > 1) return toast("Select one layer with auto layout");
+      if (list.length > 1 || group) {
+        const L = layoutOf(group);
+        if (!L) return toast("No auto layout to remove");
+        if (history.timer) commitStep();
+        edits.autoLayout = edits.autoLayout.filter((l) => l !== L);
+        noteChange();
+        reshow();
+        return actionToast("Removed auto layout");
+      }
       const t = list[0];
       if (!t || !holdsLayers(t) || !/flex|grid/.test(getComputedStyle(t).display)) return toast("No auto layout to remove");
       const own = ownValue(t, "display");
@@ -3444,12 +5359,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       reshow();
       // Figma freezes the layers where they are; here they follow the code's own layout (her call to change). A
       // code grid turned to block stacks its cells in one column, so there the toast just says they moved.
-      undoToast("Removed auto layout" + (/grid/.test(own) ? " · layers moved" : fromCode ? " · layers follow the code's layout" : ""), undo);
+      actionToast("Removed auto layout" + (/grid/.test(own) ? " · layers moved" : fromCode ? " · layers follow the code's layout" : ""));
     }
 
+    // The text node React holds for the words being edited (see oneHeldText): typing can replace it, so it's put back
+    // with the new words when editing stops, or React's next update inserts next to a node that's gone.
+    let keptText = null;
     // Double-click puts the caret where you clicked; Enter selects all the text.
     function startEditing(t, x, y) {
+      // Words React builds from several parts ("Plan {name} pricing") have no one node to retype, and swapping them
+      // blanks the page at React's next update: they're changed in the code instead.
+      if (codeBuiltWords(t)) return toast("These words are built by the code. Change them in Claude Code.");
+      // Editing the words leaves Scale, as Scale won't start on words being edited.
+      endScale();
       editing = t;
+      keptText = oneHeldText(t);
       before = t.innerHTML;
       t.setAttribute("contenteditable", "plaintext-only");
       t.setAttribute("data-ft-editing", "");
@@ -3474,10 +5398,64 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       window.getSelection().removeAllRanges();
       selBox.classList.remove("is-editing");
       editing = null;
+      // typeBreak's stand-in stays only where it's a line she can see (after another break); after words it shows
+      // nothing, so it goes.
+      t.querySelectorAll("br[data-ft-hold]").forEach((br) => {
+        br.removeAttribute("data-ft-hold");
+        const prev = br.previousSibling;
+        if (nothingAfter(br, t) && !(prev && prev.nodeName === "BR")) br.remove();
+      });
+      // React's own text node goes back, holding the new words.
+      const kept = keptText;
+      keptText = null;
+      if (kept) {
+        const words = t.textContent;
+        if (t.childNodes.length !== 1 || t.firstChild !== kept) t.replaceChildren(kept);
+        if (kept.data !== words) kept.data = words;
+      }
       if (t.innerHTML === before) return;
       const o = originalOf(t);
       if (!("html" in o)) o.html = before;
-      record(t, (entry) => { entry.html = t.innerHTML; });
+      record(t, (entry) => { entry.html = codeHtml(t); });
+      // So a rewrite by the page (an {expression} React updates) is caught and said.
+      watchWords(t);
+      // New words can change its size, and a group's auto layout makes room for it.
+      reflowFor([t]);
+    }
+
+    // Enter is a line break that stays one, as in Figma: a <br>, as the code writes it. Left to plaintext-only
+    // editing it would be a "\n", which shows only while editing (the text is pre-wrapped then) and folds to a space
+    // after. On a <button> it would also press it.
+    // Whether nothing but a stand-in <br> follows a node inside the words.
+    function nothingAfter(node, root) {
+      const after = document.createRange();
+      after.setStartAfter(node);
+      after.setEnd(root, root.childNodes.length);
+      const rest = after.cloneContents();
+      rest.querySelectorAll("br[data-ft-hold]").forEach((x) => x.remove());
+      return !rest.textContent && !rest.querySelector("*");
+    }
+    function typeBreak() {
+      // A <br> would split the one text node React holds (see keptText).
+      if (keptText) return toast("A line break can't go in these words here: the code holds them as one string. Add it in Claude Code.");
+      const sel = window.getSelection();
+      if (!sel.rangeCount || !editing.contains(sel.anchorNode)) return;
+      const r = sel.getRangeAt(0);
+      r.deleteContents();
+      const br = document.createElement("br");
+      r.insertNode(br);
+      // A break with nothing after it shows no new line and the caret can't go there, so a second <br> holds the
+      // line (as the browser's own editing does) until words follow; stopEditing drops it then.
+      if (nothingAfter(br, editing) && !editing.querySelector("br[data-ft-hold]")) {
+        const hold = document.createElement("br");
+        hold.setAttribute("data-ft-hold", "");
+        br.after(hold);
+      }
+      r.setStartAfter(br);
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      place();
     }
 
     // In Motion a click finds the nearest layer with motion under the pointer (its whole group); anything else is
@@ -3496,6 +5474,128 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (list.length > 1) pick(list);
       else select(list[0] || null);
     }
+    // An item picked from the items menu of the group or container selected: a level in, as a double-click goes,
+    // so Escape steps back out to it.
+    function selectItem(t) {
+      const from = selected;
+      const g = group;
+      selectLayers([t]);
+      if (g && groupOf(t) === g) inside = g;
+      else if (from && from !== t && from.contains(t)) scope = from;
+    }
+
+    // Figma's layer keys and right-click Select layer walk the same levels a click picks at (levelOf). Each leaves
+    // the level it lands on as the scope, so a click after it picks at that depth too.
+    // The layer at a level that holds every one of these (null: the page).
+    function holderOf(list) {
+      const chain = levelOf(list[0]);
+      for (let i = chain.length - 2; i >= 0; i--) if (list.every((t) => chain[i].contains(t))) return chain[i];
+      return null;
+    }
+    const inCodeOrder = (a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+    // One layer as the selection, at its own level: a grouped one by itself, inside its group, as a ⌘-click picks it.
+    function selectAtLevel(t) {
+      inside = groupOf(t) || null;
+      scope = holderOf([t]);
+      select(t);
+    }
+    // Enter: the layers one level in, all of them (a ⌘G group's own layers, one by one). False when there are none.
+    function selectChildren() {
+      if (group) {
+        const list = many.slice();
+        inside = group;
+        show(null, list, null);
+        return true;
+      }
+      const now = current();
+      const kids = now.flatMap(levelChildren).filter((k, i, all) => all.indexOf(k) === i);
+      if (!kids.length) return false;
+      inside = null;
+      scope = holderOf([kids[0]]);
+      if (kids.length === 1) selectAtLevel(kids[0]);
+      else show(null, kids, null);
+      return true;
+    }
+    // Shift+Enter and \: the layer that holds the selection; from a ⌘G group's layers (one, or the ones Enter
+    // selected), the group first, as Escape.
+    function selectParent() {
+      const now = current();
+      if (!now.length) return;
+      const g = selected ? groupOf(selected) : !group && inside && now.every((t) => groupOf(t) === inside) ? inside : null;
+      if (g) {
+        const list = groupMembers(g);
+        inside = null;
+        scope = holderOf(list);
+        return show(null, list, g);
+      }
+      const p = holderOf(now);
+      if (p) selectAtLevel(p);
+    }
+    // Tab and Shift+Tab: the next or previous layer at the same level, in the code's order, round from the last to the
+    // first. One layer or one group only, as in Figma.
+    function selectSibling(dir) {
+      if (!selected && !group) return;
+      const t = selected || many[0];
+      const own = selected && inside && groupOf(selected) === inside;
+      const p = own ? scope : selected ? holderOf([t]) : holderOf(many);
+      // Inside a group, its layers; anywhere else, the layers a click picks at this level, a group as one.
+      const units = own ? groupMembers(inside).sort(inCodeOrder).map((m) => [m]) : unitsOf(levelChildren(p || document.body));
+      const i = units.findIndex((u) => u.includes(t));
+      if (i < 0 || units.length < 2) return;
+      const next = units[(i + dir + units.length) % units.length][0];
+      if (own) return select(next);
+      scope = p;
+      inside = null;
+      const unit = unitOf(next);
+      if (unit) show(null, unit.list, unit.g);
+      else select(next);
+    }
+    // Every layer under the pointer, as Figma's Select layer lists them: in the layers panel's order, a layer above
+    // the layers inside it (a level deeper each), and of layers side by side the one painted on top first. Wrappers a
+    // click passes through aren't listed.
+    function layersAt(x, y) {
+      // A layer the page set to pointer-events: none (an overlay, a scrim) is still under the pointer, as Figma
+      // lists it, and is one a click can't reach: hit-tested for this one read with every layer taking hits.
+      const all = document.createElement("style");
+      all.textContent = "body * { pointer-events: auto !important; }";
+      document.head.appendChild(all);
+      let found;
+      try {
+        found = document.elementsFromPoint(x, y);
+      } finally {
+        all.remove();
+      }
+      const hits = found.filter((h) => !isUi(h) && !h.closest(".ft-guides, .ft-marks") && pickable(h));
+      // Each layer's place is its topmost hit's.
+      const rank = new Map();
+      hits.forEach((h, i) => levelOf(h).forEach((l) => {
+        if (l === h && passThrough(h)) return;
+        if (!rank.has(l)) rank.set(l, i);
+      }));
+      const layers = Array.from(rank.keys());
+      const holder = (l) => {
+        for (let e = l.parentElement; e; e = e.parentElement) if (rank.has(e)) return e;
+        return null;
+      };
+      const rows = [];
+      const add = (p, depth) => layers.filter((l) => holder(l) === p).sort((a, b) => rank.get(a) - rank.get(b)).forEach((l) => {
+        rows.push({ t: l, depth });
+        add(l, depth + 1);
+      });
+      add(null, 0);
+      return rows;
+    }
+    // Right-click, as Figma's context menu: Select layer lists them; hovering one outlines it, a click selects it.
+    // On finetune's own UI, with finetune off, in Motion or in words being edited, the browser's own menu opens.
+    document.addEventListener("contextmenu", (e) => {
+      if (!active() || motion() || isUi(e.target) || (editing && editing.contains(e.target))) return;
+      const rows = layersAt(e.clientX, e.clientY);
+      if (!rows.length) return;
+      e.preventDefault();
+      e.stopPropagation();
+      hoverBox.hidden = true;
+      openLayerMenu(e.clientX, e.clientY, rows, selectAtLevel, preview);
+    }, true);
     // Back in Motion, a selection with motion becomes its whole group; one without stays, ready for one to be added.
     function tabChanged() {
       // Columns are picked in Design only.
@@ -3553,17 +5653,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       hoverBox.classList.toggle("is-comp", !motion() && !!componentOf(previewed));
     }
 
-    // Hover outlines what a click would pick: a group as one box.
-    document.addEventListener("pointermove", (e) => {
+    // Hover outlines what a click would pick: a group as one box (⌘ goes through it, as a ⌘-click does).
+    function hoverAt(target, x, deep, alt) {
       if (previewed) return;
       const live = active() && !editing && !moving && marquee.hidden;
-      const moving_ = live && motion() ? motionPick(e.target) : null;
-      const t = !live ? null : moving_ || levelPick(e.target, e.metaKey || e.ctrlKey).pick;
-      const unit = moving_ ? { list: motionGroupOf(moving_) } : unitOf(t);
+      const moving_ = live && motion() ? motionPick(target) : null;
+      // ⌥ outlines the column under the pointer, whatever layer covers it, as an ⌥-click picks it.
+      const altCol = live && alt && !isUi(target) ? columnAt(x) : null;
+      const t = !live || altCol ? null : moving_ || levelPick(target, deep).pick;
+      const unit = moving_ ? { list: motionGroupOf(moving_) } : deep ? null : unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
       const now = current();
       // On the page itself, a column of the layout that shows outlines as a click would pick it.
-      const col = live && !t && !isUi(e.target) ? columnAt(e.clientX) : null;
+      const col = altCol || (live && !t && !isUi(target) ? columnAt(x) : null);
       if (col && !over.length) {
         hoverBox.hidden = !!column && column.cols.includes(col.i);
         if (!hoverBox.hidden) frameRect(hoverBox, columnRect(col.i));
@@ -3571,9 +5673,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return;
       }
       hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
-      if (!hoverBox.hidden) frameRect(hoverBox, unionRect(over));
+      if (!hoverBox.hidden) frameRect(hoverBox, unit && unit.g ? boxOf(over, unit.g) : unionRect(over));
       hoverBox.classList.toggle("is-comp", !motion() && over.length === 1 && !!componentOf(over[0]));
+    }
+    let pointer = null;
+    document.addEventListener("pointermove", (e) => {
+      pointer = { target: e.target, x: e.clientX };
+      hoverAt(e.target, e.clientX, e.metaKey || e.ctrlKey, e.altKey);
     }, { passive: true });
+    // Pressing or letting go of ⌘ (Ctrl) or ⌥ (Alt) changes what a click would pick, so the outline follows without a
+    // move.
+    ["keydown", "keyup"].forEach((type) => document.addEventListener(type, (e) => {
+      if (/^(Meta|Control|Alt)$/.test(e.key) && pointer && pointer.target.isConnected) hoverAt(pointer.target, pointer.x, e.metaKey || e.ctrlKey, e.altKey);
+    }, true));
 
     // mousedown, not pointerdown: preventing it is what stops the page starting a text selection.
     document.addEventListener("mousedown", (e) => {
@@ -3582,6 +5694,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         e.preventDefault();
         e.stopPropagation();
         return startResize(e, handle);
+      }
+      const turn = e.target && e.target.closest && e.target.closest(".ft-rot");
+      if (turn && active() && e.button === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        return startRotate(e, turn);
       }
       if (!active() || e.button !== 0 || isUi(e.target)) return;
       if (editing && editing.contains(e.target)) return;
@@ -3593,15 +5711,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (m) return selectLayers(motionGroupOf(m));
         const lp = levelPick(e.target, e.metaKey || e.ctrlKey);
         if (!lp.pick) return selectLayers([]);
-        const unit = unitOf(lp.pick);
+        const unit = e.metaKey || e.ctrlKey ? null : unitOf(lp.pick);
         if (unit) return show(null, unit.list, unit.g);
         return select(lp.pick);
       }
-      const lp = levelPick(e.target, e.metaKey || e.ctrlKey);
-      const t = lp.pick;
+      // ⌥-click (Alt) picks the column under the pointer whatever layer covers it, since a page whose sections run
+      // edge to edge has no empty space in a column to click; ⇧⌥ adds it to the columns picked or takes it back.
+      if (e.altKey) {
+        const at = columnAt(e.clientX);
+        if (at) return e.shiftKey ? choose(current(), toggleColumn(at.i)) : choose([], { cols: [at.i] });
+      }
+      const deep = e.metaKey || e.ctrlKey;
+      const lp = levelPick(e.target, deep);
+      let t = lp.pick;
+      // With columns picked, a shift-click is for a layer to line up with them: the outermost layer under the pointer
+      // that doesn't span the whole guide, so the heading is taken rather than the full-width section around it.
+      // ⌘⇧ still takes the deepest.
+      if (t && e.shiftKey && !deep && column) t = fitsColumns(e.target) || t;
       scope = lp.scope;
       if (inside && !(t && groupOf(t) === inside)) inside = null;
       if (!t) return startMarquee(e);
+      // ⌘-click goes through a group, as in Figma: the layer itself, inside its group, so Escape steps out to it.
+      if (deep && groupOf(t)) inside = groupOf(t);
       const unit = unitOf(t);
       const picked = unit ? unit.list : t ? [t] : [];
       // Shift adds what's clicked, or takes it back out, as in Figma.
@@ -3641,19 +5772,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (t !== deepest) {
         const chain = levelOf(deepest);
         scope = t;
-        return select(chain[chain.indexOf(t) + 1] || deepest);
+        // A grouped layer there comes as its whole group, as a click at that level picks it.
+        const next = chain[chain.indexOf(t) + 1] || deepest;
+        const unit = unitOf(next);
+        return unit ? show(null, unit.list, unit.g) : select(next);
       }
       if (!hasText(t)) return;
       select(t);
       startEditing(t, e.clientX, e.clientY);
     }, true);
 
-    document.addEventListener("keydown", (e) => {
+    const selectionKey = (e) => {
       if (!active() || e.defaultPrevented) return;
       if (editing) {
         if (e.key === "Escape") {
           e.preventDefault();
           stopEditing();
+        } else if (e.key === "Enter" && !e.isComposing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          typeBreak();
+        } else if (e.key === " " && !e.isComposing && editing.closest("button, summary")) {
+          // A <button> (or a <summary>) takes Space as a press, so no space would go in and the page's own click
+          // would run: it's typed here instead.
+          e.preventDefault();
+          document.execCommand("insertText", false, " ");
         }
         return;
       }
@@ -3684,7 +5826,25 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         e.preventDefault();
         return deleteSelection();
       }
+      // Figma's layer keys, in Design: Shift+Enter and \ select the parent, Tab and Shift+Tab the next and previous
+      // layer, Enter the children (on a text layer Enter edits its words instead, below, as Figma's does). A panel
+      // control focused from the keyboard keeps Tab and Enter, to move on and to press it.
+      if (current().length && !motion() && !e.metaKey && !e.ctrlKey && !e.altKey && !e.isComposing && !isUi(e.target)) {
+        if ((e.key === "Enter" && e.shiftKey) || (e.code === "Backslash" && !e.shiftKey)) {
+          e.preventDefault();
+          return selectParent();
+        }
+        if (e.key === "Tab") {
+          e.preventDefault();
+          return selectSibling(e.shiftKey ? -1 : 1);
+        }
+        if (e.key === "Enter" && !(selected && hasText(selected)) && selectChildren()) return e.preventDefault();
+      }
       if (e.key === "Escape") {
+        // Handled, so a page's own Escape (closing its modal, say) can tell.
+        e.preventDefault();
+        // The first Escape leaves Scale, the layer still selected (an open menu takes it first, and closes).
+        if (scaleMode && !document.querySelector(".ft-menu:not([hidden])")) return endScale();
         // Out a level: from a layer inside a group to the group, then to nothing.
         if (selected && inside && groupOf(selected) === inside) {
           const g = inside;
@@ -3703,11 +5863,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         e.preventDefault();
         startEditing(selected);
       }
+    };
+    // A key acted on here goes no further than document, so a page's own shortcuts on window don't run it too.
+    document.addEventListener("keydown", (e) => {
+      const was = e.defaultPrevented;
+      selectionKey(e);
+      if (!was && e.defaultPrevented) e.stopPropagation();
     });
 
     window.addEventListener("scroll", () => {
       place();
       hoverBox.hidden = true;
+      pointer = null;
     }, true);
     window.addEventListener("resize", place);
     document.addEventListener("input", moved, true);
@@ -3715,15 +5882,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function sync() {
       document.documentElement.classList.toggle("ft-moving", active());
       if (!active()) {
+        closeMenu();
         hoverBox.hidden = true;
-        inside = scope = null;
-        select(null);
+        // Hide UI keeps the selection, as Figma's Minimize UI does: only its boxes go, and they come back with
+        // the UI. Fully hidden (open: false, finetune.toggle(false)) lets it go.
+        if (minimized) {
+          stopEditing();
+          selBox.hidden = true;
+          placeColumn();
+        } else {
+          inside = scope = null;
+          select(null);
+        }
+      } else if (current().length || column) {
+        selBox.hidden = !current().length;
+        place();
+        if (current().length) watch();
       }
       drawMarks();
     }
     sync();
 
-    return { sync, refresh: place, reshow, selectLayers, tabChanged, guidesChanged, preview, addAutoLayout, removeAutoLayout };
+    return { sync, refresh: place, reshow, selectLayers, selectItem, tabChanged, guidesChanged, preview, addAutoLayout, removeAutoLayout, resizable };
   }
 
   const WEIGHT_NAMES = {
@@ -3732,11 +5912,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   };
   const unquote = (s) => String(s).trim().replace(/^["']|["']$/g, "");
 
-  // Only fonts the page actually loads, plus whatever the element uses now.
-  function pageFamilies(current) {
-    const set = new Set([current]);
-    if (document.fonts) document.fonts.forEach((f) => set.add(unquote(f.family)));
-    return Array.from(set);
+  // CSS's generic families are keywords: quoted, one names a font that doesn't exist, and the text falls back.
+  const GENERIC_FAMILY = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|math|emoji|fangsong|ui-(serif|sans-serif|monospace|rounded)|-apple-system)$/i;
+  const familyCss = (f) => (GENERIC_FAMILY.test(f) ? f : '"' + f + '"');
+
+  // Whether the family has a face at this weight; a variable face ("100 900") has every weight in its range.
+  function familyHas(family, w) {
+    let has = false;
+    if (document.fonts) document.fonts.forEach((f) => {
+      if (unquote(f.family) !== family) return;
+      const [lo, hi] = String(f.weight).split(/\s+/).map(Number);
+      if (isNum(hi) ? w >= lo && w <= hi : lo === w) has = true;
+    });
+    return has;
   }
 
   // A variable font ("100 900") offers every hundred in its range.
@@ -3774,13 +5962,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (anchor && !menu.contains(e.target) && !anchor.contains(e.target)) close();
     }, true);
     document.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape" || !anchor) return;
-      e.preventDefault();
-      close();
+      if (!anchor) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+      // While a menu is open, the layer keys and Delete don't reach the page's layers, as Figma's menus hold the
+      // keys: the selection (and a Select layer list, or a preview) can't change under it.
+      if ((/^(Enter|Tab|Delete|Backspace)$/.test(e.key) || e.code === "Backslash") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (!typing(e.target) && !menu.contains(e.target)) e.preventDefault();
+      }
     });
+    // Right-click on a menu opens no browser menu over it.
+    menu.addEventListener("contextmenu", (e) => e.preventDefault());
 
     return {
       close,
+      // A context menu: its top left at the pointer (kept on screen), as Figma's right-click menu opens. It hangs
+      // off a stand-in anchor there, so a click anywhere else, or Escape, closes it as any other.
+      openAt(x, y, items, onPick, onHover) {
+        const point = el("span");
+        point.getBoundingClientRect = () => new DOMRect(x, y - 4, 0, 0);
+        this.toggle(point, items, null, onPick, onHover);
+      },
       // span: an element the menu drops down under, as wide as it (8 in from its edges), as Figma's header menu
       // drops under the panel's header; without it the menu opens at the button.
       toggle(btn, items, current, onPick, onHover, span) {
@@ -3818,7 +6023,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
             glyph.innerHTML = ICON[it.icon];
             item.appendChild(glyph);
           }
-          item.appendChild(el("span", null, it.label));
+          const words = el("span", it.depth ? "ft-menu-nest" : null, it.label);
+          if (it.depth) words.style.setProperty("--ft-depth", it.depth);
+          item.appendChild(words);
           // An item that can be deleted shows a trash can on hover.
           if (it.remove) {
             const trash = el("span", "ft-menu-trash");
@@ -3858,6 +6065,299 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const label = el("span", "ft-dd-label");
     btn.append(label, caret());
     return { btn, label };
+  }
+
+  // The names the Fonts popover shows, as Figma's list does ("PP Neue Montreal", not "neueMontreal"). Display only:
+  // a pick still writes the family the page registers, so Copy and the bake never see these. The page can hand
+  // the exact names over (finetune({ fontNames })); without them a name is read off the font's files, then off the
+  // family itself.
+  const fontNames = {};
+  // Short brand prefixes kept in capitals ("gtSuperText" is GT Super Text, not Gt).
+  const FONT_ACRONYMS = /^(PP|GT|ABC|FK|DM|IBM|JB|SF|UI|AI|NY|TT|HK|KR|JP|SC|TC|CJK)$/i;
+  // Weights and styles that end a font's file name (PPNeueMontreal-Medium, GT-Super-Text-Bold-Italic), plus the
+  // words foundries add to a trial or variable file. They name a face, not the family.
+  const FONT_STYLE_WORD = /^(thin|hair|hairline|extra|ultra|semi|demi|light|leicht|regular|normal|book|buch|roman|medium|kraftig|kräftig|halbfett|fett|bold|heavy|black|italic|oblique|upright|trial|variable|vf|var|wght|\d{3})$/i;
+  // A family as the page registers it, with build tooling's marks taken off: next/font's leading underscores and
+  // hash ("__Inter_a1b2c3"), and a metric stand-in's "Fallback".
+  // After next/font's "__" the last part is always its hash, even one with no digit ("__Inter_abcdef").
+  const bareFamily = (f) => {
+    const s = unquote(f);
+    const hash = /^__/.test(s) ? /_[0-9a-f]{5,}$/i : /[_-](?=[0-9a-f]*\d)[0-9a-f]{5,}$/i;
+    return s.replace(/^_+/, "").replace(/[_ -]Fallback(?=$|[_-])/i, "").replace(hash, "");
+  };
+  // camelCase, snake_case and kebab-case split into words, a run of capitals kept as one ("PPNeueMontreal").
+  const fontWords = (s) => s.replace(/([a-z\d])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2").split(/[\s_.-]+/).filter(Boolean);
+  const titleWords = (words) => words.map((w) => (FONT_ACRONYMS.test(w) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(" ");
+  // The words a family's files share, less the weights and styles after them: GT_Super_Text_Book and
+  // GT_Super_Text_Bold_Italic are GT Super Text. Bundlers' hashes come off first (Turbopack's "-s.p.2o_lmciy58",
+  // Vite's "-BKl3ZsNC" or older ".BKl3ZsNC", webpack's "-a1b2c3d4"), and Google's "-VariableFont_wght"; a file
+  // named only by a hash, as
+  // Google Fonts' are once self-hosted, says nothing.
+  function nameFromFiles(urls) {
+    const stems = urls.map((u) => {
+      let s = u.split(/[?#]/)[0].split("/").pop();
+      try {
+        s = decodeURIComponent(s);
+      } catch (e) {
+        // Left as written.
+      }
+      s = s.replace(/\.(woff2?|ttf|otf|eot|svg)$/i, "").replace(/-s(\.p)?(\.[\w-]+)?$/, "").replace(/\.[\w-]{6,}$|-(?=[0-9a-f]*\d)[0-9a-f]{8,}$/i, "").replace(/[-_]?VariableFont.*$/i, "");
+      // Vite's eight-character hash isn't hex: it comes off when it mixes digits and both cases, or follows a weight.
+      s = s.replace(/-([\w-]{8})$/, (m, h, at, all) => ((/\d/.test(h) && /[a-z]/.test(h) && /[A-Z]/.test(h)) || FONT_STYLE_WORD.test(fontWords(all.slice(0, at)).pop() || "") ? "" : m));
+      return /^[0-9a-f]{8,}$/i.test(s) ? null : fontWords(s);
+    }).filter((w) => w && w.length);
+    if (!stems.length) return null;
+    let shared = stems[0];
+    stems.slice(1).forEach((w) => {
+      let n = 0;
+      while (n < shared.length && n < w.length && shared[n].toLowerCase() === w[n].toLowerCase()) n++;
+      shared = shared.slice(0, n);
+    });
+    while (shared.length && FONT_STYLE_WORD.test(shared[shared.length - 1])) shared = shared.slice(0, -1);
+    return shared.length ? titleWords(shared) : null;
+  }
+  // The page's own name first, then a name already written for people ("Geist", "DM Mono") as it is, then the
+  // files' name, then the family's words.
+  function fontLabel(family, files) {
+    // A generic family (sans-serif, system-ui) is CSS's own word, shown as written.
+    if (GENERIC_FAMILY.test(unquote(family))) return unquote(family);
+    const bare = bareFamily(family);
+    const given = fontNames[unquote(family)] || fontNames[bare];
+    if (given) return String(given);
+    const words = titleWords(fontWords(bare));
+    if (words === unquote(family)) return words;
+    return (files && files.length && nameFromFiles(files)) || words || unquote(family);
+  }
+
+  // The project's font families, as Figma's Fonts list but only what this page loads or names: each family in
+  // document.fonts that has loaded or that the page's own CSS names in a font stack, plus the current one. Left out:
+  // next/font's metric stand-ins ("<family> Fallback", a local Arial resized to match) when their family is listed
+  // too, and Next's own dev fonts. A stack is a font-family, with its var()s filled in from the custom properties
+  // the page defines, since next/font hands its families over that way (--font-signifier: "signifier", ...) and the
+  // rules that use them close the stack (var(--font-signifier), Georgia, serif).
+  // Each family comes with its kind (sans, serif, mono), read in this order: the generic family closing the stacks
+  // that name it (sans-serif, serif, monospace; the most common one when they differ), then its name (Mono or Code
+  // is mono, Serif without Sans is serif, Sans or Grotesk is sans), then a measure (a face whose "iiii" and "WWWW"
+  // are the same width is mono). A serif can't be measured reliably, so it's only ever read from a stack or a name;
+  // anything still unknown counts as sans serif.
+  function projectFamilies(current) {
+    const stacks = [];
+    const defs = new Map();
+    // Each family's font files, from its @font-face rules, for the name the popover shows (fontLabel).
+    const files = new Map();
+    const walk = (rules) => {
+      for (const r of rules) {
+        if (window.CSSFontFaceRule && r instanceof CSSFontFaceRule) {
+          const fam = unquote(r.style.getPropertyValue("font-family"));
+          const urls = Array.from(r.style.getPropertyValue("src").matchAll(/url\(\s*["']?([^"')]+)/g), (m) => m[1]);
+          if (fam && urls.length) files.set(fam, (files.get(fam) || []).concat(urls));
+        } else if (r.style) {
+          const ff = r.style.getPropertyValue("font-family");
+          if (ff) stacks.push(ff);
+          for (let i = 0; i < r.style.length; i++) {
+            const prop = r.style[i];
+            if (!prop.startsWith("--")) continue;
+            if (!defs.has(prop)) defs.set(prop, []);
+            defs.get(prop).push(r.style.getPropertyValue(prop).trim());
+          }
+        }
+        if (r.cssRules) walk(r.cssRules);
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      // finetune's own sheet names the panel's Inter, which isn't the page's.
+      if (sheet.ownerNode && /^finetune-/.test(sheet.ownerNode.id || "")) continue;
+      try {
+        walk(sheet.cssRules);
+      } catch (e) {
+        // Another origin's sheet can't be read.
+      }
+    }
+    // var(--name, fallback) becomes the property's value (one that isn't just itself, as Tailwind's theme writes
+    // --font-x: var(--font-x)), else its fallback; a few levels deep, for vars made of vars.
+    const fill = (text, depth) => {
+      let out = "";
+      let i = 0;
+      while (i < text.length) {
+        const at = text.indexOf("var(", i);
+        if (at < 0) return out + text.slice(i);
+        out += text.slice(i, at);
+        let level = 0;
+        let end = at + 3;
+        for (; end < text.length; end++) {
+          if (text[end] === "(") level++;
+          else if (text[end] === ")" && --level === 0) break;
+        }
+        const inner = text.slice(at + 4, end);
+        const comma = inner.indexOf(",");
+        const name = (comma < 0 ? inner : inner.slice(0, comma)).trim();
+        const value = (defs.get(name) || []).find((v) => !v.includes("var(" + name));
+        const use = value != null ? value : comma < 0 ? "" : inner.slice(comma + 1);
+        out += depth > 0 ? fill(use, depth - 1) : "";
+        i = end + 1;
+      }
+      return out;
+    };
+    const named = stacks.map((s) => fill(s, 4).split(",").map(unquote).filter(Boolean));
+    // A custom property that holds a family counts as naming it too (a family the page sets up for its rules). Its
+    // list ends in a blank, so it never votes on the family's kind: text doesn't fall back through a property.
+    defs.forEach((vals) => vals.forEach((v) => named.push(fill(v, 4).split(",").map(unquote).filter(Boolean).concat(""))));
+    const all = new Set();
+    const loaded = new Set();
+    if (document.fonts) document.fonts.forEach((f) => {
+      const name = unquote(f.family);
+      all.add(name);
+      if (f.status === "loaded") loaded.add(name);
+    });
+    const used = (f) => named.some((n) => n.includes(f));
+    // The Inter finetune loads for its own panel (loadInter) isn't the page's, unless the page's CSS names it too.
+    const panelOnly = (f) => f === "Inter" && !!document.getElementById("ft-inter") && !used(f);
+    const keep = Array.from(all).filter((f) => !(/^__nextjs-/.test(f) || (/ Fallback$/.test(f) && all.has(f.slice(0, -9)))) && !panelOnly(f) && (loaded.has(f) || used(f)));
+    if (current && !keep.includes(current)) keep.push(current);
+    const ctx = document.createElement("canvas").getContext("2d");
+    const kindOf = (f) => {
+      const votes = { sans: 0, serif: 0, mono: 0 };
+      named.forEach((n) => {
+        if (!n.includes(f)) return;
+        const g = String(n[n.length - 1]).toLowerCase();
+        if (/^(ui-)?monospace$/.test(g)) votes.mono++;
+        else if (/^(ui-)?serif$/.test(g)) votes.serif++;
+        else if (/^(ui-)?sans-serif$|^system-ui$/.test(g)) votes.sans++;
+      });
+      const top = Object.keys(votes).reduce((a, b) => (votes[b] > votes[a] ? b : a));
+      if (votes[top]) return top;
+      if (/mono|code/i.test(f)) return "mono";
+      if (/serif/i.test(f) && !/sans/i.test(f)) return "serif";
+      if (/sans|grotesk/i.test(f)) return "sans";
+      // A face that hasn't loaded measures as the sans-serif behind it, so it reads as sans, the default anyway.
+      ctx.font = "40px " + familyCss(f) + ", sans-serif";
+      return Math.abs(ctx.measureText("iiii").width - ctx.measureText("WWWW").width) < 0.5 ? "mono" : "sans";
+    };
+    // Alphabetical by the name shown, as Figma's list is.
+    return keep.map((name) => ({ name, label: fontLabel(name, files.get(name)), kind: kindOf(name) })).sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  // Figma's Fonts popover, opened from Typography's family field: white (the panel's surface), just left of the
+  // panel and level with the field, built as Layout guide styles is (title and close, a divider, then the list). No
+  // search. Under the divider, where the styles popover's first heading sits, the "All fonts" dropdown filters the
+  // list by kind; its options are the dark menu, the only dark part. Each row shows the family in its own face, the
+  // one in use ticked. Hovering a row previews it on the text (onHover), leaving the list puts it back
+  // (onHover(null)), a click applies it (onPick) and closes. Escape, a click elsewhere and the close shut it.
+  function makeFontsPop(root, menu) {
+    const FILTERS = [["all", "All fonts"], ["sans", "Sans serif fonts"], ["serif", "Serif fonts"], ["mono", "Mono fonts"]];
+    let anchor = null;
+    let opts = null;
+    let kind = "all";
+    let fonts = [];
+
+    const pop = el("div", "ft-pop ft-fonts-pop");
+    pop.hidden = true;
+    const head = el("div", "ft-pop-head");
+    const actions = el("div", "ft-head-actions");
+    actions.append(iconButton(ICON.x, "Close", close));
+    head.append(el("span", null, "Fonts"), actions);
+    const filter = dropdown((btn) => {
+      const items = FILTERS.map(([value, label]) => ({ label, value }));
+      // A line between All fonts and the kinds, as in Figma's menu.
+      items.splice(1, 0, { divider: true });
+      menu.toggle(btn, items, kind, (v) => {
+        kind = v;
+        draw();
+      });
+    });
+    const filterRow = el("div", "ft-fonts-filter");
+    filterRow.appendChild(filter.btn);
+    const list = el("div", "ft-fonts-list");
+    list.addEventListener("pointerleave", () => opts && opts.onHover(null));
+    pop.append(head, filterRow, list);
+    root.appendChild(pop);
+
+    function row(f) {
+      const r = el("div", "ft-style-row ft-font-row");
+      r.setAttribute("role", "button");
+      r.tabIndex = 0;
+      const check = el("span", "ft-font-check");
+      if (f.name === opts.current) check.innerHTML = ICON.check;
+      // The family's display name; the pick below still hands over the family itself.
+      const name = el("span", "ft-style-name ft-font-name", f.label);
+      name.style.fontFamily = familyCss(f.name);
+      r.append(check, name);
+      const pick = () => {
+        const o = opts;
+        close();
+        o.onPick(f.name);
+      };
+      r.addEventListener("click", pick);
+      r.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        pick();
+      });
+      r.addEventListener("pointerenter", () => opts && opts.onHover(f.name));
+      return r;
+    }
+
+    function draw() {
+      filter.label.textContent = FILTERS.find(([v]) => v === kind)[1];
+      const shown = fonts.filter((f) => kind === "all" || f.kind === kind);
+      list.replaceChildren(...(shown.length ? shown.map(row) : [el("div", "ft-styles-empty", "No fonts of this kind")]));
+    }
+
+    function open(btn, o) {
+      anchor = btn;
+      opts = o;
+      btn.classList.add("is-open");
+      fonts = projectFamilies(o.current);
+      draw();
+      pop.hidden = false;
+      // Just left of the panel, level with the field, kept on screen (as Layout guide styles).
+      const r = btn.getBoundingClientRect();
+      const panel = root.getBoundingClientRect();
+      pop.style.left = Math.max(8, panel.left - 8 - pop.offsetWidth) + "px";
+      pop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - pop.offsetHeight - 8)) + "px";
+      const cur = list.querySelector(".ft-font-check:not(:empty)");
+      if (cur) cur.parentNode.scrollIntoView({ block: "nearest" });
+    }
+
+    function close() {
+      if (!anchor) return;
+      menu.close();
+      const o = opts;
+      pop.hidden = true;
+      anchor.classList.remove("is-open");
+      anchor = opts = null;
+      o.onHover(null);
+    }
+
+    // Its filter's menu lives outside it, so a click there isn't a click elsewhere.
+    document.addEventListener("pointerdown", (e) => {
+      if (!anchor || pop.contains(e.target) || anchor.contains(e.target) || e.target.closest(".ft-menu")) return;
+      close();
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (!anchor) return;
+      // While it is open the layer keys and Delete don't reach the page's layers, as makeMenu holds them: the text
+      // being previewed can't be hidden, swapped or put into editing under it. A row's own Enter or Space still picks.
+      if ((/^(Enter|Tab|Delete|Backspace)$/.test(e.key) || e.code === "Backslash") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (!typing(e.target) && !pop.contains(e.target)) e.preventDefault();
+        return;
+      }
+      if (e.key !== "Escape" || e.defaultPrevented || typing(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    });
+
+    return {
+      close,
+      toggle(btn, o) {
+        if (anchor === btn) close();
+        else {
+          close();
+          open(btn, o);
+        }
+      },
+    };
   }
 
   function numField(icon, tip) {
@@ -3940,6 +6440,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const o = originalOf(t);
         if (!("src" in o)) Object.assign(o, { src: t.getAttribute("src"), srcset: t.getAttribute("srcset") });
         t.removeAttribute("srcset");
+        // currentSrc names the old image until the new one loads: the preview and the thumbnail draw again then.
+        t.addEventListener("load", () => {
+          if (target === t) draw();
+          onChange();
+        }, { once: true });
         t.src = String(reader.result);
         record(t, (entry) => { entry.src = { name: f.name, data: String(reader.result) }; });
         draw();
@@ -4022,6 +6527,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || !target || e.defaultPrevented || typing(e.target)) return;
       e.preventDefault();
+      e.stopPropagation();
       close();
     });
 
@@ -4046,16 +6552,273 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Groups, as in Figma (⌘G, ⌘⇧G): each is a list of its layers' selectors, saved with Save and copied
   // for the bake, which wraps them in a real layer in the code. The live page is never rewrapped: moving
   // a React page's elements under a new parent breaks it, so a group here is how they select and move.
+  // A layer with an edit of its own is the element that edit is on (see resolve), so the group's line and the layer's
+  // own line name the same one after the page changed; none while that edit is judged gone.
   const groupMembers = (g) => g.map((sel) => {
-    try {
-      return document.querySelector(sel);
-    } catch (e) {
-      return null;
-    }
+    const was = edits.elements[sel] && applied.get(sel);
+    if (was && was.isConnected) return was;
+    return edits.elements[sel] && lostAt.get(sel) === "moved" ? null : query(sel);
   }).filter(Boolean);
   function groupOf(t) {
-    const sel = selectorFor(t);
+    const sel = keyOf(t);
     return edits.groups.find((g) => g.includes(sel)) || null;
+  }
+
+  // A ⌘G group's auto layout (⇧A on the group, or on two or more layers, which groups them first). The group is no
+  // element on the live page, so its layout is kept beside the groups (edits.autoLayout), matched by the group's set
+  // of layers so a regroup, an undo or a reload finds it again, and shown by moving its layers (flowGroup). Those
+  // moves are ordinary recorded translates, so undo, Save and restore need nothing new. Copy lists the layout for the
+  // bake, which wraps the layers in one new element. It always hugs its layers, so its frame is wherever they are plus
+  // its padding: nothing about the frame needs keeping. These two are functions, not consts, because loadEdits runs
+  // before this part of the file does.
+  function sameSet(a, b) {
+    return a.length === b.length && a.every((s) => b.includes(s));
+  }
+  function validLayout(l, groups) {
+    const size = (v) => isNum(v) && v >= 0;
+    const pos = (v) => v === "start" || v === "center" || v === "end";
+    if (!l || !Array.isArray(l.sels) || l.sels.length < 2 || !l.sels.every((s) => typeof s === "string")) return null;
+    if ((l.flow !== "vertical" && l.flow !== "horizontal") || !size(l.gap) || !pos(l.main) || !pos(l.cross)) return null;
+    if (!Array.isArray(l.pad) || l.pad.length !== 4 || !l.pad.every(size)) return null;
+    const ignore = Array.isArray(l.ignore) ? l.ignore : [];
+    if (!ignore.every((s) => l.sels.includes(s)) || !groups.some((g) => sameSet(g, l.sels))) return null;
+    return { sels: l.sels.slice().sort(), flow: l.flow, gap: l.gap, pad: l.pad.slice(), main: l.main, cross: l.cross, ignore: ignore.slice() };
+  }
+  // Found again each time, never held: an undo or a regroup swaps the arrays.
+  const layoutOf = (g) => (g && edits.autoLayout.find((l) => sameSet(l.sels, g))) || null;
+  // The group that is exactly these layers, if they are one.
+  function groupFor(list) {
+    const sels = list.map(keyOf);
+    return edits.groups.find((g) => sameSet(g, sels)) || null;
+  }
+  // The group auto layout a layer is in, placed by it or ignoring it.
+  function layoutWith(t) {
+    const sel = keyOf(t);
+    return edits.autoLayout.find((l) => l.sels.includes(sel)) || null;
+  }
+  // The code's order: the order the baked flex places the layers in.
+  const domOrder = (a, b) => (a === b ? 0 : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+
+  // Where a layer sits without any translate (nx, ny), and where she sees it (x, y: that plus its translate, hers or,
+  // where she has none, the code's). Read off its rect less its translate and less a transform that only moves it, so
+  // a running animation's slide can't skew the layout. A turned or scaled layer is read from offset geometry, which
+  // leaves transforms out but rounds to whole pixels.
+  function placeOf(t) {
+    const cs = getComputedStyle(t);
+    const n = (v) => parseFloat(v) || 0;
+    const own = trPx(t, trNow(t));
+    const moveOnly = cs.rotate === "none" && cs.scale === "none" && (cs.transform === "none" || /^matrix\(1, 0, 0, 1,/.test(cs.transform)) && !/[%(]/.test(cs.translate);
+    let x;
+    let y;
+    let w;
+    let h;
+    if (moveOnly || !(t instanceof HTMLElement) || !t.offsetParent) {
+      const r = t.getBoundingClientRect();
+      const tr = moveOnly && cs.translate !== "none" ? cs.translate.split(/\s+/).map(n) : [];
+      const m = moveOnly && cs.transform !== "none" ? new DOMMatrixReadOnly(cs.transform) : null;
+      x = r.left - (tr[0] || 0) - (m ? m.e : 0);
+      y = r.top - (tr[1] || 0) - (m ? m.f : 0);
+      w = r.width;
+      h = r.height;
+    } else {
+      // Against the body, offsets are from the document's corner.
+      const op = t.offsetParent;
+      const pr = op === document.body ? { left: -window.scrollX, top: -window.scrollY } : op.getBoundingClientRect();
+      const edge = op === document.body ? { x: 0, y: 0 } : { x: op.clientLeft, y: op.clientTop };
+      x = pr.left + edge.x + t.offsetLeft;
+      y = pr.top + edge.y + t.offsetTop;
+      w = t.offsetWidth;
+      h = t.offsetHeight;
+    }
+    return { t, sel: keyOf(t), nx: x, ny: y, x: x + (own[0] || 0), y: y + (own[1] || 0), w, h };
+  }
+  // A group layout's layers in the code's order, the ones it places (flow) and the ones that ignore it, and its
+  // frame's corner (fx, fy). The frame hugs the placed layers, so it's derived from where they are, not kept. nx, ny
+  // is where the bake's new element would put them before any move, for Copy's translate.
+  function alGeometry(L) {
+    const shown = groupMembers(L.sels).filter((t) => !t.hasAttribute("data-ft-deleted") && getComputedStyle(t).display !== "none").sort(domOrder);
+    const flow = [];
+    const ignored = [];
+    shown.forEach((t) => {
+      const b = placeOf(t);
+      (L.ignore.includes(b.sel) ? ignored : flow).push(b);
+    });
+    const base = flow.length ? flow : ignored;
+    const least = (k) => (base.length ? Math.min(...base.map((b) => b[k])) : 0);
+    return { flow, ignored, fx: least("x") - L.pad[3], fy: least("y") - L.pad[0], nx: least("nx"), ny: least("ny") };
+  }
+  // Places a group's layers as its flex will in the code: one after another in the code's order, gap apart, inside
+  // the padding, lined up across the flow. Each move goes through nudge, so it's an ordinary recorded translate, and a
+  // second run moves nothing. Twice at most: a move can box a layer (inline becomes inline-block), shifting the rest.
+  // The translate a layer's code gives it (in px), while she has none of her own; "" otherwise.
+  function codeTranslate(t) {
+    const tr = getComputedStyle(t).translate;
+    return !t.style.translate && tr !== "none" && !/[%(]/.test(tr) ? tr : "";
+  }
+  // A group layout's move of one of its layers. Her translate stands in for the code's (Copy says translate: none);
+  // none is written where hers comes back to nothing, so the code's doesn't show again. To 2 decimals (an arrow
+  // nudge keeps 1), so a scaled group's gaps and alignment land where its Copy line says.
+  function layoutNudge(t, dx, dy) {
+    [dx, dy] = localDelta(t, dx, dy);
+    const cur = trNow(t);
+    cur[0].px += dx;
+    cur[1].px += dy;
+    boxed(t);
+    writeTranslate(t, cur, true);
+  }
+  function flowGroup(L) {
+    const y = L.flow === "vertical";
+    const across = (span, size) => (L.cross === "center" ? (span - size) / 2 : L.cross === "end" ? span - size : 0);
+    history.quiet++;
+    // A translate in a layer's code is taken over as hers first, where it is, since nudge adds to hers alone.
+    groupMembers(L.sels.filter((s) => !L.ignore.includes(s))).forEach((t) => {
+      const tr = codeTranslate(t);
+      if (tr) setStyle(t, "translate", tr);
+    });
+    for (let pass = 0; pass < 2; pass++) {
+      const f = alGeometry(L);
+      if (!f.flow.length) break;
+      const W = Math.max(...f.flow.map((b) => b.w));
+      const H = Math.max(...f.flow.map((b) => b.h));
+      let run = y ? f.fy + L.pad[0] : f.fx + L.pad[3];
+      let moved = false;
+      f.flow.forEach((b) => {
+        const tx = y ? f.fx + L.pad[3] + across(W, b.w) : run;
+        const ty = y ? run : f.fy + L.pad[0] + across(H, b.h);
+        run += (y ? b.h : b.w) + L.gap;
+        if (Math.abs(tx - b.x) < 0.005 && Math.abs(ty - b.y) < 0.005) return;
+        layoutNudge(b.t, tx - b.x, ty - b.y);
+        moved = true;
+      });
+      if (!moved) break;
+    }
+    history.quiet--;
+    noteChange();
+    flowTick = editTick;
+  }
+  // After a change to a layer in a group's auto layout (its words, its size, a move of its own), the group places
+  // its layers again, as Figma's frame would.
+  function reflowFor(list) {
+    const sels = list.map(keyOf);
+    edits.autoLayout.filter((l) => l.sels.some((s) => sels.includes(s))).forEach(flowGroup);
+  }
+  // The frame a group layout draws: the box around the layers it places, plus its padding.
+  function alFrame(L) {
+    // Read on every pointer move and scroll, so it goes by the stored selectors rather than working each one out.
+    const placed = groupMembers(L.sels.filter((s) => !L.ignore.includes(s))).filter((t) => !t.hasAttribute("data-ft-deleted"));
+    if (!placed.length) return null;
+    const u = unionRect(placed);
+    const [pt, pr, pb, pl] = L.pad;
+    return { left: u.left - pl, top: u.top - pt, right: u.right + pr, bottom: u.bottom + pb, width: u.width + pl + pr, height: u.height + pt + pb };
+  }
+  // The box a set of layers shows as: a group with auto layout is its frame.
+  function boxOf(list, g) {
+    const L = layoutOf(g);
+    return (L && alFrame(L)) || unionRect(list);
+  }
+  // Copy's line for a group layout: the new element's CSS, longhands in a fixed order. translate is the frame's move
+  // from where the new element would sit, so a group she dragged keeps its move through the bake. margin is the
+  // layers' outer margins, which the new element takes over (alBake).
+  function alDeclarations(L, f, margin) {
+    const y = L.flow === "vertical";
+    const out = ["display: flex", "flex-direction: " + (y ? "column" : "row"), (y ? "row-gap: " : "column-gap: ") + L.gap + "px",
+      "justify-content: " + ALIGN_CSS[L.main], "align-items: " + ALIGN_CSS[L.cross]];
+    ["top", "right", "bottom", "left"].forEach((side, i) => { if (L.pad[i]) out.push("padding-" + side + ": " + L.pad[i] + "px"); });
+    ["top", "right", "bottom", "left"].forEach((side, i) => { if (margin && +fmt2(margin[i])) out.push("margin-" + side + ": " + fmt2(margin[i]) + "px"); });
+    out.push("width: fit-content");
+    // To 2 decimals, as a K scale's values are: 1 would put a scaled group up to 0.05px off.
+    const tx = +fmt2(f.fx - f.nx);
+    const ty = +fmt2(f.fy - f.ny);
+    if (tx || ty) out.push("translate: " + (tx || 0) + "px " + (ty || 0) + "px");
+    return out.join("; ");
+  }
+  // What a group layout's layers need in the bake so the new element's flex puts them where she sees them. The
+  // preview places border boxes, but flex adds every margin and collapses none: so the layers' margins go to 0 (the
+  // gap holds the space between them) and the new element takes the outer ones (along the flow the first's start
+  // and the last's end, across it the smallest), so it sits where they sat. A layer that filled its old parent
+  // would shrink to its content in a hugging flex, so it keeps its size in px. One that ignores the layout is placed
+  // by its margin box (absolute left and top place that) and keeps its width unless that's fixed (out of the flow it
+  // shrinks to fit), as Ignore auto layout on a container does. wrap: the new element's margins. layers: [selector, declarations], in the code's order.
+  function alBake(L, f) {
+    const y = L.flow === "vertical";
+    const SIDES = ["top", "right", "bottom", "left"];
+    const n = (v) => parseFloat(v) || 0;
+    const marginsOf = (t) => {
+      const cs = getComputedStyle(t);
+      return [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map(n);
+    };
+    const wrap = [0, 0, 0, 0];
+    const ms = new Map(f.flow.map((b) => [b, marginsOf(b.t)]));
+    if (f.flow.length) {
+      const [lead, trail, cLead, cTrail] = y ? [0, 2, 3, 1] : [3, 1, 0, 2];
+      const all = f.flow.map((b) => ms.get(b));
+      wrap[lead] = all[0][lead];
+      wrap[trail] = all[all.length - 1][trail];
+      wrap[cLead] = Math.min(...all.map((m) => m[cLead]));
+      wrap[cTrail] = Math.min(...all.map((m) => m[cTrail]));
+    }
+    const layers = f.flow.concat(f.ignored).sort((a, b) => domOrder(a.t, b.t)).map((b) => {
+      const out = [];
+      const ignored = !ms.has(b);
+      if (ignored) {
+        const m = marginsOf(b.t);
+        out.push("position: absolute", "left: " + round1(b.x - m[3] - f.fx) + "px", "top: " + round1(b.y - m[0] - f.fy) + "px");
+      } else ms.get(b).forEach((v, i) => { if (round1(v)) out.push("margin-" + SIDES[i] + ": 0px"); });
+      const [cw, ch] = boxCss(b.t, b.w, b.h);
+      const wm = sizeModeOf(b.t, "w");
+      if (wm === "fill" || (ignored && wm === "hug")) out.push("width: " + round1(cw) + "px");
+      if (sizeModeOf(b.t, "h") === "fill") out.push("height: " + round1(ch) + "px");
+      return [b.sel, out, b.t];
+    }).filter((l) => l[1].length);
+    return { wrap, layers };
+  }
+  // Why one auto layout can't hold these layers, or "" when it can. The bake wraps them in one new element, so they
+  // must be HTML layers side by side in the code.
+  function groupLayoutRefusal(list) {
+    if (list.length < 2) return "Auto layout needs two or more layers";
+    if (list.some((t) => t === pageEl || t === document.body || t === document.documentElement)) return "Auto layout can't hold the page itself";
+    if (list.some(inSvg)) return "Auto layout works on HTML layers";
+    if (list.some((t) => list.some((o) => o !== t && o.contains(t)))) return "One of these layers holds another";
+    if (list.some((t) => t.parentElement !== list[0].parentElement)) return "These layers sit in different places in the code, so one auto layout can't hold them";
+    if (drawnScaled(list)) return "These layers are drawn scaled or turned, so auto layout can't measure them";
+    return "";
+  }
+  // Whether the layers are drawn at another size than their CSS gives them: a scale or a turn on their parent, or
+  // further out. The group's gaps and moves are measured on screen but baked as CSS px, so there every number would
+  // come out wrong. Read off a box's drawn size against its CSS size: the parent's, and each layer's that only moves.
+  function drawnScaled(list) {
+    const off = (e) => {
+      if (!(e instanceof HTMLElement) || !e.offsetWidth || !e.offsetHeight) return false;
+      const r = e.getBoundingClientRect();
+      return Math.abs(r.width - e.offsetWidth) > 1 || Math.abs(r.height - e.offsetHeight) > 1;
+    };
+    const p = list[0].parentElement;
+    if (p && p !== document.documentElement && off(p)) return true;
+    return list.some((t) => {
+      const cs = getComputedStyle(t);
+      return cs.rotate === "none" && cs.scale === "none" && (cs.transform === "none" || /^matrix\(1, 0, 0, 1,/.test(cs.transform)) && off(t);
+    });
+  }
+  // The group layout that keeps the layers where she sees them: the flow from how they sit (where they overlap both
+  // ways, the axis they spread along most), then the gap and alignment read in screen order. reordered: the code's
+  // order isn't the order on screen, so they'll swap places.
+  function inferGroup(list) {
+    const bs = list.slice().sort(domOrder).map(placeOf);
+    const boxes = bs.map((b) => ({ el: b.t, l: b.x, t: b.y, r: b.x + b.w, b: b.y + b.h }));
+    let inf = inferLayout(boxes);
+    let overlap = false;
+    if (inf.reason) {
+      const spread = (k) => {
+        const c = bs.map((b) => (k === "x" ? b.x + b.w / 2 : b.y + b.h / 2));
+        return Math.max(...c) - Math.min(...c);
+      };
+      inf = { flow: spread("x") > spread("y") ? "horizontal" : "vertical" };
+      overlap = true;
+    }
+    const lo = inf.flow === "vertical" ? "t" : "l";
+    const reordered = boxes.some((b, i) => i && b[lo] < boxes[i - 1][lo] - 0.5);
+    const out = inferLayout(boxes.slice().sort((a, b) => a[lo] - b[lo]), { flow: inf.flow });
+    return Object.assign(out, { reordered, moves: out.moves || overlap });
   }
 
   // The box around several layers, in window coordinates.
@@ -4068,16 +6831,84 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return { left, top, right, bottom, width: right - left, height: bottom - top };
   }
 
-  // A move by dx, dy as a translate, recorded like one typed into the Position fields. sim "stack" is Spacing's
-  // move on a free-flow container: its share is added up in entry.sim apart from her own moves, so a change of
-  // Flow takes back just Spacing's share and a layer she moved keeps her move.
+  // A translate value read as the code writes it, per axis: px plus a share of the layer's own size (a %), which
+  // is all a computed translate holds (calc() keeps the two apart). A third value (z) is kept as it is. null when
+  // it's something else (a var() inline).
+  function trAxes(v) {
+    const s = String(v || "").trim();
+    if (!s || s === "none") return [{ px: 0, pct: 0 }, { px: 0, pct: 0 }, ""];
+    const parts = [];
+    let depth = 0;
+    let cur = "";
+    for (const ch of s) {
+      if (ch === "(") depth++;
+      if (ch === ")") depth--;
+      if (/\s/.test(ch) && !depth) {
+        if (cur) parts.push(cur);
+        cur = "";
+      } else cur += ch;
+    }
+    if (cur) parts.push(cur);
+    const axis = (p) => {
+      const out = { px: 0, pct: 0 };
+      if (!p) return out;
+      const body = /^calc\((.*)\)$/i.exec(p);
+      const terms = (body ? body[1] : p).replace(/\s*([+-])\s+/g, " $1").trim().split(/\s+/);
+      for (const term of terms) {
+        const m = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(px|%)?$/i.exec(term);
+        if (!m || (!m[2] && parseFloat(m[1]))) return null;
+        out[m[2] === "%" ? "pct" : "px"] += parseFloat(m[1]);
+      }
+      return out;
+    };
+    const x = axis(parts[0]);
+    const y = axis(parts[1]);
+    return x && y && parts.length <= 3 ? [x, y, parts[2] || ""] : null;
+  }
+  // The translate she sees on t now: her own, else the code's.
+  const trNow = (t) => (t.style.translate && trAxes(t.style.translate)) || trAxes(getComputedStyle(t).translate) || trAxes("");
+  // The translate the code gives t (its own inline one or its stylesheet's), as it was before her first move.
+  function codeTrOf(t) {
+    const o = originalOf(t);
+    if (!("translate" in o.styles)) return getComputedStyle(t).translate;
+    return o.codeTr != null ? o.codeTr : o.styles.translate || "none";
+  }
+  // A translate in px, its % worked out against the layer's own box (a % translate is a share of its own size).
+  function trPx(t, ax) {
+    const box = t instanceof HTMLElement ? { w: t.offsetWidth, h: t.offsetHeight } : t.getBBox ? (() => { try { const b = t.getBBox(); return { w: b.width, h: b.height }; } catch (e) { return { w: 0, h: 0 }; } })() : { w: 0, h: 0 };
+    return [ax[0].px + (ax[0].pct / 100) * box.w, ax[1].px + (ax[1].pct / 100) * box.h];
+  }
+  // Writes a translate given per axis. Back on the code's own, the edit goes (and the code's inline value with it
+  // comes back); otherwise the whole value is written, the code's share kept: a -50% stays -50% with her px added
+  // in a calc(), so the bake keeps a centring the code made. Nothing at all, where the code has a translate, is none.
+  // fine: to 0.01px, as Scale writes its sizes (else 0.1px).
+  function writeTranslate(t, ax, fine) {
+    const code = trAxes(codeTrOf(t));
+    const step = fine ? 100 : 10;
+    const near = (a, b) => Math.abs(a.px - b.px) < 0.5 / step && Math.abs(a.pct - b.pct) < 0.0005;
+    if (code && near(ax[0], code[0]) && near(ax[1], code[1]) && (ax[2] || "") === (code[2] || "")) return handBack(t, "translate");
+    const fmt = (a) => {
+      const px = Math.round(a.px * step) / step;
+      const pct = Math.round(a.pct * 1000) / 1000;
+      if (!pct) return px + "px";
+      if (!px) return pct + "%";
+      return "calc(" + pct + "% " + (px < 0 ? "- " : "+ ") + Math.abs(px) + "px)";
+    };
+    const none = !ax[2] && [0, 1].every((i) => !Math.round(ax[i].px * step) && !Math.round(ax[i].pct * 1000));
+    setStyle(t, "translate", none ? "none" : fmt(ax[0]) + " " + fmt(ax[1]) + (ax[2] ? " " + ax[2] : ""));
+  }
+
+  // A move by dx, dy as a translate, recorded like one typed into the Position fields. It adds to the translate
+  // she sees, the code's included (taken over as hers), so a layer the code already moves goes on from there.
+  // sim "stack" is Spacing's move on a free-flow container: its share is added up in entry.sim apart from her own
+  // moves, so a change of Flow takes back just Spacing's share and a layer she moved keeps her move.
   function nudge(t, dx, dy, sim) {
     [dx, dy] = localDelta(t, dx, dy);
-    const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
-    const tx = Math.round(((cur[0] || 0) + dx) * 10) / 10;
-    const ty = Math.round(((cur[1] || 0) + dy) * 10) / 10;
+    const cur = trNow(t);
+    cur[0].px += dx;
+    cur[1].px += dy;
     boxed(t);
-    setStyle(t, "translate", tx || ty ? tx + "px " + ty + "px" : "");
+    writeTranslate(t, cur);
     if (sim) record(t, (entry) => {
       if (!entry.styles.translate) return;
       const was = entry.sim || { x: 0, y: 0 };
@@ -4088,9 +6919,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // "All items" for the guide alignments: what she could select (text, images, boxes with a fill),
-  // outermost only, so a card moves with the words inside it.
-  function pageItems() {
-    const all = Array.from(document.body.querySelectorAll("*")).filter((e) => {
+  // outermost only, so a card moves with the words inside it. Inside root when one is given (a full-width band's).
+  function pageItems(root) {
+    const all = Array.from((root || document.body).querySelectorAll("*")).filter((e) => {
       if (e === pageEl || isUi(e) || inSvg(e) || e.closest(".ft-guides, .ft-hover-box, .ft-sel-box, .ft-marquee, .ft-panel")) return false;
       const r = e.getBoundingClientRect();
       if (!r.width || !r.height || getComputedStyle(e).visibility === "hidden") return false;
@@ -4103,9 +6934,50 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // site's decided grid, her call 2026-10-15: a site has its grid even where no CSS grid draws it), else its widest
   // CSS grid with four or more equal columns, at least half the window wide (a two-column list is content, not
   // the page's grid). Count and gutter are the grid's own; equal margins read as Stretch, otherwise Left with an
-  // offset.
+  // offset. A page with neither still has a grid when its sections sit in one centred content column and a grid
+  // inside runs edge to edge of it (containerGrid).
   function pageGrid() {
-    if (declaredGrid) return Object.assign(newGuide(), declaredGrid);
+    if (declaredGrid) return fromCode(Object.assign(newGuide(), declaredGrid), "layout");
+    return fullGrid() || containerGrid();
+  }
+  // Whether a grid's column count comes from its own width (repeat(auto-fit or auto-fill, ...)) rather than the
+  // window's: no rule or variant holds a count for it, so Copy says so and the bake writes px. The computed tracks
+  // are px either way, so it's read by giving the grid half its width for a moment and put straight back.
+  function fluidGrid(p) {
+    const count = () => getComputedStyle(p).gridTemplateColumns.split(/\s+/).map(parseFloat).filter(isNum).length;
+    const n = count();
+    const was = p.style.getPropertyValue("width");
+    const pri = p.style.getPropertyPriority("width");
+    still(p, true);
+    p.style.setProperty("width", Math.round(p.getBoundingClientRect().width / 2) + "px", "important");
+    const half = count();
+    if (was) p.style.setProperty("width", was, pri);
+    else p.style.removeProperty("width");
+    tidyStyle(p);
+    flush();
+    still(p, false);
+    return half !== n;
+  }
+  // The column of grid p that its item t starts in as the code places it (finetune's px translate taken off),
+  // 1-based; 0 when it can't be read.
+  function itemColumn(t, p) {
+    const m = /^(-?[\d.]+)px(?:\s+-?[\d.]+px)?$|^none$/.exec(getComputedStyle(t).translate);
+    if (!m) return 0;
+    const cs = getComputedStyle(p);
+    const tracks = cs.gridTemplateColumns.split(/\s+/).map(parseFloat).filter(isNum);
+    const gap = parseFloat(cs.columnGap) || 0;
+    let x = p.getBoundingClientRect().left + (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.borderLeftWidth) || 0);
+    const left = t.getBoundingClientRect().left - (parseFloat(m[1]) || 0);
+    for (let i = 0; i < tracks.length; i++) {
+      if (left < x + tracks[i] + gap / 2) return i + 1;
+      x += tracks[i] + gap;
+    }
+    return 0;
+  }
+  // A grid's or a box's own selector for Copy: its id, else up to four of its classes, else its tag.
+  const gridName = (e) => (e.id ? "#" + CSS.escape(e.id)
+    : e.classList.length ? Array.from(e.classList).slice(0, 4).map((c) => "." + CSS.escape(c)).join("") : e.localName);
+  function fullGrid() {
     const W = document.documentElement.clientWidth;
     let best = null;
     for (const e of document.body.querySelectorAll("*")) {
@@ -4127,7 +6999,94 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const g = Object.assign(newGuide(), { count: best.n, gutter: Math.round(parseFloat(cs.columnGap) || 0) });
     if (Math.abs(left - (W - right)) <= 1) Object.assign(g, { align: "stretch", offset: Math.round(left) });
     else Object.assign(g, { align: "left", offset: Math.round(left), width: Math.round(best.w) });
-    return g;
+    return fromCode(g, gridName(best.e));
+  }
+  // The content column most of the page sits in, as vibecoded sites build it (.container, mx-auto max-w-7xl px-6,
+  // width: min(1100px, 92vw), a section with padding-inline): boxes centred in the window by a max-width, side
+  // padding or auto margins, grouped by their content edges. The group down the most of the page's height wins (two
+  // or more boxes, or one down 40% of it). Its columns are those of the grids inside it that run edge to edge of
+  // it with two or more equal tracks, the most common count and gap among them (a tie goes to more columns, the finer
+  // grid). A content column with no such grid gives no layout: "Layout not defined" stays (her call 2026-10-15).
+  function containerGrid() {
+    const W = document.documentElement.clientWidth;
+    const H = document.documentElement.scrollHeight;
+    const px = (cs, k) => parseFloat(cs[k]) || 0;
+    const content = (r, cs) => [r.left + px(cs, "paddingLeft") + px(cs, "borderLeftWidth"), r.right - px(cs, "paddingRight") - px(cs, "borderRightWidth")];
+    const cols = new Map();
+    const grids = [];
+    for (const e of document.body.querySelectorAll("*")) {
+      if (isUi(e) || e.closest(".ft-guides, .ft-panel")) continue;
+      const r = e.getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      const cs = getComputedStyle(e);
+      const [left, right] = content(r, cs);
+      if (cs.display === "grid" || cs.display === "inline-grid") {
+        const tracks = cs.gridTemplateColumns.split(/\s+/).map(parseFloat).filter(isNum);
+        const avg = tracks.reduce((a, b) => a + b, 0) / tracks.length;
+        if (tracks.length >= 2 && avg > 0 && tracks.every((t) => Math.abs(t - avg) <= 1)) {
+          grids.push({ e, left, right, n: tracks.length, gap: Math.round(px(cs, "columnGap")) });
+        }
+      }
+      if (Math.abs(r.left - (W - r.right)) > 1 || right - left < 1) continue;
+      const centred = cs.maxWidth !== "none" || (px(cs, "paddingLeft") > 0 && px(cs, "paddingRight") > 0)
+        || (px(cs, "marginLeft") > 0 && Math.abs(px(cs, "marginLeft") - px(cs, "marginRight")) <= 1);
+      if (!centred) continue;
+      const k = Math.round(left) + "," + Math.round(right);
+      if (!cols.has(k)) cols.set(k, { left, right, boxes: [], spans: [] });
+      const c = cols.get(k);
+      c.boxes.push(e);
+      c.spans.push([r.top, r.bottom]);
+    }
+    // How much of the page's height a group covers: its boxes' spans merged, so nested boxes count once.
+    const covered = (spans) => {
+      let sum = 0;
+      let end = -Infinity;
+      spans.slice().sort((a, b) => a[0] - b[0]).forEach(([a, b]) => {
+        if (b <= end) return;
+        sum += b - Math.max(a, end);
+        end = b;
+      });
+      return sum;
+    };
+    // Only a group with a grid edge to edge across it can be the content column: padded full-width sections around a
+    // narrower container cover more height (their padding counts) but hold no grid themselves.
+    let col = null;
+    let fits = [];
+    cols.forEach((c) => {
+      c.h = covered(c.spans);
+      if (!(c.boxes.length >= 2 || c.h >= 0.4 * H) || (col && c.h <= col.h)) return;
+      const f = grids.filter((g) => Math.abs(g.left - c.left) <= 1 && Math.abs(g.right - c.right) <= 1);
+      if (!f.length) return;
+      col = c;
+      fits = f;
+    });
+    if (!col) return null;
+    const tally = new Map();
+    fits.forEach((g) => {
+      const k = g.n + "," + g.gap;
+      tally.set(k, (tally.get(k) || []).concat(g));
+    });
+    const [n, gap] = Array.from(tally.keys()).sort((a, b) => tally.get(b).length - tally.get(a).length
+      || parseInt(b) - parseInt(a))[0].split(",").map(Number);
+    const left = col.left;
+    const right = col.right;
+    const g = Object.assign(newGuide(), { count: n, gutter: gap });
+    if (Math.abs(left - (W - right)) <= 1) Object.assign(g, { align: "stretch", offset: Math.round(left) });
+    else Object.assign(g, { align: "left", offset: Math.round(left), width: Math.round((right - left - (n - 1) * gap) / n) });
+    // Named as the code has it, so Copy's columns comment and the bake find it: each of those grids inside the
+    // content column (a grid that is the column itself by its own name), as one selector list.
+    const names = [];
+    tally.get(n + "," + gap).forEach((gr) => {
+      const box = col.boxes.find((b) => b !== gr.e && b.contains(gr.e));
+      const name = (box ? gridName(box) + " " : "") + gridName(gr.e);
+      if (!names.includes(name)) names.push(name);
+    });
+    return fromCode(g, names.join(", "));
+  }
+  // Where the page's grid comes from in the code (the grid's own classes, or "layout" for the call's), for Copy's
+  // columns comment. Not enumerable, so the guides copied from it, saved with the edits, don't carry it.
+  function fromCode(g, source) {
+    return Object.defineProperty(g, "source", { value: source });
   }
 
   // A guide's column edges across the window, as drawn.
@@ -4147,13 +7106,29 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     return { starts, ends };
   }
+  // A box across the whole guide, its first column's left edge to its last one's right: a full-width band (a
+  // section, a header), not a layer to line up with columns.
+  function spansGuide(r, g) {
+    const { starts, ends } = guideEdges(g);
+    return r.left <= starts[0] + 1 && r.right >= ends[ends.length - 1] - 1;
+  }
 
   // What the guide alignments move: each group as one, then every other item on its own.
-  function pageUnits() {
+  // A unit that spans the whole guide (a section, a header, a footer: a full-width band) isn't moved, since lining
+  // its edge up with a column would push it off the page; the items inside it are taken instead, the same way, down
+  // to ones that fit. A band with nothing inside stays put.
+  function pageUnits(g) {
     const groups = edits.groups.map(groupMembers).filter((m) => m.length);
     const grouped = groups.flat();
-    const loose = pageItems().filter((t) => !grouped.some((m) => m === t || m.contains(t) || t.contains(m)));
-    return groups.concat(loose.map((t) => [t]));
+    const loose = (root) => pageItems(root).filter((t) => !grouped.some((m) => m !== root && (m === t || m.contains(t) || t.contains(m))));
+    const units = [];
+    const take = (unit) => {
+      if (!g || !spansGuide(unionRect(unit), g)) return units.push(unit);
+      if (unit.length > 1) return unit.forEach((t) => take([t]));
+      loose(unit[0]).forEach((t) => take([t]));
+    };
+    groups.concat(loose().map((t) => [t])).forEach(take);
+    return units;
   }
 
   const nearest = (list, v) => list.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
@@ -4163,14 +7138,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // horizontally puts each item in the middle of the page instead. Every move is recorded.
   function alignAll(g, how) {
     const W = document.documentElement.clientWidth;
-    pageUnits().forEach((unit) => {
+    let moved = false;
+    pageUnits(g).forEach((unit) => {
       const r = unionRect(unit);
       const dx = how === "left" ? nearest(guideEdges(g).starts, r.left) - r.left
         : how === "right" ? nearest(guideEdges(g).ends, r.right) - r.right
           : W / 2 - (r.left + r.width / 2);
-      if (Math.abs(dx) >= 0.05) unit.forEach((t) => nudge(t, dx, 0));
+      if (Math.abs(dx) < 0.05) return;
+      unit.forEach((t) => nudge(t, dx, 0));
+      moved = true;
     });
-    undoToast("Align all items " + ALIGN_WORD[how], undo);
+    // Nothing moved, no step: an Undo here would take back the edit before it.
+    if (moved) actionToast("Align all items " + ALIGN_WORD[how]);
   }
 
   // The columns layout that shows (one at a time), and column i of it as a box down the window.
@@ -4194,19 +7173,66 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // moved as alignSelection moves them (a group as one).
   function alignToColumns(cols, list, how) {
     const box = columnsRect(cols);
-    if (box) alignSelection(list, how, box);
+    if (!box) return;
+    alignSelection(list, how, box);
+    noteColumns(cols, list, how);
+  }
+  // Which columns a layer was lined up with or sized to, kept on its edit so Copy can say so while it still sits
+  // there: the bake can then place it in the page's grid (a grid-column) rather than write the px it landed at.
+  // source is the page's grid in the code when the guide is still on its numbers, else "guide" (her own guide).
+  function noteColumns(cols, list, how) {
+    const g = shownGuide();
+    if (!g) return;
+    const base = {
+      first: Math.min(...cols) + 1, last: Math.max(...cols) + 1, count: g.count, how, gutter: g.gutter, align: g.align,
+      source: (pageDefault && sameNums(g, pageDefault) && pageDefault.source) || "guide", vw: window.innerWidth,
+    };
+    if (g.align === "stretch") base.margin = g.offset;
+    else Object.assign(base, { offset: g.offset, colWidth: g.width });
+    // Only a layer that sits on the columns by itself is noted: one in a ⌘G group moved or scaled as one unit fills
+    // just its part of the span, and a grid-column for the whole span would stretch it over its neighbours.
+    const box = columnsRect(cols);
+    const on = (r) => !box ? false : how === "left" ? Math.abs(r.left - box.left) <= 0.5
+      : how === "right" ? Math.abs(r.right - box.right) <= 0.5
+        : how === "hcenter" ? Math.abs(r.left + r.width / 2 - (box.left + box.width / 2)) <= 0.5
+          : Math.abs(r.left - box.left) <= 0.5 && Math.abs(r.width - box.width) <= 0.5;
+    list.filter((t) => !list.some((o) => o !== t && o.contains(t))).forEach((t) => {
+      const entry = edits.elements[keyOf(t)];
+      if (!entry) return;
+      const r = t.getBoundingClientRect();
+      if (on(r)) entry.cols = Object.assign({ left: round2(r.left + window.scrollX), width: round2(r.width) }, base);
+      else delete entry.cols;
+    });
+    noteChange();
   }
   // Match item widths to the columns: each layer (the outermost picked) takes their width and lines up with the
-  // leftmost one; an image or a vector keeps its proportions.
+  // leftmost one. It's a width change like a typed W (resizeLayer): what's inside wraps, and an image, a video, an
+  // <svg>, a vector or a box the code gives an aspect-ratio keeps its proportions (her call: images scale, and the
+  // item's height changes with its width), as does a layer with its lock on. A ⌘G group is one box, as Figma resizes
+  // a group: each layer's width and its place across the group scale by the span over the group's width, so the
+  // layers keep their spacing rather than all landing on the span's left edge.
   function matchColumns(cols, list) {
     const box = columnsRect(cols);
     if (!box) return;
     const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
-    top.forEach((t) => {
-      const keep = t.tagName === "IMG" || isVector(t) ? sizeOf(t) : null;
-      setSize(t, Math.round(box.width), keep && keep.w ? Math.round((box.width * keep.h) / keep.w) : null);
+    const keeps = (t) => isVector(t) || ratioDriven(t) || ratioLocked(t);
+    const groups = edits.groups.map(groupMembers).filter((m) => m.length > 1 && m.every((t) => top.includes(t)));
+    const grouped = groups.flat();
+    const units = groups.concat(top.filter((t) => !grouped.includes(t)).map((t) => [t]));
+    units.forEach((unit) => {
+      if (unit.length === 1) return resizeLayer(unit[0], Math.round(box.width), null, { locked: keeps(unit[0]) });
+      const u = unionRect(unit);
+      if (!u.width) return;
+      const f = box.width / u.width;
+      const at = unit.map((t) => t.getBoundingClientRect().left - u.left);
+      unit.forEach((t) => resizeLayer(t, round2(exactSize(t).w * f), null, { locked: keeps(t) }));
+      unit.forEach((t, i) => {
+        const dx = u.left + at[i] * f - t.getBoundingClientRect().left;
+        if (Math.abs(dx) >= 0.05) nudge(t, dx, 0);
+      });
     });
-    alignTo(top.map((t) => [t]), box, "left");
+    alignTo(units, box, "left");
+    noteColumns(cols, list, "width");
   }
 
   // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box (or
@@ -4251,18 +7277,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // A group's items in one column or one row, in order, with the gaps between them; null when they overlap both
-  // ways (then there's no single spacing to set).
+  // ways (then there's no single spacing to set). A stack once read is kept (axis and order), so one spaced closer
+  // than touching (a negative Spacing, which overlaps them) still reads as that stack while its items keep their
+  // order along it, and Spacing can be typed back.
+  const stacksSeen = new Map();
   function stackOf(items) {
     const rs = items.map((t) => ({ t, r: t.getBoundingClientRect() })).filter((x) => x.r.width || x.r.height);
     if (rs.length < 2) return null;
+    const key = rs.map((x) => selectorFor(x.t)).sort().join("\n");
+    const edges = (axis) => (axis === "y" ? ["top", "bottom"] : ["left", "right"]);
     const run = (axis) => {
-      const lo = axis === "y" ? "top" : "left";
-      const hi = axis === "y" ? "bottom" : "right";
+      const [lo, hi] = edges(axis);
       const sorted = rs.slice().sort((a, b) => a.r[lo] - b.r[lo]);
       if (!sorted.every((x, i) => !i || x.r[lo] >= sorted[i - 1].r[hi] - 0.5)) return null;
       return { axis, items: sorted.map((x) => x.t), gaps: sorted.slice(1).map((x, i) => x.r[lo] - sorted[i].r[hi]) };
     };
-    return run("y") || run("x");
+    const st = run("y") || run("x");
+    if (st) {
+      stacksSeen.set(key, { axis: st.axis, items: st.items });
+      return st;
+    }
+    const kept = stacksSeen.get(key);
+    if (!kept) return null;
+    const [lo, hi] = edges(kept.axis);
+    const order = kept.items.map((t) => rs.find((x) => x.t === t));
+    if (order.some((x) => !x) || !order.every((x, i) => !i || x.r[lo] > order[i - 1].r[lo] + 0.5)) return null;
+    return { axis: kept.axis, items: kept.items, gaps: order.slice(1).map((x, i) => x.r[lo] - order[i].r[hi]) };
   }
 
   // Sets every gap in the stack to n by moving each item after the first (so the ones below move down too).
@@ -4292,17 +7332,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // Takes the edit off and puts back the layer's own inline value, if the code wrote one (a React style prop):
   // setStyle's "" only removes, which would also drop the code's inline value until the next undo.
   function handBack(t, prop) {
-    // On a component, the "" went to every instance that doesn't override it, so each gets its own value back,
-    // not only the one selected.
+    // On a component, the "" went to every instance, and each was written again (see paintComps): the code's own value
+    // back, or what another component edit still gives it (FeatureCard's, around this Card).
     const shared = sharedComponent(t, prop);
-    const list = shared
-      ? instancesOf(shared).filter((i) => i === t || (edits.elements[selectorFor(i)] || { styles: {} }).styles[prop] == null)
-      : [t];
     setStyle(t, prop, "");
-    list.forEach((i) => {
-      const own = originalOf(i).styles[prop];
-      if (own) i.style.setProperty(prop, own);
-    });
+    if (shared) return;
+    // An instance's own override taken off falls back the same way.
+    if (Object.keys(edits.components).some((k) => rankOf(t, k) >= 0)) return paintComps(t, [prop]);
+    const own = originalOf(t).styles[prop];
+    if (own) t.style.setProperty(prop, own);
   }
 
   // Figma's Resizing inside auto layout (Fixed, Hug, Fill) and Ignore auto layout, written as CSS longhands only:
@@ -4351,9 +7389,25 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const auto = get();
     if (was) t.style.setProperty(prop, was, pri);
     else t.style.removeProperty(prop);
+    tidyStyle(t);
     flush();
     still(t, false);
     return { now, hug, auto };
+  }
+  // A layer's size across its auto layout with its own alignment set to start for a moment, so it doesn't stretch.
+  function unstretchedSize(t, lp, axis) {
+    const prop = selfProp(lp, axis);
+    const was = t.style.getPropertyValue(prop);
+    const pri = t.style.getPropertyPriority(prop);
+    still(t, true);
+    t.style.setProperty(prop, lp.flex ? "flex-start" : "start");
+    const v = axis === "w" ? t.offsetWidth : t.offsetHeight;
+    if (was) t.style.setProperty(prop, was, pri);
+    else t.style.removeProperty(prop);
+    tidyStyle(t);
+    flush();
+    still(t, false);
+    return v;
   }
   // Whether nothing sets this axis's size, so it's whatever the layout gives it.
   const sizedByLayout = (t, axis) => {
@@ -4372,7 +7426,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (own && /\d/.test(own) && !/%/.test(own)) return "fixed";
     if (laid && lp.flex && lp.main === axis && /\d/.test(getComputedStyle(t).flexBasis)) return "fixed";
     const s = sizeTrial(t, axis);
-    if (laid && lp.main !== axis && stretches(t, lp, axis) && Math.abs(s.now - s.auto) < 0.5) return "fill";
+    if (laid && lp.main !== axis && stretches(t, lp, axis) && Math.abs(s.now - s.auto) < 0.5) {
+      // CSS stretches only a box whose own size is auto. One the stylesheet sizes (a class's height: 30px) keeps that
+      // size when it stops stretching, where an auto one hugs its content: that's Fixed, even when the row happens
+      // to be as tall.
+      return Math.abs(unstretchedSize(t, lp, axis) - s.hug) >= 0.5 ? "fixed" : "fill";
+    }
     if (Math.abs(s.now - s.hug) < 0.5) return "hug";
     if (Math.abs(s.now - s.auto) < 0.5 && s.auto > s.hug + 0.5) return "fill";
     return "fixed";
@@ -4448,6 +7507,1043 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     fixAxis(t, axis, Math.round(axis === "w" ? s.w : s.h));
   }
 
+  // Figma's resize, the one path a typed W or H, Make selected N cols wide and a handle drag all take. Unlike Scale (K)
+  // it changes a size, never what's inside: text, strokes and corner radius keep their px.
+
+  // The lock beside W and H (Constrain proportions), per layer. Off until she turns it on, images included, so a W
+  // or an H changes only itself (her call, 2026-10-15).
+  const ratioLocks = new WeakMap();
+  const ratioLocked = (t) => !!ratioLocks.get(t);
+  // Whether the code makes one axis follow the other when only one is set: a CSS aspect-ratio, or the own ratio of an
+  // image, a video, a canvas or an <svg> whose other axis is left auto.
+  function ratioDriven(t) {
+    if (!(t instanceof Element) || isVector(t)) return false;
+    return getComputedStyle(t).aspectRatio !== "auto" || /^(IMG|VIDEO|CANVAS|EMBED|OBJECT)$/.test(t.tagName) || isSvgRoot(t);
+  }
+  // A layer that holds others in the code (a card), not words.
+  const holdsLayers = (t) => t instanceof HTMLElement && !hasText(t) && Array.from(t.children).some((c) => !isUi(c));
+  // The box a parent lays its children in: inside its padding, and none for display: contents, which has no box.
+  function contentOf(p) {
+    if (!(p instanceof HTMLElement)) return { w: 0, h: 0 };
+    const cs = getComputedStyle(p);
+    if (cs.display === "contents") return { w: 0, h: 0 };
+    const n = (k) => parseFloat(cs[k]) || 0;
+    return { w: p.clientWidth - n("paddingLeft") - n("paddingRight"), h: p.clientHeight - n("paddingTop") - n("paddingBottom") };
+  }
+  // Whether an element's height comes from its parent's (a height: 100%, a stretch, an inset), read by making the
+  // parent 40px taller for a moment: then a resize that leaves the parent's height crops it rather than growing it.
+  function followsParentH(d) {
+    const p = d.parentElement;
+    if (!(p instanceof HTMLElement)) return false;
+    const was = p.style.getPropertyValue("height");
+    const pri = p.style.getPropertyPriority("height");
+    still(p, true);
+    const h0 = sizeOf(d).h;
+    p.style.setProperty("height", p.offsetHeight + 40 + "px", "important");
+    const h1 = sizeOf(d).h;
+    if (was) p.style.setProperty("height", was, pri);
+    else p.style.removeProperty("height");
+    tidyStyle(p);
+    flush();
+    still(p, false);
+    return h1 - h0 >= 20;
+  }
+  // What's inside a layer before a resize, so refit can wrap it after: each element's size, whether it filled its
+  // parent's width, whether its height hangs on its parent's, and an image's or video's fill. At most 400 elements, so
+  // a big layer stays quick to drag.
+  function fitBefore(t) {
+    if (!(t instanceof HTMLElement) && !isSvgRoot(t)) return [];
+    const inner = t instanceof HTMLElement ? Array.from(t.querySelectorAll("*")).filter((d) => !isUi(d) && !inSvg(d)).slice(0, 400) : [];
+    // Whether a parent's width was set rather than hugging its content, as it was before the resize (the layer resized
+    // included): one that fills its own parent (read first, as querySelectorAll lists parents before children), one
+    // whose width isn't its fit-content, or one the code gives a width (a 400px card round a 400px wrapper is as wide
+    // as its content and still set). A parent that hugs (an absolute flex column with no width) took its width from
+    // its widest child, which stays hugging. Read once per parent; the rules are walked only when the trial can't tell.
+    const byEl = new Map();
+    const setW = new Map();
+    const widthSet = (p) => {
+      // The layer resized, when its width came from its parent (a block, or a grid or flex item stretched across): the
+      // trial below can't tell that from hugging when its content is exactly as wide (a grid cell's card round its
+      // 300px image), and its fillsW is never read, as only what's inside it is. An absolute or floated one, or one
+      // its row sizes from its content, hugs, so its widest child stays as it is.
+      if (p === t && t instanceof HTMLElement) {
+        const cs = getComputedStyle(t);
+        const lp = layoutParentOf(t);
+        const fills = /^(absolute|fixed)$/.test(cs.position) || cs.float !== "none" ? false
+          : lp ? (lp.flex && lp.main === "w" ? parseFloat(cs.flexGrow) > 0 : stretches(t, lp, "w"))
+          : /^(block|flex|grid|flow-root|list-item)$/.test(cs.display);
+        if (fills) return true;
+      }
+      if ((byEl.get(p) || {}).fillsW) return true;
+      if (!setW.has(p)) {
+        const tr = p instanceof HTMLElement ? sizeTrial(p, "w") : null;
+        setW.set(p, !!tr && (Math.abs(tr.now - tr.hug) >= 0.5 || /\d/.test(declaredValue(p, "width"))));
+      }
+      return setW.get(p);
+    };
+    return [t].concat(inner).map((d) => {
+      // Whole px (sizeOf) to test against the parent's box, which is whole px too; the size kept is unrounded
+      // (exactSize), so an image that keeps its ratio to the decimal doesn't read as one that changed shape.
+      const s = sizeOf(d);
+      const x = exactSize(d);
+      const cs = getComputedStyle(d);
+      const k = { d, w: x.w, h: x.h, media: /^(IMG|VIDEO|CANVAS)$/.test(d.tagName) || isSvgRoot(d), fit: /^(IMG|VIDEO)$/.test(d.tagName) ? cs.objectFit : null };
+      byEl.set(d, k);
+      // A fill the code chose (object-fit: fill written in a rule or inline) is kept: only the CSS default, which no
+      // one picked, gets cover when the box changes shape.
+      if (k.fit === "fill") k.fitSet = !!declaredValue(d, "object-fit");
+      // The inline values a resize may write, as they were, so a drag that comes back puts them back (putBack).
+      k.was = {};
+      ["width", "height", "object-fit", "align-self"].forEach((p) => { k.was[p] = d.style.getPropertyValue(p); });
+      // Whether its row stretched it to the row's height, read once before the resize: a drag calls resizeLayer on
+      // every move, and once a move has written align-self: start the live value no longer stretches, so reading it
+      // live would take the start off again on the next move and flip it on every move after.
+      if (d === t && t instanceof HTMLElement) {
+        const lp = layoutParentOf(t);
+        k.stretchedH = !!(lp && lp.inFlow && lp.main !== "h" && stretches(t, lp, "h"));
+      }
+      if (d !== t && /^(static|relative|sticky)$/.test(cs.position) && cs.display !== "contents" && (cs.display !== "inline" || REPLACED.test(d.tagName))) {
+        const pc = contentOf(d.parentElement);
+        const n = (v) => parseFloat(v) || 0;
+        k.mx = n(cs.marginLeft) + n(cs.marginRight);
+        k.pw = pc.w;
+        // As wide as its parent's box, in a parent whose width is set: it fills, whatever its own fit-content (a
+        // wrapper with width: 400px round a 400px image hugs and fills at once). In a parent that hugs, the widest
+        // line made the parent that wide, so it stays as it is. Asked of the parent, not the child, for that reason.
+        k.fillsW = pc.w > 0 && Math.abs(s.w + k.mx - pc.w) < 0.5 && widthSet(d.parentElement);
+        // Only an image, a video or an <svg> needs this (to crop or to grow), and only when it's as tall as its parent.
+        k.tiedH = k.media && pc.h > 0 && Math.abs(s.h + n(cs.marginTop) + n(cs.marginBottom) - pc.h) < 0.5 && followsParentH(d);
+      }
+      return k;
+    });
+  }
+  // A note for Copy on why a value was written that she didn't type, kept beside the value: Copy prints it only while
+  // the layer still has that value.
+  function noteWhy(t, prop, why) {
+    const value = t.style.getPropertyValue(prop);
+    if (!value) return;
+    record(t, (entry) => {
+      if (entry.styles[prop] === value) entry.why = Object.assign({}, entry.why, { [prop]: { value, note: why } });
+    });
+  }
+  // Puts one inline value back as fitBefore read it (was), for a drag that comes back: what an earlier move wrote for
+  // another size mustn't stay behind. A value that is the code's own goes back as the code's (handBack), so no edit
+  // is left. true when it changed anything.
+  function putBack(d, prop, was) {
+    const v = was[prop] || "";
+    if (d.style.getPropertyValue(prop) === v) return false;
+    if (v === (originalOf(d).styles[prop] || "")) handBack(d, prop);
+    else setStyle(d, prop, v);
+    return true;
+  }
+  // After a width change, what's inside wraps as in Figma: a layer that filled the old width fills the new one (one
+  // the code gave a px width is written the new one), an image, video or <svg> keeps its proportions (taller or
+  // shorter; one whose height hangs on its parent's crops instead), and the text, strokes and radii are left alone.
+  // Any image or video whose box changed shape keeps its fill: with none in the code (fill, which stretches), cover,
+  // Figma's default image fill, is written. fit is fitBefore's, taken before the change. Sizes are read unrounded, so
+  // an image with height: auto, which keeps its ratio by itself, gets no height and no fill written. Whatever no longer
+  // applies (a drag back to the old width) goes back to how it was.
+  function refit(t, fit, widened) {
+    fit.forEach((k) => {
+      const d = k.d;
+      if (!d.isConnected) return;
+      let now = exactSize(d);
+      if (d !== t) {
+        let held = false;
+        if (widened && k.fillsW) {
+          const pc = contentOf(d.parentElement);
+          const want = pc.w - k.mx;
+          if (Math.abs(pc.w - k.pw) >= 0.5 && want > 0) {
+            held = true;
+            if (Math.abs(now.w - want) >= 0.5) {
+              setSize(d, want, null);
+              now = exactSize(d);
+            }
+          }
+        }
+        if (!held && putBack(d, "width", k.was)) now = exactSize(d);
+        held = false;
+        if (widened && k.media && k.w && k.h && !k.tiedH && Math.abs(now.w - k.w) >= 0.5) {
+          held = true;
+          const want = (now.w * k.h) / k.w;
+          if (Math.abs(now.h - want) >= 0.5) {
+            setSize(d, null, want);
+            now = exactSize(d);
+          }
+        }
+        if (!held && putBack(d, "height", k.was)) now = exactSize(d);
+      }
+      if (k.fit === "fill" && !k.fitSet && k.w && k.h && now.w && now.h) {
+        if (Math.abs((now.w * k.h) / (now.h * k.w) - 1) > 0.005) {
+          if (d.style.getPropertyValue("object-fit") !== "cover") {
+            setStyle(d, "object-fit", "cover");
+            noteWhy(d, "object-fit", "added: its box changed shape and the code had no fill, so it crops (Figma's default image fill) rather than stretch");
+          }
+        } else putBack(d, "object-fit", k.was);
+      }
+    });
+  }
+  // Resizes one layer to w by h (null leaves that axis to the code). Unlocked, an axis changes alone: where the code
+  // would make the other follow (an aspect-ratio, an image's own ratio), that one is pinned at its px, unrounded so
+  // it truly stays. Locked, the other follows in proportion: where the code keeps the ratio itself, only the axis
+  // given is written and the code brings the other along (written too only if it doesn't). In auto layout a size
+  // given is Fixed (fixAxis), unless the caller fixed it already (o.fixed, a drag). A container made wider or
+  // narrower wraps its content (refit); one its grid or flex row stretched to the row's height couldn't, so it takes
+  // align-self: start. o.from / o.exact / o.fit: the size and the inside as they were, for a drag that resizes from
+  // its start on every move.
+  function resizeLayer(t, w, h, o = {}) {
+    const e0 = o.exact || exactSize(t);
+    const fit = o.fit || fitBefore(t);
+    const vector = isVector(t);
+    const one = (w == null) !== (h == null);
+    const follows = !!o.locked && one && !vector && ratioDriven(t);
+    // The axis the lock makes follow. A drag (fixed) made only the dragged axis Fixed when it started, so this one is
+    // made Fixed here, as a typed size does, and the drag's Copy matches the typed one.
+    let added = null;
+    if (o.locked && !follows && e0.w && e0.h) {
+      if (w != null && h == null) { h = round2((w * e0.h) / e0.w); added = "h"; }
+      else if (h != null && w == null) { w = round2((h * e0.w) / e0.h); added = "w"; }
+    }
+    const lp = vector ? null : layoutParentOf(t);
+    if (lp && !o.fixed) {
+      if (w != null) fixAxis(t, "w", w);
+      if (h != null) fixAxis(t, "h", h);
+    } else {
+      // Before the size goes in: fixAxis reads whether the layout sizes it, which a px size would hide. Once per drag
+      // (marked on fitBefore's entry, which lives for the drag): on a later move the px size hides the stretch, and
+      // fixAxis would take back the start it wrote on the first.
+      if (lp && added && fit[0] && fit[0].d === t && fit[0].fixedLock !== added) {
+        fixAxis(t, added, null);
+        fit[0].fixedLock = added;
+      }
+      setSize(t, w, h);
+    }
+    if (vector) return;
+    if (one && ratioDriven(t)) {
+      const axis = w == null ? "w" : "h";
+      const now = exactSize(t);
+      const want = !follows ? e0[axis] : axis === "h" ? (now.w * e0.h) / e0.w : (now.h * e0.w) / e0.h;
+      if (e0.w && e0.h && Math.abs(now[axis] - want) >= 0.5) {
+        const px = round2(want);
+        if (lp) fixAxis(t, axis, px);
+        else setSize(t, axis === "w" ? px : null, axis === "h" ? px : null);
+        if (!follows) noteWhy(t, axis === "w" ? "width" : "height", "kept: only the " + (axis === "w" ? "height" : "width") + " was changed, and the code's aspect ratio would have changed this too");
+      }
+    }
+    const widened = Math.abs(exactSize(t).w - e0.w) >= 0.5;
+    if (widened && h == null && lp && lp.inFlow && lp.main !== "h" && holdsLayers(t) && (fit[0] && fit[0].d === t ? fit[0].stretchedH : stretches(t, lp, "h")) && sizedByLayout(t, "h")) {
+      setUnlessOwn(t, "align-self", lp.flex ? "flex-start" : "start");
+      noteWhy(t, "align-self", "added: its " + (lp.flex ? "flex row" : "grid") + " stretched it to the row's height, so it couldn't wrap its content after the width change");
+    } else if (w != null && h == null && fit[0] && fit[0].d === t) putBack(t, "align-self", fit[0].was);
+    refit(t, fit, widened);
+  }
+  // A typed W or H keeps the layer's top-left where it is, as Figma keeps X and Y and as a handle drag does. Where the
+  // code centres it (left: 50% with translateX(-50%), margin: 0 auto) the size alone would grow it from both sides, so
+  // a translate puts it back, as the drag writes. In auto layout the layout places it, so nothing is moved.
+  function typedResize(t, w, h, o) {
+    const lp = layoutParentOf(t);
+    const r0 = t.getBoundingClientRect();
+    resizeLayer(t, w, h, o);
+    if (lp && lp.inFlow) return;
+    const r = t.getBoundingClientRect();
+    const dx = r0.left - r.left;
+    const dy = r0.top - r.top;
+    if (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05) nudge(t, dx, dy);
+  }
+
+  // Scale (K), as Figma's: a layer and everything inside it grow or shrink together around an anchor point. Figma's K
+  // rewrites the stored numbers (size, font size, radius, stroke, effects, padding, gap, every child's size and place)
+  // and leaves no transform, so this multiplies the real values too (her call): no zoom, and a scale transform only on
+  // an SVG shape, which has no other way. Every scale is the snapshot taken when Scale started times the factor, never
+  // what's on the page now times it, so drag after drag doesn't drift.
+  const fmt2 = (n) => String(Math.round(n * 100) / 100 || 0);
+  const round4 = (n) => Math.round(n * 10000) / 10000;
+  const NUM = "-?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?";
+  // A px length anywhere in a value (a shadow list, a filter, a gradient's stops and size, a clip-path or
+  // shape-outside shape), but never inside a url(); a path()'s numbers are all px, so they go through scalePath.
+  const LENGTHS = new RegExp("url\\((?:[^()\"']|\"[^\"]*\"|'[^']*')*\\)|path\\(((?:nonzero|evenodd)\\s*,\\s*)?([\"'])([^\"']*)\\2\\)|(" + NUM + ")px\\b", "gi");
+  // A path's numbers, but an arc's turn and its two flags (the 3rd to 5th of every 7 after an A), which aren't lengths:
+  // her squircle clip-paths are arcs and curves.
+  function scalePath(d, k) {
+    let cmd = "";
+    let i = 0;
+    return d.replace(new RegExp("([MmLlHhVvCcSsQqTtAaZz])|(" + NUM + ")", "g"), (m, c, n) => {
+      if (c) {
+        cmd = c;
+        i = 0;
+        return c;
+      }
+      const flag = (cmd === "A" || cmd === "a") && i % 7 >= 2 && i % 7 <= 4;
+      i++;
+      return flag ? n : fmt2(parseFloat(n) * k);
+    });
+  }
+  function scaleLengths(v, k) {
+    return String(v).replace(LENGTHS, (m, rule, q, d, n) => (n != null ? fmt2(parseFloat(n) * k) + "px"
+      : d != null ? "path(" + (rule || "") + q + scalePath(d, k) + q + ")" : m));
+  }
+  // A value's lengths, and the rest of it, so two values can be compared number by number.
+  function lengthsOf(v) {
+    const nums = [];
+    const rest = String(v).replace(LENGTHS, (m, rule, q, d, n) => {
+      if (n != null) {
+        nums.push(parseFloat(n));
+        return "#";
+      }
+      if (d != null) {
+        (d.match(new RegExp(NUM, "g")) || []).forEach((x) => nums.push(parseFloat(x)));
+        return "path(#)";
+      }
+      return m;
+    });
+    return { nums, rest };
+  }
+  const hasLength = (v) => lengthsOf(v).nums.some((n) => n !== 0);
+  function sameLengths(a, b) {
+    const x = lengthsOf(a);
+    const y = lengthsOf(b);
+    return x.rest === y.rest && x.nums.length === y.nums.length && x.nums.every((n, i) => Math.abs(n - y.nums[i]) <= 0.01);
+  }
+  // The computed value as the code gives it (Typed OM), where getComputedStyle hands back what it lays out to: a margin
+  // or an inset that is auto, and a grid's tracks as written (200px 1fr, not the px each came to).
+  function codeValue(el, prop) {
+    try {
+      return String(el.computedStyleMap().get(prop));
+    } catch (e) {
+      return "";
+    }
+  }
+  // Read as the code gives them: a grid's tracks, and an origin, which getComputedStyle turns from 50% into px (a %
+  // keeps no line; only px parts are multiplied).
+  const CODE_READ = /^(grid-template-|transform-origin|perspective-origin)/;
+  const readScaled = (el, prop) => (CODE_READ.test(prop) ? codeValue(el, prop) : getComputedStyle(el).getPropertyValue(prop).trim());
+  const scaleStyle = (t, prop, value) => setStyle(t, prop, value, true);
+
+  // What K multiplies (the px parts only; a %, a keyword, an fr stay). Text and box values follow on their own when they
+  // can (an em, a %, an inherited font size, a unitless line height), so they're read again before each write; border,
+  // outline and column-rule widths never follow, so they're always written.
+  const SCALE_TEXT = ["line-height", "letter-spacing", "word-spacing", "text-indent", "text-shadow", "text-decoration-thickness",
+    "text-underline-offset", "-webkit-text-stroke-width"];
+  const SCALE_BOX = ["padding-top", "padding-right", "padding-bottom", "padding-left", "margin-top", "margin-right", "margin-bottom",
+    "margin-left", "min-width", "min-height", "max-width", "max-height", "row-gap", "column-gap",
+    "border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius", "box-shadow",
+    "filter", "backdrop-filter", "flex-basis", "grid-template-columns", "grid-template-rows", "grid-auto-columns", "grid-auto-rows",
+    "background-image", "background-size", "background-position", "mask-image", "mask-size", "mask-position", "object-position",
+    "column-width", "vertical-align", "clip-path", "shape-outside", "shape-margin", "border-image-width", "border-image-outset",
+    "transform-origin", "perspective-origin", "perspective"];
+  const SCALE_EDGES = ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width", "outline-width", "column-rule-width",
+    "outline-offset"];
+  const MOVES = ["transform", "translate", "scale", "rotate"];
+  // A pseudo-element's lengths worth listing: its origins are left out (computed, a 50% reads as px).
+  const PSEUDO_LENGTHS = ["width", "height", "top", "right", "bottom", "left", "font-size", "translate"]
+    .concat(SCALE_TEXT, SCALE_BOX, SCALE_EDGES).filter((p) => !/-origin$/.test(p));
+  const REPLACED = /^(IMG|VIDEO|CANVAS|IFRAME|EMBED|OBJECT)$/;
+
+  // The properties an animation or transition holds on el now (one that's running, or done and filling): writing them
+  // would do nothing, so they're left and listed. The move properties count as one.
+  function animatedProps(el) {
+    const out = new Set();
+    el.getAnimations().forEach((a) => {
+      const fx = a.effect;
+      if (!fx || !fx.getComputedTiming || fx.getComputedTiming().progress == null) return;
+      if (a.transitionProperty) out.add(a.transitionProperty);
+      (fx.getKeyframes ? fx.getKeyframes() : []).forEach((kf) => Object.keys(kf).forEach((p) => {
+        if (!/^(offset|computedOffset|easing|composite)$/.test(p)) out.add(p.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()));
+      }));
+    });
+    if (MOVES.some((p) => out.has(p))) MOVES.forEach((p) => out.add(p));
+    return out;
+  }
+  // A longhand counts when its shorthand is animated (padding holds padding-top).
+  const animates = (set, prop) => set.has(prop) || Array.from(set).some((a) => prop.indexOf(a + "-") === 0);
+
+  // The value the code wrote for prop on el, where the computed one has lost it: Chrome snaps border, outline and
+  // column-rule widths to whole device pixels, so 1.5px reads back as 1px. The inline value first (hers, or the
+  // code's), else the stylesheet rule that wins: !important first, then the most specific match, then the last of
+  // equals. "" when none is found (a rule that can't be read, a value only a shorthand with var() sets).
+  function declaredValue(el, prop) {
+    const inline = el.style.getPropertyValue(prop);
+    if (inline) return inline.trim();
+    const weigh = (sel) => {
+      const x = sel.replace(/:where\((?:[^()]|\([^()]*\))*\)/g, "").replace(/::?(before|after|first-line|first-letter)\b|::[\w-]+/g, "");
+      const ids = (x.match(/#[\w-]+/g) || []).length;
+      const cls = (x.match(/\.[\w-]+|\[[^\]]*\]|:(?!is\(|not\(|has\()[\w-]+/g) || []).length;
+      const tags = (x.match(/(^|[\s>+~(,])[a-zA-Z][\w-]*/g) || []).length;
+      return ids * 1e6 + cls * 1e3 + tags;
+    };
+    let best = null;
+    const walk = (rules) => {
+      for (const r of rules) {
+        if (r instanceof CSSStyleRule) {
+          const v = r.style.getPropertyValue(prop);
+          if (!v) continue;
+          const parts = r.selectorText.split(/,(?![^()]*\))/).filter((x) => {
+            try {
+              return el.matches(x);
+            } catch (e) {
+              return false;
+            }
+          });
+          if (!parts.length) continue;
+          const w = Math.max(...parts.map(weigh)) + (r.style.getPropertyPriority(prop) === "important" ? 1e9 : 0);
+          if (!best || w >= best.w) best = { w, v: v.trim() };
+        } else if (r.cssRules) {
+          if (r.media && r.media.mediaText && !matchMedia(r.media.mediaText).matches) continue;
+          if (typeof CSSSupportsRule !== "undefined" && r instanceof CSSSupportsRule && !CSS.supports(r.conditionText)) continue;
+          walk(r.cssRules);
+        }
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      try {
+        if (!sheet.disabled && (!sheet.media || !sheet.media.mediaText || matchMedia(sheet.media.mediaText).matches)) walk(sheet.cssRules);
+      } catch (e) {
+        // A sheet from another origin can't be read.
+      }
+    }
+    return best ? best.v : "";
+  }
+
+  // A length as the code wrote it (a token, a rem), worked out on el without Chrome's whole-pixel snapping: a hidden
+  // probe inside el holds it in a registered <length> property, which keeps the fraction (var(--bw) = 1.5px reads
+  // 1.5px, where the border width reads 1px). NaN when it isn't a length (a style, a colour).
+  const EXACT = "--ft-exact-length";
+  let exactReady = false;
+  function exactLength(el, text) {
+    if (!exactReady) {
+      exactReady = true;
+      try {
+        CSS.registerProperty({ name: EXACT, syntax: "<length>", inherits: false, initialValue: "-99999px" });
+      } catch (e) {
+        // Registered already (finetune loaded twice), or the browser can't: then it reads NaN below.
+      }
+    }
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;display:none";
+    probe.style.setProperty(EXACT, text);
+    if (!probe.style.getPropertyValue(EXACT)) return NaN;
+    el.appendChild(probe);
+    const v = getComputedStyle(probe).getPropertyValue(EXACT).trim();
+    probe.remove();
+    return /^-?\d*\.?\d+(e-?\d+)?px$/.test(v) && v !== "-99999px" ? parseFloat(v) : NaN;
+  }
+  // The code's value for a border, outline or column rule width where the longhand doesn't hold it: a shorthand that
+  // uses a token (border: var(--bw) solid) leaves its longhands empty. The width is the shorthand's one part that's
+  // a length; border-width gives each side by its place (1 to 4 values).
+  function edgeFromShorthand(el, prop) {
+    const parts = (v) => (v.match(/(?:[^\s(]|\([^()]*(?:\([^()]*\)[^()]*)*\))+/g) || []);
+    const side = /^border-(top|right|bottom|left)-width$/.exec(prop);
+    const lengthIn = (v) => {
+      for (const x of parts(v)) {
+        const n = exactLength(el, x);
+        if (isNum(n)) return n;
+      }
+      return NaN;
+    };
+    if (side) {
+      const all = declaredValue(el, "border-width");
+      if (all) {
+        const w = parts(all);
+        const at = { top: 0, right: 1, bottom: 2, left: 3 }[side[1]];
+        if (w.length >= 1 && w.length <= 4) return exactLength(el, w[[[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 2, 1], [0, 1, 2, 3]][w.length - 1][at]]);
+      }
+      for (const sh of ["border-" + side[1], "border"]) {
+        const v = declaredValue(el, sh);
+        if (v) return lengthIn(v);
+      }
+      return NaN;
+    }
+    const sh = { "outline-width": "outline", "column-rule-width": "column-rule" }[prop];
+    const v = sh ? declaredValue(el, sh) : "";
+    return v ? lengthIn(v) : NaN;
+  }
+
+  // Whether a box holds words anywhere: a text node, a form field, or a ::before or ::after with content (an icon
+  // font's glyph).
+  function wordsIn(el) {
+    if (el.textContent.trim() || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(el.tagName) || el.querySelector("input, textarea, select")) return true;
+    const drawn = (e) => ["::before", "::after"].some((pe) => !/^(none|normal)$/.test(getComputedStyle(e, pe).content));
+    return drawn(el) || Array.from(el.querySelectorAll("*")).some(drawn);
+  }
+
+  // One element's part of the snapshot: what K writes on it, each with its computed value and the inline value it had.
+  // font first, then follow (read again before writing), fixed (always written), size (Fixed axes only), once (a
+  // shape's turn-in-place and stroke setting), viewBox (an <svg> that has none), skipped (animated, left).
+  function scaleItem(el, root, out) {
+    const cs = getComputedStyle(el);
+    const anim = animatedProps(el);
+    const it = { el, root, font: [], follow: [], fixed: [], size: [], once: [], skipped: [], viewBox: null };
+    const take = (list, prop, v, on) => {
+      const t = on || el;
+      if (animates(on ? animatedProps(on) : anim, prop)) {
+        if (hasLength(v)) it.skipped.push(prop);
+        return;
+      }
+      if (!hasLength(v)) return;
+      const p = { el: t, prop, v, inline: t.style.getPropertyValue(prop), last: null };
+      // Background blur is written as the prefixed one first, then the standard one (a build that merges the pair keeps
+      // the last).
+      if (prop === "backdrop-filter") Object.assign(p, { also: "-webkit-backdrop-filter", alsoInline: t.style.getPropertyValue("-webkit-backdrop-filter") });
+      list.push(p);
+    };
+    out.push(it);
+    // The panel's own record of a Stroke or Effects she set on this layer (what those sections show and edit from):
+    // its numbers grow with the CSS they wrote.
+    const keepMeta = () => {
+      const own = edits.elements[keyOf(el)];
+      if (own && (own.stroke || own.effects)) {
+        it.meta = { stroke: own.stroke ? Object.assign({}, own.stroke) : null, effects: own.effects ? own.effects.map((fx) => Object.assign({}, fx)) : null };
+      }
+    };
+    // A shape's stroke: its weight and its dashes (and where they start), each multiplied.
+    const strokes = (d) => {
+      const ds = d === el ? cs : getComputedStyle(d);
+      if (ds.stroke === "none") return;
+      const on = d === el ? null : d;
+      take(it.fixed, "stroke-width", ds.strokeWidth, on);
+      if (ds.strokeDasharray !== "none") take(it.fixed, "stroke-dasharray", ds.strokeDasharray, on);
+      take(it.fixed, "stroke-dashoffset", ds.strokeDashoffset, on);
+    };
+    // A shape picked on its own: its geometry where SVG has some to write (a rect's size and corner radius, a circle's
+    // r, an ellipse's rx and ry) and its stroke, else the vector scale finetune already uses, turned in place. A stroke
+    // drawn at a fixed screen weight (vector-effect: non-scaling-stroke) wouldn't grow with that scale: it keeps its
+    // vector-effect and its stroke is multiplied, so the line comes out f times as thick, as Figma's does, whatever
+    // the svg's viewBox.
+    if (isVector(el)) {
+      const geo = { rect: ["width", "height", "rx", "ry"], circle: ["r"], ellipse: ["rx", "ry"] }[el.tagName.toLowerCase()];
+      if (geo) {
+        geo.forEach((p) => take(it.fixed, p, cs.getPropertyValue(p)));
+        strokes(el);
+        keepMeta();
+        return;
+      }
+      if (animates(anim, "scale")) return it.skipped.push("scale");
+      const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
+      it.fixed.push({ el, prop: "scale", v: sc[0] + " " + (sc.length > 1 ? sc[1] : sc[0]), inline: el.style.getPropertyValue("scale"), last: null, shape: true });
+      if (el.style.transformBox !== "fill-box") {
+        it.once.push({ el, prop: "transform-box", inline: el.style.getPropertyValue("transform-box"), to: "fill-box" });
+        it.once.push({ el, prop: "transform-origin", inline: el.style.getPropertyValue("transform-origin"), to: "center" });
+      }
+      if (cs.vectorEffect === "non-scaling-stroke") strokes(el);
+      return;
+    }
+    keepMeta();
+    const svg = el instanceof SVGSVGElement;
+    const replaced = REPLACED.test(el.tagName) || svg;
+    // A drawn ::before or ::after: its px lengths now. It has no inline style to write, so it can't grow; Copy lists
+    // the ones that didn't follow (an em or an inherited font size does).
+    if (!replaced && el instanceof HTMLElement) {
+      it.pseudo = ["::before", "::after"].map((pe) => {
+        const ps = getComputedStyle(el, pe);
+        if (/^(none|normal)$/.test(ps.content)) return null;
+        const v = {};
+        PSEUDO_LENGTHS.forEach((p) => {
+          const style = /^(border-\w+|outline|column-rule)-width$/.exec(p);
+          if (style && ps.getPropertyValue(p.replace(/-width$/, "-style")) === "none") return;
+          const x = ps.getPropertyValue(p);
+          if (hasLength(x)) v[p] = x;
+        });
+        return Object.keys(v).length ? { pe, v } : null;
+      }).filter(Boolean);
+    }
+    // An image, a video or an <svg> has no words, so its inherited font size isn't one of its values; nor has a box
+    // with no words anywhere inside it (an em value there is read again before it's written, so it still grows). An
+    // <svg> holding words keeps the font size it has, so only its viewBox scales them (else they'd grow twice). The
+    // text values (line height and the rest) go with the font size: a box with no words gets none of them.
+    if (!replaced) {
+      if (wordsIn(el)) {
+        take(it.font, "font-size", cs.fontSize);
+        SCALE_TEXT.forEach((p) => take(it.follow, p, cs.getPropertyValue(p)));
+      }
+    } else if (svg && el.querySelector("text, foreignObject")) {
+      const n = it.font.length;
+      take(it.font, "font-size", cs.fontSize);
+      if (it.font.length > n) it.font[n].keep = true;
+    }
+    SCALE_BOX.forEach((p) => {
+      const margin = /^margin-/.test(p);
+      // The layer K is on keeps its margins (they place it, as its position does) and an auto margin stays auto.
+      if (margin && (root || codeValue(el, p) === "auto")) return;
+      take(it.follow, p, CODE_READ.test(p) ? codeValue(el, p) : cs.getPropertyValue(p));
+    });
+    // A width counts only where its line is drawn: Chrome reports an outline's or a column rule's medium (3px) with no
+    // style at all.
+    // Read as the code wrote it (1.5px, which the computed value snaps to 1px). One written in em grows with the font
+    // size, so it's read again before writing, as the follow values are, and gets no line where it followed.
+    // An outline's offset is read the same way: Chrome rounds it to whole px too.
+    SCALE_EDGES.forEach((p) => {
+      if (cs.getPropertyValue(p === "outline-offset" ? "outline-style" : p.replace(/-width$/, "-style")) === "none") return;
+      const c = cs.getPropertyValue(p);
+      const d = declaredValue(el, p);
+      const em = /^(-?\d*\.?\d+)em$/.exec(d);
+      if (em) return take(it.follow, p, fmt2(parseFloat(em[1]) * parseFloat(cs.fontSize)) + "px");
+      // A token or a rem (var(--bw), 0.09375rem) is worked out unsnapped, so 1.5px grows to 3px and not 2px.
+      const x = /^-?\d*\.?\d+px$/.test(d) ? parseFloat(d) : d ? exactLength(el, d) : edgeFromShorthand(el, p);
+      take(it.fixed, p, isNum(x) && Math.abs(x - parseFloat(c)) < 1 ? x + "px" : c);
+    });
+    // A table's border spacing, only where it's set (it's inherited, so every row and cell reads it too), and read as
+    // the code wrote it, as Chrome cuts it to whole px (4.11px reads 4px).
+    const bs = cs.borderSpacing;
+    const bd = declaredValue(el, "border-spacing");
+    if (bd || !el.parentElement || getComputedStyle(el.parentElement).borderSpacing !== bs) {
+      const c = bs.split(/\s+/).map(parseFloat);
+      const d = /^-?\d*\.?\d+px(\s+-?\d*\.?\d+px)?$/.test(bd) ? bd.split(/\s+/).map(parseFloat) : null;
+      const near = d && d.every((n, i) => Math.abs(n - c[Math.min(i, c.length - 1)]) < 1);
+      take(it.fixed, "border-spacing", near ? bd : bs);
+    }
+    // A layer inside: its place in the box, which grows. The layer K is on is placed by the anchor instead.
+    if (!root) {
+      if (cs.position !== "static" && cs.position !== "sticky") {
+        ["left", "top", "right", "bottom"].forEach((p) => { if (codeValue(el, p) !== "auto") take(it.follow, p, cs.getPropertyValue(p)); });
+      }
+      take(it.follow, "translate", cs.translate);
+      const m = /^matrix\(([^)]+)\)$/.exec(cs.transform);
+      const n = m ? m[1].split(",").map(parseFloat) : null;
+      if (n && (n[4] || n[5])) {
+        if (animates(anim, "transform")) it.skipped.push("transform");
+        else it.fixed.push({ el, prop: "transform", v: cs.transform, inline: el.style.getPropertyValue("transform"), last: null, matrix: n });
+      }
+    } else if (MOVES.some((p) => anim.has(p))) {
+      // The layer K is on, moved by an animation in px (a 6px rise): the anchor places it, but the rise stays 6px.
+      const px = el.getAnimations().some((a) => a.effect && a.effect.getKeyframes
+        && a.effect.getKeyframes().some((kf) => MOVES.some((p) => kf[p] && hasLength(kf[p]))));
+      if (px) it.skipped.push("transform");
+    }
+    // Width and height on a Fixed axis only (Hug and Fill follow what's inside or around them). An image, a video, a
+    // canvas or an <svg> keeps its own size unless it's given one, so it counts as Fixed; so does the layer K is on
+    // when it fills its parent, or it couldn't grow. Across a flex row an image or an <svg> can read as Fill (its own
+    // size happens to match the stretch), which would leave its height behind: it counts as Fixed there too, which
+    // comes out the same when it really stretches. Along the row a Fill one keeps growing into its share.
+    if (cs.display !== "contents" && (cs.display !== "inline" || replaced)) {
+      const lp = replaced ? layoutParentOf(el) : null;
+      ["w", "h"].forEach((axis) => {
+        const prop = axis === "w" ? "width" : "height";
+        const px = parseFloat(cs.getPropertyValue(prop));
+        if (!isNum(px)) return;
+        if (animates(anim, prop)) return it.skipped.push(prop);
+        let mode = sizeModeOf(el, axis);
+        const coded = mode === "fixed";
+        if (mode === "hug" && replaced) mode = "fixed";
+        if (mode === "fill" && replaced && !(lp && lp.inFlow && lp.main === axis)) mode = "fixed";
+        if (mode === "fill" && root) mode = "fixed";
+        if (mode === "fixed") it.size.push({ el, prop, axis, px, coded, inline: el.style.getPropertyValue(prop), last: null, was: locksOf(el) });
+      });
+    }
+    if (svg) {
+      // An <svg> scales its own drawing when its size changes, through its viewBox; one without a viewBox would keep
+      // it, so it gets one at the size it has. Nothing inside is touched, but a stroke drawn at a fixed screen weight
+      // (vector-effect: non-scaling-stroke) wouldn't grow with it: its stroke-width is multiplied, so it bakes as a
+      // plain number on that shape and the vector-effect stays.
+      if (!el.hasAttribute("viewBox")) it.viewBox = { w: parseFloat(cs.width) || 0, h: parseFloat(cs.height) || 0 };
+      el.querySelectorAll("*").forEach((d) => {
+        if (getComputedStyle(d).vectorEffect === "non-scaling-stroke") strokes(d);
+      });
+      return;
+    }
+    Array.from(el.children).forEach((c) => {
+      if (!isUi(c) && getComputedStyle(c).display !== "none") scaleItem(c, false, out);
+    });
+  }
+
+  // The flex locks fixAxis can write on a layer in auto layout, and what her edits had on each before Scale, so 1x
+  // takes them off again.
+  const LOCKS = ["flex-grow", "flex-shrink", "flex-basis", "min-width", "min-height", "align-self", "justify-self"];
+  const locksOf = (el) => {
+    const e = entryOf(el);
+    return LOCKS.map((p) => [p, e && e.styles[p] != null ? e.styles[p] : null]);
+  };
+  // What the inline styles look like, so an edit that isn't a scale (Layout's W and H, an undo) can be told from the
+  // scale's own; a move of the layer K is on doesn't count (the anchor places it). Each element's declarations are
+  // sorted, as an undo can put them back in another order.
+  const cssSig = (el, root) => el.style.cssText.split(";").map((d) => d.trim()).filter((d) => d && !(root && /^translate\s*:/.test(d))).sort().join(";");
+  const scaleSig = (m) => m.items.map((it) => cssSig(it.el, it.root) + "|" + (it.el.getAttribute("viewBox") || "")).join("\n");
+  // Keeps what the page looks like now with the factor it's at, so an undo or a redo that lands back on it picks up
+  // that factor and this snapshot, never one measured off the page (Chrome rounds borders, so a width can't give
+  // the factor back exactly).
+  function scaleSeal(m) {
+    m.sig = scaleSig(m);
+    m.states.set(m.sig, { items: m.items, layout: m.layout, fAtSnap: m.fAtSnap, snapSize: m.snapSize, f: m.f, base: Object.assign({}, m.base) });
+  }
+  function scaleSnap(m) {
+    m.items = [];
+    m.roots.forEach((t) => scaleItem(t, true, m.items));
+    const L = layoutOf(m.g);
+    m.layout = L ? { gap: L.gap, pad: L.pad.slice() } : null;
+    m.snapSize = m.many ? null : exactSize(m.roots[0]);
+    m.trs = m.roots.map((t) => copyTr(trNow(t)));
+    scaleSeal(m);
+  }
+  const copyTr = (ax) => [Object.assign({}, ax[0]), Object.assign({}, ax[1]), ax[2] || ""];
+  // Starts Scale on one layer or several (g: their ⌘G group). base is the size at 1x; f the factor now; fAtSnap the
+  // factor the snapshot was taken at; prior a factor an earlier Scale left on each layer, so Copy's comment is the
+  // whole factor from the code.
+  function beginScale(list, g) {
+    const many = list.length > 1;
+    const roots = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+    const box = many ? boxOf(list, g) : null;
+    const m = {
+      list: list.slice(), roots, many, g: g || null,
+      base: many ? { w: box.width, h: box.height } : exactSize(list[0]),
+      f: 1, fAtSnap: 1, anchor: [0.5, 0.5], states: new Map(),
+      prior: roots.map((t) => parseFloat((entryOf(t) || {}).scaled) || 1),
+    };
+    scaleSnap(m);
+    // Each ::before and ::after as Scale found it, to tell which grew.
+    m.pseudo0 = m.items.filter((it) => it.pseudo && it.pseudo.length).map((it) => ({ el: it.el, list: it.pseudo }));
+    scaleMode = m;
+    document.documentElement.classList.add("ft-scaling");
+    const n = m.items.reduce((s, it) => s + it.skipped.length, 0);
+    if (n) toast(n === 1 ? "1 animated value wasn't scaled" : n + " animated values weren't scaled");
+  }
+  function dropScale() {
+    scaleMode = null;
+    document.documentElement.classList.remove("ft-scaling");
+  }
+  // Whether Scale is on for what the panel shows.
+  function scaleHolds(target) {
+    const m = scaleMode;
+    if (!m || !target) return false;
+    if (!Array.isArray(target)) return !m.many && m.list[0] === target;
+    return m.many && target.length === m.list.length && target.every((t) => m.list.includes(t));
+  }
+  const scaleRect = (m) => (m.many ? boxOf(m.list, m.g) : m.roots[0].getBoundingClientRect());
+  // After an edit that wasn't a scale (Layout's W or H, a nudge), a new snapshot at the factor Scale is at: the factor
+  // stays (a W of its own isn't a scale, so it can't tell the factor), and 1x is moved so W and H read the true size.
+  function scaleFresh() {
+    const m = scaleMode;
+    if (!m) return;
+    const sig = scaleSig(m);
+    if (sig === m.sig) return;
+    const known = m.states.get(sig);
+    if (known) {
+      Object.assign(m, known, { sig });
+      // What was last written may not be what's on the page now, so each value is written again where it changes.
+      m.items.forEach((it) => [it.font, it.follow, it.fixed, it.size].forEach((l) => l.forEach((p) => {
+        p.last = null;
+        p.locked = false;
+      })));
+      return;
+    }
+    const box = m.many ? boxOf(m.list, m.g) : null;
+    const now = box ? { w: box.width, h: box.height } : exactSize(m.roots[0]);
+    m.base = { w: now.w / m.f, h: now.h / m.f };
+    m.fAtSnap = m.f;
+    scaleSnap(m);
+  }
+  // Where a scale starts from: the anchor's point on screen (a, or the panel's), the factor, each layer's top left.
+  function scaleFrom(a) {
+    scaleFresh();
+    const m = scaleMode;
+    const at = a || m.anchor;
+    const r = scaleRect(m);
+    // Each layer's translate as Scale last worked it out, unrounded, unless it has moved since (an arrow nudge).
+    const near = (x, y) => [0, 1].every((i) => Math.abs(x[i].px - y[i].px) < 0.006 && Math.abs(x[i].pct - y[i].pct) < 0.0006) && x[2] === y[2];
+    m.trs = m.roots.map((t, i) => {
+      const now = copyTr(trNow(t));
+      return m.trs && m.trs[i] && near(m.trs[i], now) ? m.trs[i] : now;
+    });
+    return {
+      r, a: at, f: m.f, A: { x: r.left + r.width * at[0], y: r.top + r.height * at[1] },
+      trs: m.trs.map(copyTr),
+      tls: m.roots.map((t) => {
+        const b = t.getBoundingClientRect();
+        return [b.left, b.top];
+      }),
+    };
+  }
+  // An attribute written as an edit (a K scale's viewBox), recorded and undone like a style.
+  function setAttr(t, name, value) {
+    const o = originalOf(t);
+    o.attrs = o.attrs || {};
+    if (!(name in o.attrs)) o.attrs[name] = t.getAttribute(name);
+    const v = value == null ? o.attrs[name] : value;
+    if (t.getAttribute(name) === v) return;
+    if (v == null) t.removeAttribute(name);
+    else t.setAttribute(name, v);
+    record(t, (entry) => {
+      const a = Object.assign({}, entry.attrs);
+      if (v != null && v !== o.attrs[name]) a[name] = v;
+      else delete a[name];
+      if (Object.keys(a).length) entry.attrs = a;
+      else delete entry.attrs;
+    });
+  }
+  // A transform the code set: a pure move comes back as a translate(), any other keeps its a, b, c, d.
+  function matrixScaled(n, k) {
+    const e = fmt2(n[4] * k);
+    const f = fmt2(n[5] * k);
+    if (n[0] === 1 && n[1] === 0 && n[2] === 0 && n[3] === 1) return "translate(" + e + "px, " + f + "px)";
+    return "matrix(" + n.slice(0, 4).join(", ") + ", " + e + ", " + f + ")";
+  }
+  // One element's writes at k (the factor over the snapshot). At 1x everything goes back to what it had.
+  function scaleWrite(it, k) {
+    const one = Math.abs(k - 1) < 1e-9;
+    const put = (p, v) => {
+      if (p.also) scaleStyle(p.el, p.also, v);
+      scaleStyle(p.el, p.prop, v);
+      p.last = v;
+    };
+    // Back to what it had: a value the code gave is handed back (no edit left, so 1x prints nothing), one she had
+    // edited before Scale is written again.
+    const restore = (el, prop, inline) => {
+      const o = originalOf(el).styles;
+      const e = entryOf(el);
+      if (prop in o && o[prop] !== inline) {
+        if (el.style.getPropertyValue(prop) !== inline) scaleStyle(el, prop, inline);
+        return;
+      }
+      if (!(e && e.styles[prop] != null) && el.style.getPropertyValue(prop) === inline) return;
+      scaleStyle(el, prop, "");
+      if (inline) el.style.setProperty(prop, inline);
+    };
+    const back = (p) => {
+      p.last = null;
+      if (p.also) restore(p.el, p.also, p.alsoInline);
+      restore(p.el, p.prop, p.inline);
+    };
+    // Read first, then written: the reads see the ancestors' new values (and this one's font size), and none of this
+    // element's own writes changes another of its reads. A kept value (an <svg>'s font size) is written as it was.
+    const follow = (list) => {
+      if (one) return list.forEach(back);
+      list.map((p) => [p, p.keep ? p.v : scaleLengths(p.v, k)]).filter(([p, v]) => !sameLengths(readScaled(p.el, p.prop), v)).forEach(([p, v]) => put(p, v));
+    };
+    follow(it.font);
+    follow(it.follow);
+    // Border widths are compared with the last value written, not the screen: Chrome draws them on whole device
+    // pixels, so 1px x 1.5 may still show 1px while the line rightly says 1.5px.
+    it.fixed.forEach((p) => {
+      if (one) return back(p);
+      const sc = p.shape ? p.v.split(" ").map((x) => round4(parseFloat(x) * k)).join(" ") : null;
+      const v = sc || (p.matrix ? matrixScaled(p.matrix, k) : scaleLengths(p.v, k));
+      if (v !== p.last) put(p, v);
+    });
+    it.once.forEach((p) => {
+      const v = one ? p.inline : p.to;
+      if (p.el.style.getPropertyValue(p.prop) !== v) scaleStyle(p.el, p.prop, v);
+    });
+    if (it.viewBox) setAttr(it.el, "viewBox", one ? null : "0 0 " + fmt2(it.viewBox.w) + " " + fmt2(it.viewBox.h));
+    if (it.meta) {
+      const x = (n) => (one ? n : Math.round(n * k * 100) / 100);
+      const s = it.meta.stroke;
+      const want = {
+        stroke: s ? Object.assign({}, s, { weight: x(s.weight) }) : null,
+        effects: it.meta.effects ? it.meta.effects.map((fx) => Object.assign({}, fx, { x: x(fx.x), y: x(fx.y), blur: x(fx.blur), spread: x(fx.spread) })) : null,
+      };
+      const e = entryOf(it.el) || {};
+      if (JSON.stringify(want) !== JSON.stringify({ stroke: e.stroke || null, effects: e.effects || null })) {
+        record(it.el, (entry) => {
+          if (want.stroke) entry.stroke = want.stroke;
+          if (want.effects) entry.effects = want.effects;
+        });
+      }
+    }
+    // Size last, after padding and borders: the snapshot's own width or height (the content box for content-box, the
+    // border box for border-box), so padding is never taken off twice. Inside auto layout its flex locks go on first.
+    it.size.forEach((p) => {
+      if (one) {
+        back(p);
+        // The flex locks go back to what they were before Scale.
+        p.locked = false;
+        p.was.forEach(([prop, v]) => {
+          const e = entryOf(p.el);
+          const now = e && e.styles[prop] != null ? e.styles[prop] : null;
+          if (now === v) return;
+          if (v != null) return scaleStyle(p.el, prop, v);
+          scaleStyle(p.el, prop, "");
+          const own = originalOf(p.el).styles[prop];
+          if (own) p.el.style.setProperty(prop, own);
+        });
+        return;
+      }
+      const px = p.px * k;
+      if (Math.abs((parseFloat(getComputedStyle(p.el).getPropertyValue(p.prop)) || 0) - px) <= 0.01) return;
+      if (!p.locked) {
+        p.locked = true;
+        const lp = layoutParentOf(p.el);
+        // Across the flow, a size the code already fixes isn't stretched, so it needs no lock (one would be a line
+        // that changes nothing).
+        if (lp && lp.inFlow && !(p.coded && lp.main !== p.axis)) fixAxis(p.el, p.axis, null);
+      }
+      put(p, fmt2(px) + "px");
+    });
+  }
+  // The smallest factor K goes to: the shorter side down to 0.01px, as Figma's. A side that's 0 (a straight line, a
+  // hairline's missing height) has nothing to shrink, so only the sides with a size count.
+  function scaleLeast(m) {
+    const sides = [m.base.w, m.base.h].filter((x) => x > 0);
+    return sides.length ? 0.01 / Math.min(...sides) : 0.01;
+  }
+  // Scales to f (the factor over 1x) from where `from` (scaleFrom) left it: every value, a group layout's gap and
+  // padding through the group's own layout, then the place, so the anchor stays put.
+  function applyScale(f, from) {
+    const m = scaleMode;
+    if (!m || !(f > 0)) return;
+    const k = f / m.fAtSnap;
+    m.f = f;
+    m.items.forEach((it) => scaleWrite(it, k));
+    const L = m.layout && layoutOf(m.g);
+    if (L) {
+      L.gap = Math.round(m.layout.gap * k * 100) / 100;
+      L.pad = m.layout.pad.map((p) => Math.round(p * k * 100) / 100);
+      flowGroup(L);
+    }
+    if (from) scalePlace(m, from, L);
+    if (Math.abs(k - 1) > 1e-9 && m.roots.every((t, i) => Math.abs(m.prior[i] * f - 1) < 1e-6)) scaleHome(m);
+    scaleNotes(m);
+    scaleSeal(m);
+  }
+  // Back at the code's own size over two Scales (2x, then 0.5x in a second K), each value that comes out as the
+  // code's own is handed back, as 1x within one Scale does, so Copy has no line for it; one she had edited before
+  // keeps her value. Then the flex locks a Scale put on go where taking them off changes nothing.
+  function scaleHome(m) {
+    const off = (el, prop) => {
+      const orig = originalOf(el).styles[prop] || "";
+      el.style.removeProperty(prop);
+      if (orig) el.style.setProperty(prop, orig);
+    };
+    const giveBack = (el, prop) => {
+      scaleStyle(el, prop, "");
+      off(el, prop);
+    };
+    m.items.forEach((it) => {
+      [it.font, it.follow, it.fixed, it.size].forEach((list) => list.forEach((p) => {
+        const e = entryOf(p.el);
+        const mine = e && e.styles[p.prop];
+        if (mine == null || p.shape || p.keep) return;
+        off(p.el, p.prop);
+        const edge = SCALE_EDGES.includes(p.prop) || p.prop === "border-spacing";
+        const code = edge ? declaredValue(p.el, p.prop) || getComputedStyle(p.el).getPropertyValue(p.prop) : readScaled(p.el, p.prop);
+        p.el.style.setProperty(p.prop, mine);
+        if (!sameLengths(code, mine) && !(p.matrix && sameLengths(getComputedStyle(p.el).transform, code))) return;
+        giveBack(p.el, p.prop);
+        if (p.also) giveBack(p.el, p.also);
+        p.last = null;
+        p.locked = false;
+      }));
+      if (!it.size.length) return;
+      const e = entryOf(it.el);
+      if (!e || e.styles.width != null || e.styles.height != null) return;
+      LOCKS.forEach((lp) => {
+        if (e.styles[lp] == null) return;
+        const mine = e.styles[lp];
+        const r0 = it.el.getBoundingClientRect();
+        off(it.el, lp);
+        const r1 = it.el.getBoundingClientRect();
+        const same = ["left", "top", "width", "height"].every((k) => Math.abs(r0[k] - r1[k]) <= 0.01);
+        it.el.style.setProperty(lp, mine);
+        if (same) giveBack(it.el, lp);
+      });
+    });
+  }
+  // One layer: its anchor point goes back where it was. Several: each lands where the scale around the anchor takes its
+  // top left; a group layout's layers move together, as the layout keeps them. A layer the code's layout places
+  // (flex or grid) isn't moved, as resize does.
+  function scalePlace(m, from, L) {
+    const placed = (t) => {
+      const lp = layoutParentOf(t);
+      return !!(lp && lp.inFlow);
+    };
+    // A measured move on screen, added to the translate it has, written to 0.01px.
+    const go = (t, dx, dy) => {
+      if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) return;
+      const [lx, ly] = localDelta(t, dx, dy);
+      const cur = trNow(t);
+      cur[0].px += lx;
+      cur[1].px += ly;
+      boxed(t);
+      writeTranslate(t, cur, true);
+    };
+    const { A, a } = from;
+    if (!m.many) {
+      const t = m.roots[0];
+      if (placed(t)) return;
+      // A shape inside an SVG counts in its parent's units: only measured, from where it is now.
+      const ax = inSvg(t) || !m.snapSize ? copyTr(trNow(t)) : copyTr(from.trs[0]);
+      // Worked out, not measured: the anchor's place in the box moves by the size's change times the anchor, so the
+      // translate is the one Scale started from plus that, unrounded. Back at a factor it had, around the same anchor,
+      // it's that factor's translate exactly (1x leaves no line).
+      if (!inSvg(t) && m.snapSize) {
+        const r = (from.f - m.f) / m.fAtSnap;
+        ax[0].px += m.snapSize.w * r * a[0];
+        ax[1].px += m.snapSize.h * r * a[1];
+        boxed(t);
+        writeTranslate(t, ax, true);
+      }
+      // What the sums can't know is measured and taken out: a layout that moves it as it grows, a line box that
+      // rounds, a shape's own units.
+      const b = t.getBoundingClientRect();
+      const dx = A.x - (b.left + b.width * a[0]);
+      const dy = A.y - (b.top + b.height * a[1]);
+      const off = inSvg(t) || !m.snapSize ? 0.005 : 0.25;
+      if (Math.abs(dx) >= off || Math.abs(dy) >= off) {
+        const [lx, ly] = localDelta(t, dx, dy);
+        ax[0].px += lx;
+        ax[1].px += ly;
+        boxed(t);
+        writeTranslate(t, ax, true);
+      }
+      m.trs[0] = ax;
+      return;
+    }
+    const r = from.f ? m.f / from.f : 1;
+    const flow = L ? groupMembers(L.sels.filter((s) => !L.ignore.includes(s))) : [];
+    m.roots.forEach((t, i) => {
+      if (flow.includes(t) || placed(t)) return;
+      const b = t.getBoundingClientRect();
+      const tl = from.tls[i];
+      go(t, A.x + (tl[0] - A.x) * r - b.left, A.y + (tl[1] - A.y) * r - b.top);
+    });
+    const fr = flow.length && alFrame(L);
+    if (fr) {
+      const dx = A.x - (fr.left + fr.width * a[0]);
+      const dy = A.y - (fr.top + fr.height * a[1]);
+      flow.forEach((t) => go(t, dx, dy));
+    }
+  }
+  // Copy's notes: the whole factor on each layer K was on, and what animations held, while it's scaled.
+  function scaleNotes(m) {
+    // The factor to 8 digits, so the bake's check of a token times it against a line holds on large values too.
+    let whole = false;
+    m.roots.forEach((t, i) => {
+      const total = Number((m.prior[i] * m.f).toPrecision(8));
+      const want = Math.abs(total - 1) < 1e-6 ? "" : String(total);
+      if (want) whole = true;
+      if (((entryOf(t) || {}).scaled || "") !== want) record(t, (entry) => { if (want) entry.scaled = want; else delete entry.scaled; });
+    });
+    // At this Scale's 1x, the notes an earlier Scale left stay while the layer is still scaled.
+    const on = whole && Math.abs(m.f - 1) > 1e-9;
+    // A ::before or ::after length that stayed (nearer what it was than to it times the factor). Back at this
+    // session's 1x, as above.
+    let fresh = false;
+    (m.pseudo0 || []).forEach(({ el, list }) => {
+      const e = entryOf(el) || {};
+      let want = whole ? e.scalePseudo || "" : "";
+      if (on) {
+        want = list.map(({ pe, v }) => {
+          const ps = getComputedStyle(el, pe);
+          const left = Object.keys(v).filter((p) => {
+            const was = lengthsOf(v[p]).nums;
+            const now = lengthsOf(ps.getPropertyValue(p)).nums;
+            return was.some((n, i) => n && now[i] != null && Math.abs(now[i] - n) <= Math.abs(now[i] - n * m.f));
+          });
+          return left.length ? pe + ": " + left.join(", ") : "";
+        }).filter(Boolean).join("; ");
+      }
+      if ((e.scalePseudo || "") === want) return;
+      if (want && !e.scalePseudo) fresh = true;
+      record(el, (entry) => { if (want) entry.scalePseudo = want; else delete entry.scalePseudo; });
+    });
+    if (fresh && !m.pseudoToast) {
+      m.pseudoToast = true;
+      toast("::before and ::after weren't scaled");
+    }
+    m.items.forEach((it) => {
+      const had = (entryOf(it.el) || {}).scaleSkipped || "";
+      const want = on ? it.skipped.join(", ") : whole ? had : "";
+      if (had !== want) record(it.el, (entry) => { if (want) entry.scaleSkipped = want; else delete entry.scaleSkipped; });
+    });
+  }
+
   // Ignore auto layout: the layer leaves its parent's flow (absolute) and stays where it is on screen, its translate
   // kept. The parent becomes the box it's placed in, so a static parent is made relative.
   const ignoresLayout = (t) => /^(absolute|fixed)$/.test(getComputedStyle(t).position);
@@ -4486,7 +8582,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const cb = t.offsetParent || p;
     const pr = cb.getBoundingClientRect();
     const n = (v) => parseFloat(v) || 0;
-    const tr = cs.translate && cs.translate !== "none" ? cs.translate.split(/\s+/).map(n) : [];
+    const tr = trPx(t, trNow(t));
     const left = r0.left - pr.left - cb.clientLeft + cb.scrollLeft - n(cs.marginLeft) - (tr[0] || 0);
     const top = r0.top - pr.top - cb.clientTop + cb.scrollTop - n(cs.marginTop) - (tr[1] || 0);
     setStyle(t, "left", round1(left) + "px");
@@ -4505,14 +8601,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   // Takes Spacing's share (nudge's entry.sim) out of a layer's translate and keeps the rest, her own moves.
   function takeBackSpacing(t) {
-    const e = edits.elements[selectorFor(t)];
+    const e = edits.elements[keyOf(t)];
     if (!e || !e.sim) return;
-    const cur = String(t.style.translate || "").trim().split(/\s+/).map(parseFloat);
-    const x = Math.round(((cur[0] || 0) - e.sim.x) * 10) / 10;
-    const y = Math.round(((cur[1] || 0) - e.sim.y) * 10) / 10;
-    const own = String(originalOf(t).styles.translate || "").trim().split(/\s+/).map(parseFloat);
-    if (x === (own[0] || 0) && y === (own[1] || 0)) handBack(t, "translate");
-    else setStyle(t, "translate", x + "px " + y + "px");
+    const cur = trNow(t);
+    cur[0].px -= e.sim.x;
+    cur[1].px -= e.sim.y;
+    writeTranslate(t, cur);
     record(t, (entry) => { delete entry.sim; });
   }
 
@@ -4527,9 +8621,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const mainOf = (v) => ALIGN_MAIN[alignWord(v)] || "start";
   const crossOf = (v) => ALIGN_CROSS[alignWord(v)] || "start";
   const stretchy = (v) => /^(normal|stretch)$/.test(alignWord(v));
+  // Wrapped, Figma's alignment across moves the rows as one block, with the gap between them: align-content packed
+  // to a side. Its normal stretches the rows apart instead, so then the cell is read off align-items.
+  const PACKED = { "flex-start": "start", start: "start", center: "center", "flex-end": "end", end: "end" };
   function alignOf(t) {
     const cs = getComputedStyle(t);
-    return { main: mainOf(cs.justifyContent), cross: crossOf(cs.alignItems), stretch: stretchy(cs.alignItems) };
+    const packed = /^wrap/.test(cs.flexWrap) && PACKED[alignWord(cs.alignContent)];
+    return { main: mainOf(cs.justifyContent), cross: packed || crossOf(cs.alignItems), stretch: stretchy(cs.alignItems) };
+  }
+  // Packs a wrap's rows to that side, handed back when the code's own already does.
+  function packRows(t, cross) {
+    if (PACKED[alignWord(ownValue(t, "align-content"))] === cross) handBack(t, "align-content");
+    else setStyle(t, "align-content", ALIGN_CSS[cross]);
   }
   function padOf(t) {
     const cs = getComputedStyle(t);
@@ -4786,6 +8889,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const y = inf.flow === "vertical";
     const fills = boxes.filter((b) => (y ? Math.abs(b.l - content.l) < 0.5 && Math.abs(b.r - content.r) < 0.5
       : Math.abs(b.t - content.t) < 0.5 && Math.abs(b.b - content.b) < 0.5));
+    // Block margins that collapsed out through the container (nothing on that side stops them: no padding, no
+    // border, and at the bottom an auto height) sit outside its box. Flex collapses none, so they'd land inside it
+    // and grow it. They move onto the container's own margin, where they collapse as before, so nothing moves. A
+    // negative margin of its own doesn't add up that simply: then it stays, and the toast says layers moved.
+    const leaks = [];
+    if (y) {
+      const cs = getComputedStyle(t);
+      const n = (v) => parseFloat(v) || 0;
+      const first = boxes[0];
+      const last = boxes[boxes.length - 1];
+      if (first.m[0] > 0 && !p[0] && !n(cs.borderTopWidth) && Math.abs(first.t + first.m[0] - content.t) < 0.5) leaks.push([first.el, "margin-top", first.m[0], n(cs.marginTop)]);
+      if (last.m[2] > 0 && !p[2] && !n(cs.borderBottomWidth) && Math.abs(last.b - last.m[2] - content.b) < 0.5 && sizedByLayout(t, "h")) leaks.push([last.el, "margin-bottom", last.m[2], n(cs.marginBottom)]);
+    }
+    const r0 = t.getBoundingClientRect();
     const own = ownValue(t, "display");
     if (/flex/.test(own)) handBack(t, "display");
     else setStyle(t, "display", own.startsWith("inline") ? "inline-flex" : "flex");
@@ -4808,11 +8925,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         }
       });
     }
+    leaks.forEach(([c, prop, m, mine]) => {
+      if (mine < 0) return;
+      setPx(c, prop, 0);
+      mark(c, prop);
+      if (m > mine) {
+        setPx(t, prop, m);
+        mark(t, prop);
+      }
+    });
     ["padding-top", "padding-right", "padding-bottom", "padding-left"].forEach((prop, i) => {
       if (Math.abs(inf.pad[i] - p[i]) < 0.05) return;
       setPx(t, prop, inf.pad[i]);
       mark(t, prop);
     });
+    // The frame itself should stay put too; where it didn't, the toast says so.
+    const r1 = t.getBoundingClientRect();
+    if (["left", "top", "right", "bottom"].some((k) => Math.abs(r1[k] - r0[k]) >= 0.5)) inf.moves = true;
     if (selection) selection.reshow();
     return inf;
   }
@@ -4838,7 +8967,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     else {
       handBack(t, "display");
       // Back to inline, a layer she moved, turned or sized loses that on screen, so it's boxed again.
-      const e = edits.elements[selectorFor(t)];
+      const e = edits.elements[keyOf(t)];
       if (e && ["translate", "rotate", "scale", "width", "height"].some((p) => e.styles[p])) boxed(t);
     }
     handBack(t, "flex-direction");
@@ -4846,7 +8975,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Copy). Her padding stays: it still places the layers. The padding and margins that only held the layers under
     // flex go, or the block layout would add them to its own and move the layers.
     const e = entryOf(t);
-    ["flex-wrap", "row-gap", "column-gap", "justify-content", "align-items"].forEach((p) => {
+    ["flex-wrap", "row-gap", "column-gap", "justify-content", "align-items", "align-content"].forEach((p) => {
       if (e && e.styles[p] != null) handBack(t, p);
     });
     dropInferred(t);
@@ -4954,6 +9083,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || !g || e.defaultPrevented || typing(e.target)) return;
       e.preventDefault();
+      e.stopPropagation();
       close();
     });
 
@@ -5046,6 +9176,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || !fx || e.defaultPrevented || typing(e.target)) return;
       e.preventDefault();
+      e.stopPropagation();
       close();
     });
 
@@ -5213,6 +9344,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     edits.newKeyframes[name] = { preset: id, body: preset[2] };
     noteChange();
     return name;
+  }
+  // The @keyframes names her edits run (every animation-name she set, on a layer or a component).
+  function namesRun() {
+    const runs = new Set();
+    JSON.stringify(edits, (k, v) => {
+      if (k === "newKeyframes" || k === "keyframes" || k === "waapi") return undefined;
+      if (k === "animation-name" && typeof v === "string") splitTop(v).forEach((n) => runs.add(n.trim()));
+      return v;
+    });
+    return runs;
+  }
+  // An added @keyframes nothing runs any more (another was picked in its place) goes, from the page and the edits,
+  // so Copy doesn't ask the code for it and picking it again takes its own name back.
+  function dropUnusedKeyframes() {
+    const runs = namesRun();
+    Object.keys(edits.newKeyframes).forEach((name) => {
+      if (runs.has(name)) return;
+      putNewKeyframes(name, null);
+      delete edits.newKeyframes[name];
+      delete edits.keyframes[name];
+    });
+    noteChange();
   }
   // Puts finetune's added @keyframes where next says (undo, redo, a reload).
   function paintNewKeyframes(next) {
@@ -5411,14 +9564,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const d = across ? v.x : v.y;
         info.direction = across ? (d.n < 0 ? "left" : "right") : d.n < 0 ? "up" : "down";
         info.distance = { n: Math.abs(d.n), u: d.u };
+      } else if (v.x && v.y) {
+        // Keyframes that move but sit still now (a distance typed to 0) still offer the move, so it can be typed
+        // out again: Up until the panel knows better (moveShape).
+        info.direction = "up";
+        info.distance = { n: 0, u: moving[0].parts.move.y.u };
       }
     }
-    // The keyframe(s) farthest from rest (scale 1, no turn, opacity 1), which a field edits together.
+    // The keyframe(s) farthest from rest (scale 1, no turn, opacity 1), which a field edits together. Keyframes that
+    // declare it but sit at rest (typed back to 1, say) still offer it (rest: true), so it can be typed again.
     const farthest = (aspect, rest) => {
       const list = has(aspect);
       if (!list.length || list.some((f) => f.parts[aspect] == null)) return;
       const far = list.reduce((a, b) => (Math.abs(b.parts[aspect] - rest) > Math.abs(a.parts[aspect] - rest) ? b : a));
-      if (Math.abs(far.parts[aspect] - rest) < 1e-6) return;
+      if (Math.abs(far.parts[aspect] - rest) < 1e-6) {
+        info[aspect] = { value: rest, frames: list, rest: true };
+        return;
+      }
       info[aspect] = { value: far.parts[aspect], frames: list.filter((f) => Math.abs(f.parts[aspect] - far.parts[aspect]) < 1e-6) };
     };
     farthest("scale", 1);
@@ -5428,16 +9590,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
   // Turns every keyframe's move from one direction to another, keeping its distance: along the same axis it
   // flips, across it swaps the axes.
-  function turnMoves(info, to) {
-    const [fx, fy] = DIRS[info.direction];
+  function turnMove(m, from, to) {
+    const [fx, fy] = DIRS[from];
     const [tx, ty] = DIRS[to];
+    const s = (l, k) => ({ n: l.n * k, u: l.u });
+    return fx && tx ? { x: s(m.x, fx * tx), y: m.y } : fy && ty ? { x: m.x, y: s(m.y, fy * ty) }
+      : fy ? { x: s(m.y, fy * tx), y: s(m.x, fy * tx) } : { x: s(m.y, fx * ty), y: s(m.x, fx * ty) };
+  }
+  function turnMoves(info, to) {
     info.frames.forEach((f) => {
       const m = f.parts.move;
       if (!m || (!m.x.n && !m.y.n)) return;
-      const s = (l, k) => ({ n: l.n * k, u: l.u });
-      const next = fx && tx ? { x: s(m.x, fx * tx), y: m.y } : fy && ty ? { x: m.x, y: s(m.y, fy * ty) }
-        : fy ? { x: s(m.y, fy * tx), y: s(m.x, fy * tx) } : { x: s(m.y, fx * ty), y: s(m.x, fx * ty) };
-      writePart(f, "move", next);
+      writePart(f, "move", turnMove(m, info.direction, to));
     });
   }
   // Scales every keyframe's move so the whole move covers this distance, in its unit.
@@ -5447,6 +9611,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const m = f.parts.move;
       if (!m || (!m.x.n && !m.y.n)) return;
       writePart(f, "move", { x: { n: m.x.n * k, u: m.x.u }, y: { n: m.y.n * k, u: m.y.u } });
+    });
+  }
+  // A move apart from its size: its direction and each moving keyframe's move per unit of distance. The panel keeps
+  // the last one it saw, so a move typed down to 0 types out again as it was. With none, the first keyframe that
+  // moves goes Up toward where the layer sits (as Slide in does), or away from it when that keyframe is later.
+  function moveShape(info) {
+    const per = (l) => ({ n: l.n / info.distance.n, u: l.u });
+    return {
+      direction: info.direction,
+      frames: info.frames.filter((f) => f.parts.move && (f.parts.move.x.n || f.parts.move.y.n)).map((f) => ({ at: f.at, x: per(f.parts.move.x), y: per(f.parts.move.y) })),
+    };
+  }
+  function stillShape(info) {
+    const f = info.frames.find((g) => g.parts.move);
+    return { direction: "up", frames: [{ at: f.at, x: { n: 0, u: f.parts.move.x.u }, y: { n: f.at ? -1 : 1, u: f.parts.move.y.u } }] };
+  }
+  const turnShape = (shape, to) => ({ direction: to, frames: shape.frames.map((p) => Object.assign({ at: p.at }, turnMove(p, shape.direction, to))) });
+  // Moves the keyframes of a still move out to this distance, in the shape's direction.
+  function putShape(info, shape, n) {
+    shape.frames.forEach((p) => {
+      const f = info.frames.find((g) => g.at === p.at && g.parts.move);
+      if (f) writePart(f, "move", { x: { n: p.x.n * n, u: p.x.u }, y: { n: p.y.n * n, u: p.y.u } });
     });
   }
 
@@ -5459,7 +9645,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // (a staggered list) are one animation, a group.
   const waapi = new Map();
   const knownAnims = new WeakSet();
-  // Set by the inspector: gives a new call the playback speed while its layer is being watched.
+  // Each layer's entries, so a call only looks at its own layer's (a pointer follower calls animate() every frame).
+  // seq keeps them in the order they were first seen, the same on every layer, so a group's key matches.
+  const waapiByEl = new WeakMap();
+  let waapiSeq = 0;
+  // Set by the inspector: gives a new call the playback speed while its layer is being watched. It's handed the
+  // layer and the call's animation, and must stay cheap: it runs on every call.
   let afterAnimate = () => {};
   const camel = (p) => p.replace(/-([a-z])/g, (m, c) => c.toUpperCase());
   function cleanFrame(k) {
@@ -5496,14 +9687,34 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return t;
   }
   const editedFrames = (frames, ed) => frames.map((f, i) => Object.assign({}, f, ed && ed.frames && ed.frames[i]));
-  function noteAnim(el, anim, frames, timing, id, stack) {
-    const key = id ? "id:" + id : JSON.stringify(frames);
+  function dropTarget(entry, el) {
+    entry.targets.delete(el);
+    const mine = waapiByEl.get(el);
+    if (mine) mine.delete(entry);
+    if (!entry.targets.size) waapi.delete(entry.key);
+  }
+  // stack is the call's Error: the browser only writes its text out when it's read, so it's read once, for a new entry.
+  function noteAnim(el, anim, frames, timing, id, stack, key) {
+    key = key || (id ? "id:" + id : JSON.stringify(frames));
     let entry = waapi.get(key);
     if (!entry) {
-      entry = { key, label: id || propsOf(frames).join(", "), hint: callerOf(stack), frames, targets: new Map() };
+      const text = typeof stack === "string" ? stack : stack && stack.stack;
+      entry = { key, seq: ++waapiSeq, label: id || propsOf(frames).join(", "), hint: callerOf(text), frames, targets: new Map() };
       waapi.set(key, entry);
     }
+    let mine = waapiByEl.get(el);
+    if (!mine) waapiByEl.set(el, (mine = new Set()));
+    // A layer the page animates again with fresh values (a pointer follower) is one animation, not one per call: an
+    // earlier call on it of the same properties is let go, unless she has edited it, once it's over or this one
+    // replaces it (not adding to it: composite "add" or "accumulate").
+    const replaces = anim.effect && anim.effect.composite === "replace" && !frames.some((f) => f.composite && f.composite !== "replace");
+    mine.forEach((other) => {
+      if (other === entry || other.label !== entry.label || edits.waapi[other.key]) return;
+      const was = other.targets.get(el).anim;
+      if (replaces || (was.playState !== "running" && was.playState !== "paused")) dropTarget(other, el);
+    });
     entry.targets.set(el, { anim, timing });
+    mine.add(entry);
     knownAnims.add(anim);
     return entry;
   }
@@ -5515,14 +9726,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (!isUi(this)) {
           const effect = new KeyframeEffect(null, keyframes, options);
           const id = options && typeof options === "object" && options.id ? String(options.id) : "";
-          plan = { frames: effect.getKeyframes().map(cleanFrame), timing: codeTiming(effect.getTiming()), id, stack: new Error().stack };
+          const frames = effect.getKeyframes().map(cleanFrame);
+          plan = { frames, timing: codeTiming(effect.getTiming()), id, stack: new Error(), key: id ? "id:" + id : JSON.stringify(frames) };
         }
       } catch (e) {
         plan = null;
       }
       let kf = keyframes;
       let opts = options;
-      const ed = plan && edits.waapi[plan.id ? "id:" + plan.id : JSON.stringify(plan.frames)];
+      const ed = plan && edits.waapi[plan.key];
       if (ed) {
         kf = editedFrames(plan.frames, ed);
         opts = Object.assign(typeof options === "number" ? {} : Object.assign({}, options), editedTiming(plan.timing, ed, selectorFor(this)));
@@ -5530,8 +9742,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const anim = native.call(this, kf, opts);
       if (plan) {
         try {
-          noteAnim(this, anim, plan.frames, plan.timing, plan.id, plan.stack);
-          afterAnimate();
+          noteAnim(this, anim, plan.frames, plan.timing, plan.id, plan.stack, plan.key);
+          afterAnimate(this, anim);
         } catch (e) {
           // Listing it is a nicety; the page's animation runs regardless.
         }
@@ -5563,11 +9775,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (edits.waapi[entry.key]) applyWaapi(entry);
     });
     waapi.forEach((entry) => entry.targets.forEach((tg, el) => {
-      if (!el.isConnected) entry.targets.delete(el);
+      if (!el.isConnected) dropTarget(entry, el);
     }));
   }
   // The JavaScript animations a layer runs.
-  const waapiOf = (e) => Array.from(waapi.values()).filter((en) => en.targets.has(e));
+  const waapiOf = (e) => {
+    const mine = waapiByEl.get(e);
+    return mine ? Array.from(mine).sort((a, b) => a.seq - b.seq) : [];
+  };
   // Her edit record for a JavaScript animation, made on its first edit with what the code said, so Copy can name
   // the call and the bake can find it: edits.waapi[key] = { label, hint, sels, code: { timing, delays, frames },
   // timing, delays, frames }.
@@ -5659,7 +9874,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (r instanceof CSSStyleRule) {
           const names = splitTop(r.style.getPropertyValue("animation-name")).filter((n) => n && n !== "none");
           if (names.length) consider(r, names);
-        } else if (r.cssRules && !(r instanceof CSSKeyframesRule)) walk(r.cssRules);
+        } else if (r.cssRules && !(r instanceof CSSKeyframesRule)) {
+          // A rule for another screen size, or a feature this browser lacks, can't start here.
+          try {
+            if (window.CSSMediaRule && r instanceof CSSMediaRule && !matchMedia(r.conditionText || r.media.mediaText).matches) continue;
+            if (window.CSSSupportsRule && r instanceof CSSSupportsRule && !CSS.supports(r.conditionText)) continue;
+          } catch (e) {
+            // A condition it can't read is walked as before.
+          }
+          walk(r.cssRules);
+        }
       }
     };
     for (const sheet of document.styleSheets) {
@@ -5682,7 +9906,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const undoBtn = iconButton(ICON.undo, "Undo", undo);
     const redoBtn = iconButton(ICON.redo, "Redo", redo);
     undoBtn.setAttribute("data-ft-tip-key", KEYS.mod + "Z");
-    redoBtn.setAttribute("data-ft-tip-key", KEYS.shift + KEYS.mod + "Z");
+    redoBtn.setAttribute("data-ft-tip-key", KEYS.shiftMod + "Z");
     const actions = el("div", "ft-actions");
     actions.append(undoBtn, redoBtn);
     const top = el("div", "ft-top");
@@ -5695,11 +9919,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const modes = el("div", "ft-modes");
     const modeBtns = [["design", "Design", "pencilRuler"], ["motion", "Motion", "motion"]].map(([name, label, icon]) => {
       const b = button("ft-modes-btn", null, () => {
+        // Scale is a Design tool: Motion leaves it.
+        if (name === "motion" && scaleMode) endScale();
         modeBtns.forEach((m) => m.setAttribute("aria-selected", String(m === b)));
         root.setAttribute("data-tab", name);
         menu.close();
         picker.close();
         imagePop.close();
+        fontsPop.close();
         guidePop.close();
         effectPop.close();
         designPane.hidden = name !== "design";
@@ -5749,14 +9976,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Fills stack like Figma's: the top row paints on top.
     function paint() {
       const shown = layers.filter((l) => l.visible).map((l) => "linear-gradient(" + rgba(l) + ", " + rgba(l) + ")");
-      pageEl.style.backgroundColor = "transparent";
-      pageEl.style.backgroundImage = shown.length ? shown.join(", ") : "none";
+      const page = livePage();
+      page.style.backgroundColor = "transparent";
+      page.style.backgroundImage = shown.length ? shown.join(", ") : "none";
       picker.sync();
     }
 
     function paintAndSave() {
       paint();
       edits.page = layers.map((l) => Object.assign({}, l));
+      // The fill is a list of layers, so the window it was set in is kept beside it.
+      stampView((edits.pageView = {}));
       noteChange();
     }
 
@@ -5783,7 +10013,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     page.append(head, list);
 
     const menu = makeMenu(root);
+    openLayerMenu = (x, y, rows, onPick, onHover) => menu.openAt(x, y,
+      [{ heading: true, label: "Select layer" }].concat(rows.map((r, i) => ({ label: (componentOf(r.t) || kindOf(r.t)) + " · " + elName(r.t), value: i, depth: r.depth }))),
+      (i) => onPick(rows[i].t), (i) => onHover(i == null ? null : rows[i].t));
+    closeMenu = menu.close;
     const imagePop = makeImagePop(root, menu, () => changed(false));
+    const fontsPop = makeFontsPop(root, menu);
 
     // Horizontal layout: one columns layout at a time (Figma's layout guide). With none saved for the page,
     // it starts as the page's own grid when its code has one (pageGrid), ready to tweak, hidden until ⌃G or its eye
@@ -5791,23 +10026,55 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // it, and its fields and alignment sit under it. Save keeps it; Copy never includes it. The header saves it as
     // a style, or applies a saved one.
     const guides = edits.guides;
-    if (!guides.length) {
-      const own = pageGrid();
-      if (own) guides.push(Object.assign(own, { visible: false }));
+    // For the guide following the window's width (followPage): the last page grid it was on (a width with no grid
+    // keeps the one before), the untouched guide set aside while the width has none, and whether a page grid was ever
+    // taken up (so one she removed isn't put back).
+    let anchor = null;
+    let parked = null;
+    let tookPage = false;
+    parkedGuide = () => parked;
+    takePageGrid();
+    // The page grid, taken up as the page's layout when there's none (hidden), and what a saved layout on its numbers
+    // (fromPage, see savable) now reads: the code's grid as it is today.
+    function takePageGrid() {
+      pageDefault = pageGrid();
+      if (pageDefault) pageDefault.visible = false;
+      anchor = pageDefault;
+      parked = null;
+      tookPage = !!pageDefault || guides.length > 0;
+      if (!guides.length) {
+        if (pageDefault) guides.push(copyGuides([pageDefault])[0]);
+        return;
+      }
+      guides.forEach((g, i) => {
+        if (!g.fromPage) return;
+        const next = copyGuides([g])[0];
+        delete next.fromPage;
+        if (pageDefault) GUIDE_NUMS.forEach((k) => { next[k] = pageDefault[k]; });
+        guides[i] = next;
+      });
     }
     const overlay = el("div", "ft-guides");
     const guideSec = el("div", "ft-section");
     const guideHead = el("div", "ft-section-head");
     const guideList = el("div", "ft-guide-list");
 
-    // Styles, as Figma's Layout guide styles (titled "Active layout guides", her name): a popover just left of the
-    // panel, with a close, no search. The page's own grid first ("From the page", so a tweak can always go back to it), then hers, under "This page"
-    // and "All pages". Hovering a row shows it on the page, a click applies it, leaving the list puts hers back; a
-    // saved style's row shows Delete on hover, where Figma's shows Edit style.
+    // Styles, as Figma's Layout guide styles (titled "Layout guide styles"): a popover just left of the panel, with a
+    // close, no search. "Currently used by site" is the layout on the page now, filled blue as Figma fills the style in
+    // use; the header's + saves it as a style (the same
+    // All pages / Just this page choice as the bookmark) until it's saved. "Additional styles" lists the rest: the
+    // page's own grid (so a tweak can always go back to it), hers for this page (marked) and for all pages. Hovering a
+    // row shows it on the page, a click applies it, leaving the list puts hers back; a saved style's row shows Delete
+    // on hover, where Figma's shows Edit style.
     const stylesPop = el("div", "ft-pop ft-styles-pop");
     stylesPop.hidden = true;
     const stylesHead = el("div", "ft-pop-head");
-    stylesHead.append(el("span", null, "Active layout guides"), iconButton(ICON.x, "Close", () => closeStyles()));
+    // Its + (Create style) sits left of the close, as Figma's styles popover has it; it shows while the layout in use
+    // isn't a saved style yet.
+    const createStyle = iconButton(ICON.plus, "Create style", () => openSave(createStyle));
+    const stylesActions = el("div", "ft-head-actions");
+    stylesActions.append(createStyle, iconButton(ICON.x, "Close", () => closeStyles()));
+    stylesHead.append(el("span", null, "Layout guide styles"), stylesActions);
     const stylesList = el("div", "ft-styles-list");
     stylesPop.append(stylesHead, stylesList);
     root.appendChild(stylesPop);
@@ -5839,6 +10106,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const row = el("div", "ft-style-row");
       row.setAttribute("role", "button");
       row.tabIndex = 0;
+      // A style is its numbers and color: it shows when hovered or picked, whatever eye it was saved with.
+      guide = Object.assign(copyGuides([guide])[0], { visible: true });
+      delete guide.fromPage;
       const pick = () => {
         preview(null);
         use([guide]);
@@ -5851,7 +10121,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         pick();
       });
       row.addEventListener("pointerenter", () => preview(guide));
-      row.insertAdjacentHTML("beforeend", ICON.columns);
+      row.insertAdjacentHTML("beforeend", ICON.gridColumn);
       row.appendChild(el("span", "ft-style-name", name));
       if (remove) {
         const trash = iconButton(ICON.trash, "Delete style", remove);
@@ -5863,13 +10133,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     function drawStyles() {
       const rows = [];
+      const cur = guides[0];
+      const curName = cur ? styleName(cur) : "";
+      if (cur) {
+        const row = el("div", "ft-style-row ft-style-current");
+        row.insertAdjacentHTML("beforeend", ICON.gridColumn);
+        row.appendChild(el("span", "ft-style-name", curName));
+        rows.push(el("div", "ft-styles-heading", "Currently used by site"), row);
+      }
+      createStyle.hidden = !cur || [STYLES_ALL, stylesPage()].some((key) => loadStyles(key).some((st) => st.name === curName));
+      const more = [];
       const own = pageGrid();
-      if (own) rows.push(el("div", "ft-styles-heading", "From the page"), styleRow("Page grid · " + styleName(own), own));
-      [[STYLES_PAGE, "This page"], [STYLES_ALL, "All pages"]].forEach(([key, heading]) => {
+      if (own && styleName(own) !== curName) more.push(styleRow("Page grid · " + styleName(own), own));
+      [[stylesPage(), " · this page"], [STYLES_ALL, ""]].forEach(([key, tag]) => {
         const list = loadStyles(key);
-        if (!list.length) return;
-        rows.push(el("div", "ft-styles-heading", heading));
-        list.forEach((st, i) => rows.push(styleRow(st.name, st.guide, () => {
+        list.forEach((st, i) => st.name !== curName && more.push(styleRow(st.name + tag, st.guide, () => {
           const now = loadStyles(key);
           now.splice(i, 1);
           storeStyles(key, now);
@@ -5883,7 +10161,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           drawStyles();
         })));
       });
-      if (!rows.length) rows.push(el("div", "ft-styles-empty", "No saved styles yet"));
+      rows.push(el("div", "ft-styles-heading", "Additional styles"));
+      if (more.length) rows.push(...more);
+      else rows.push(el("div", "ft-styles-empty", "No saved styles yet"));
       stylesList.replaceChildren(...rows);
     }
     function openStyles() {
@@ -5902,12 +10182,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     // Closes on a click anywhere else, or Escape; the button toggles it.
     document.addEventListener("pointerdown", (e) => {
-      if (stylesPop.hidden || stylesPop.contains(e.target) || styleBtn.contains(e.target)) return;
+      if (stylesPop.hidden || stylesPop.contains(e.target) || styleBtn.contains(e.target) || savePop.contains(e.target)) return;
       closeStyles();
     }, true);
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || stylesPop.hidden || e.defaultPrevented || typing(e.target)) return;
       e.preventDefault();
+      e.stopPropagation();
       closeStyles();
     });
     const styleBtn = iconButton(ICON.guideStyles, "Styles", openStyles);
@@ -5916,9 +10197,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // the same numbers aren't saved twice.
     const savePop = el("div", "ft-pop ft-save-pop");
     savePop.hidden = true;
+    let saveAnchor = null;
     const closeSave = () => {
       savePop.hidden = true;
-      saveBtn.classList.remove("is-open");
+      if (saveAnchor) saveAnchor.classList.remove("is-open");
+      saveAnchor = null;
     };
     function saveStyle(key) {
       closeSave();
@@ -5926,29 +10209,41 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!g) return;
       const name = styleName(g);
       const list = loadStyles(key);
-      if (list.some((st) => st.name === name)) return toast("Already saved");
-      list.push({ name, guide: copyGuides([g])[0] });
+      // The page's own grid is already listed in Styles ("Page grid"), so this page needn't keep it twice.
+      if (list.some((st) => st.name === name) || (key !== STYLES_ALL && pageDefault && styleName(pageDefault) === name)) return toast("Already saved");
+      const kept = Object.assign(copyGuides([g])[0], { visible: true });
+      delete kept.fromPage;
+      list.push({ name, guide: kept });
       if (!storeStyles(key, list)) return toast("Couldn't save: storage is blocked or full");
-      undoToast("Saved style", () => storeStyles(key, loadStyles(key).filter((st) => st.name !== name)));
+      if (!stylesPop.hidden) drawStyles();
+      undoToast("Saved style", () => {
+        storeStyles(key, loadStyles(key).filter((st) => st.name !== name));
+        if (!stylesPop.hidden) drawStyles();
+      });
     }
     const saveBody = el("div", "ft-save-body");
     saveBody.append(
       button("ft-choice", "Apply to all pages", () => saveStyle(STYLES_ALL)),
-      button("ft-choice", "Just this page", () => saveStyle(STYLES_PAGE))
+      button("ft-choice", "Just this page", () => saveStyle(stylesPage()))
     );
     savePop.appendChild(saveBody);
-    const saveBtn = iconButton(ICON.bookmark, "Save as style", () => {
-      if (!savePop.hidden) return closeSave();
+    // The bookmark in the Horizontal layout header and the + in the Styles popover's header both open it, under the one
+    // pressed.
+    function openSave(anchor) {
+      if (!savePop.hidden && saveAnchor === anchor) return closeSave();
+      closeSave();
       menu.close();
       savePop.hidden = false;
-      saveBtn.classList.add("is-open");
+      saveAnchor = anchor;
+      anchor.classList.add("is-open");
       // Under the button, its right edge on the button's, kept on screen.
-      const r = saveBtn.getBoundingClientRect();
+      const r = anchor.getBoundingClientRect();
       savePop.style.left = Math.max(8, r.right - savePop.offsetWidth) + "px";
       savePop.style.top = Math.min(r.bottom + 6, window.innerHeight - savePop.offsetHeight - 8) + "px";
-    });
+    }
+    const saveBtn = iconButton(ICON.bookmark, "Use as active grid", () => openSave(saveBtn));
     document.addEventListener("pointerdown", (e) => {
-      if (!savePop.hidden && !savePop.contains(e.target) && !saveBtn.contains(e.target)) closeSave();
+      if (!savePop.hidden && !savePop.contains(e.target) && !(saveAnchor && saveAnchor.contains(e.target))) closeSave();
     }, true);
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || savePop.hidden || e.defaultPrevented) return;
@@ -5967,7 +10262,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // After the guides redraw: the column help card, and a picked column whose layout went (set further down).
     let afterGuides = () => {};
 
-    // No layout yet: say so, and offer the usual one to start from (12 columns).
+    // No layout yet: say so, and offer the usual one to start from (8 columns).
     const guideEmpty = el("div", "ft-guide-empty");
     const guideWarn = el("div", "ft-guide-warn");
     guideWarn.innerHTML = ICON.warning;
@@ -5975,6 +10270,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const addLayout = button("ft-choice ft-choice-icon", null, () => {
       guides.push(newGuide());
       drawGuides();
+      offerStyle();
     });
     const plus = el("span");
     plus.innerHTML = ICON.plus;
@@ -6058,24 +10354,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const alignBox = el("div", "ft-guide-align");
       alignBox.append(el("div", "ft-field-label", "Align items to nearest column"), alignSeg(g));
       const fields = el("div", "ft-type ft-guide-set");
-      guideFields(fields, g, () => drawGuides());
+      guideFields(fields, g, () => {
+        drawGuides();
+        offerSoon(g);
+      });
       group.append(rowEl, fields, alignBox);
       return { g, group, rowEl, label, eye, swatch };
     }
 
     // Figma's Show layout grids: ⌃G on a Mac, Ctrl+Shift+4 elsewhere. Turned on with nothing selected, the panel shows
     // the layout (brought back if it was hidden, in Design if Motion was showing); with a layer selected, the panel stays
-    // as it is. With no layout yet, it adds the usual one (12 columns).
+    // as it is. With no layout yet, it adds the usual one (8 columns).
     const GRID_KEY = MAC ? "⌃G" : "Ctrl+Shift+4";
     document.addEventListener("keydown", (e) => {
       const hit = MAC ? e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && e.code === "KeyG"
         : e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey && e.code === "Digit4";
       if (!hit || e.defaultPrevented || typing(e.target)) return;
       e.preventDefault();
+      e.stopPropagation();
       const on = !guides.some((g) => g.visible);
-      if (!guides.length) guides.push(newGuide());
+      const added = !guides.length;
+      if (added) guides.push(newGuide());
       else guides.forEach((g) => { g.visible = on; });
       drawGuides();
+      if (added) offerStyle();
       if (!on || shown || shownColumn) return;
       if (inspector.hidden) {
         if (minimized) toggleUi();
@@ -6113,13 +10415,107 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       afterGuides();
     }
     drawGuides();
+    // A call that declares a grid to a panel already built. With no layout yet it's taken up; one still on the last
+    // page grid's numbers takes the new numbers (its eye and color stay), as a reload would show it.
     adoptPageGrid = () => {
-      if (guides.length) return;
-      const own = pageGrid();
-      if (!own) return;
-      guides.push(Object.assign(own, { visible: false }));
+      const was = pageDefault;
+      pageDefault = pageGrid();
+      if (!pageDefault) return;
+      pageDefault.visible = false;
+      anchor = pageDefault;
+      tookPage = true;
+      parked = null;
+      if (!guides.length) guides.push(copyGuides([pageDefault])[0]);
+      else if (sameNums(guides[0], was) && !sameNums(guides[0], pageDefault)) {
+        const next = copyGuides([guides[0]])[0];
+        GUIDE_NUMS.forEach((k) => { next[k] = pageDefault[k]; });
+        guides[0] = next;
+      } else return;
       drawGuides();
     };
+    // The page's grid changes with the window (a container's margin grows, a breakpoint drops columns), so a guide
+    // still on the page's numbers takes the new ones, eye and color kept. A width with no grid sets that guide aside
+    // ("Layout not defined") and the next width with one brings it back. A guide she retuned stays as she set it.
+    // Following the width isn't an edit: it's left out of the undo history, and the steps already there are moved
+    // onto the new numbers once the resize settles, so an Undo doesn't put back another width's grid.
+    function followPage() {
+      const now = pageGrid();
+      if (now) now.visible = false;
+      pageDefault = now;
+      if (parked && guides.length) parked = null;
+      const g = guides[0];
+      let change = false;
+      if (parked) {
+        if (now) {
+          const back = copyGuides([parked])[0];
+          GUIDE_NUMS.forEach((k) => { back[k] = now[k]; });
+          guides.push(back);
+          parked = null;
+          change = true;
+        }
+      } else if (g && sameNums(g, anchor)) {
+        if (!now) {
+          parked = g;
+          guides.splice(0, 1);
+          change = true;
+        } else if (!sameNums(g, now)) {
+          const next = copyGuides([g])[0];
+          GUIDE_NUMS.forEach((k) => { next[k] = now[k]; });
+          guides[0] = next;
+          change = true;
+        }
+      } else if (!guides.length && !tookPage && now) {
+        guides.push(copyGuides([now])[0]);
+        tookPage = true;
+        change = true;
+      }
+      if (now) anchor = now;
+      if (!change) return;
+      history.quiet++;
+      drawGuides();
+      history.quiet--;
+    }
+    // The undo steps' guide on the numbers it had when the resize began, moved to the ones it has now.
+    function rebaseSteps(from, to) {
+      if (!from || !to || sameNums(from, to)) return;
+      const move = (s) => {
+        if (s == null) return s;
+        const o = JSON.parse(s);
+        const g = o.guides && o.guides[0];
+        if (!g || !sameNums(g, from)) return s;
+        GUIDE_NUMS.forEach((k) => { g[k] = to[k]; });
+        return JSON.stringify(o);
+      };
+      history.now = move(history.now);
+      history.past = history.past.map(move);
+      history.future = history.future.map(move);
+    }
+    let resizeFrame = 0;
+    let resizeFrom = null;
+    let resizeSettle = 0;
+    let pageWidth = document.documentElement.clientWidth;
+    const onWidth = () => {
+      pageWidth = document.documentElement.clientWidth;
+      if (!resizeFrom) resizeFrom = anchor;
+      if (!resizeFrame) resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = 0;
+        followPage();
+      });
+      clearTimeout(resizeSettle);
+      resizeSettle = setTimeout(() => {
+        rebaseSteps(resizeFrom, anchor);
+        resizeFrom = null;
+      }, 300);
+    };
+    window.addEventListener("resize", onWidth);
+    // The page's width also changes with no resize event when a classic scrollbar comes or goes (content loading in,
+    // a modal locking the scroll, any page on Windows), and the page grid's margins move with it. Only a change of
+    // width counts, so a page growing taller doesn't rescan it.
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => {
+        if (document.documentElement.clientWidth !== pageWidth) onWidth();
+      }).observe(document.documentElement);
+    }
     let fillLayers = [];
     const chosen = el("div", "ft-chosen");
     let textLayer = null;
@@ -6181,18 +10577,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return {
           x: Math.round(r.left + window.scrollX),
           y: Math.round(r.top + window.scrollY),
-          rot: cs.rotate === "none" ? 0 : parseFloat(cs.rotate) || 0,
+          rot: turnOf(target),
           sx: sc[0],
           sy: sc.length > 1 ? sc[1] : sc[0],
         };
       };
       const moveBy = (dx, dy) => nudge(target, dx, dy);
-      const setRot = (deg) => {
-        const d = Math.round((((deg % 360) + 360) % 360) * 10) / 10;
-        boxed(target);
-        turnInPlace(target);
-        setStyle(target, "rotate", d ? d + "deg" : "");
-      };
+      const setRot = (deg) => setTurn(target, deg);
       const setScale = (sx, sy) => {
         boxed(target);
         turnInPlace(target);
@@ -6218,8 +10609,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const turns = actionSeg([["rotate", "rotateSquare", "Rotate 90° right"], ["flipH", "flipHorizontal", "Flip horizontal", KEYS.shift + "H"], ["flipV", "flipVertical", "Flip vertical", KEYS.shift + "V"]], (how) => {
         const now = read();
         if (how === "rotate") setRot(now.rot + 90);
-        else if (how === "flipH") setScale(-now.sx, now.sy);
-        else setScale(now.sx, -now.sy);
+        else {
+          if (how === "flipH") setScale(-now.sx, now.sy);
+          else setScale(now.sx, -now.sy);
+          // A flip mirrors the layer on the canvas, as in Figma, so a turned layer's turn goes the other way too
+          // (the scale alone would mirror it inside its own turn).
+          if (Math.round(now.rot * 10) % 3600) setRot(-now.rot);
+        }
         changed(true);
       });
       const toParent = (how) => {
@@ -6237,7 +10633,37 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // Ignore auto layout, in the header as in Figma, on a layer whose parent is auto layout. On a component
       // instance it would change every instance, so it waits for an override.
       let ignore = null;
-      if (layoutParentOf(target)) {
+      // In a ⌘G group's auto layout (the nearer frame, so it comes first), Ignore auto layout takes the layer out of
+      // the group's flow where it is, its move kept as a plain one, and the rest close up. X and Y wait while the
+      // group places it, as in Figma.
+      const sel = keyOf(target);
+      const placed = () => {
+        const L = layoutWith(target);
+        return !!L && !L.ignore.includes(sel);
+      };
+      if (layoutWith(target)) {
+        const actions = el("div", "ft-head-actions");
+        ignore = iconButton(ICON.ignoreLayout, "Ignore auto layout", () => {
+          const L = layoutWith(target);
+          if (!L) return;
+          L.ignore = L.ignore.includes(sel) ? L.ignore.filter((s2) => s2 !== sel) : L.ignore.concat(sel);
+          flowGroup(L);
+          changed(true);
+        });
+        actions.appendChild(ignore);
+        s.firstChild.appendChild(actions);
+        const why = "Auto layout places this layer";
+        draws.push(() => {
+          const on = placed();
+          x.input.disabled = y.input.disabled = on;
+          [x.wrap, y.wrap].forEach((f) => {
+            if (on) f.setAttribute("data-ft-tip", why);
+            else f.removeAttribute("data-ft-tip");
+          });
+          ignore.setAttribute("aria-pressed", String(!on));
+        });
+        [x.wrap, y.wrap].forEach(withTip);
+      } else if (layoutParentOf(target)) {
         const actions = el("div", "ft-head-actions");
         const locked = !!sharedComponent(target, "position");
         ignore = iconButton(ICON.ignoreLayout, locked ? "Override this instance first" : "Ignore auto layout", () => {
@@ -6259,7 +10685,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         x.set(now.x, force);
         y.set(now.y, force);
         rot.set(Math.round(now.rot * 10) / 10 + "°", force);
-        if (ignore) ignore.setAttribute("aria-pressed", String(ignoresLayout(target)));
+        if (ignore && !layoutWith(target)) ignore.setAttribute("aria-pressed", String(ignoresLayout(target)));
       });
       return s;
     }
@@ -6268,24 +10694,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // A move moves every layer by the same amount, each recorded, so the bake keeps them together.
     function setSection(list, isGroup) {
       const s = section("Position");
+      // A group with auto layout is where its frame is, padding included.
+      const g = isGroup ? groupFor(list) : null;
       const read = () => {
-        const u = unionRect(list);
+        const u = boxOf(list, g);
         return { x: Math.round(u.left + window.scrollX), y: Math.round(u.top + window.scrollY) };
       };
       const x = numField("X");
       const y = numField("Y");
-      // Measured once, then every layer moves by that much.
+      // Measured once, then every layer moves by that much (a layer inside another selected one rides along with it).
+      const outer = () => list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
       editable(x.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n)) return;
         const d = n - read().x;
-        list.forEach((t) => nudge(t, d, 0));
+        outer().forEach((t) => nudge(t, d, 0));
       });
       editable(y.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n)) return;
         const d = n - read().y;
-        list.forEach((t) => nudge(t, 0, d));
+        outer().forEach((t) => nudge(t, 0, d));
       });
       const xy = el("div", "ft-type-pair");
       xy.append(x.wrap, y.wrap);
@@ -6295,8 +10724,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       };
       const grid = el("div", "ft-type");
       grid.append(labeled("Alignment", alignRow(act), true), labeled("Position", xy, true));
-      // A group's Spacing, when its layers sit in one column or row: the ones after the first move.
-      const st = isGroup ? stackOf(list) : null;
+      // A group's Spacing, when its layers sit in one column or row: the ones after the first move. With auto layout
+      // the Layout section's Gap does it instead.
+      const st = isGroup && !layoutOf(g) ? stackOf(list) : null;
       if (st) {
         const spacing = numField(st.axis === "x" ? ICON.arrowsHorizontal : ICON.arrowsVertical, "Spacing");
         editable(spacing.input, changed, (v) => {
@@ -6319,6 +10749,237 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return s;
     }
 
+    // A ⌘G group's Layout, as Figma's frame shows it. Without auto layout, the header's Add auto layout (⇧A), named
+    // for what it would pick. With it, the container's rows (Flow, Resizing, Alignment and Gap, Padding, Clip content),
+    // each writing the group's layout (edits.autoLayout); flowGroup then moves the layers to match, in the same undo
+    // step. A group hugs its layers until it's in the code, so Fixed, Fill, Wrap, Gap Auto and Clip content wait,
+    // shown disabled with why.
+    function groupLayout(list) {
+      const s = section("Layout");
+      const g = groupFor(list);
+      if (!layoutOf(g)) {
+        const actions = el("div", "ft-head-actions");
+        const addBtn = iconButton(ICON.alAddV, "Add auto layout", () => selection && selection.addAutoLayout());
+        addBtn.setAttribute("data-ft-tip-key", KEYS.shift + "A");
+        actions.appendChild(addBtn);
+        s.firstChild.appendChild(actions);
+        // Layers that can't share one element say why on the click, so the tip stays plain for them.
+        draws.push((force) => {
+          if (!force || groupLayoutRefusal(list)) return;
+          const inf = inferGroup(list);
+          const tip = "Add " + inf.flow + " auto layout" + (inf.moves || inf.reordered ? " (layers move)" : " · gap " + inf.gap);
+          addBtn.setAttribute("data-ft-tip", tip);
+          addBtn.setAttribute("aria-label", tip);
+          const glyph = inf.flow === "horizontal" ? "alAddH" : "alAddV";
+          if (addBtn.dataset.ftIcon !== glyph) { addBtn.innerHTML = ICON[glyph]; addBtn.dataset.ftIcon = glyph; }
+        });
+        return s;
+      }
+      // Found again on every write and draw, never held: an undo swaps the entry.
+      const live = () => layoutOf(g);
+      const write = (fn) => {
+        const L = live();
+        if (!L) return;
+        fn(L);
+        flowGroup(L);
+      };
+      const grid = el("div", "ft-type");
+      const disable = (b, why, label) => {
+        b.setAttribute("aria-disabled", "true");
+        b.setAttribute("data-ft-tip", why);
+        b.setAttribute("aria-label", label);
+        b.setAttribute("aria-description", why);
+      };
+
+      // Flow: Freeform takes the auto layout off (⌥⇧A). Vertical and Horizontal trade places keeping the nine dots'
+      // cell, so what was along the flow is now across it.
+      const flow = segmented([["free", "flowFree", "Freeform"], ["vertical", "flowVertical", "Vertical layout"], ["horizontal", "flowHorizontal", "Horizontal layout"]], (v) => {
+        const L = live();
+        if (!L || v === L.flow) return;
+        if (v === "free") return selection && selection.removeAutoLayout();
+        write((l) => {
+          l.flow = v;
+          [l.main, l.cross] = [l.cross, l.main];
+        });
+      }, "ft-seg-track");
+      const wrapBtn = iconButton(ICON.flowWrap, "Wrap", () => {});
+      disable(wrapBtn, "Wrap needs a fixed width", "Wrap");
+      const wrapGap = el("span", "ft-action-gap");
+      const flowRow = el("div", "ft-with-action");
+      flowRow.append(flow.seg, wrapBtn, wrapGap);
+      grid.appendChild(labeled("Flow", flowRow, true));
+
+      // Resizing: Hug both ways, read only.
+      const hugs = "A group hugs its layers until it's in the code";
+      const w = numField("W");
+      const h = numField("H");
+      w.input.disabled = h.input.disabled = true;
+      // On the whole field, as a group layer's X and Y, so hovering its "Hug" says why too.
+      [w.wrap, h.wrap].forEach((f) => {
+        f.setAttribute("data-ft-tip", hugs);
+        withTip(f);
+      });
+      const dims = el("div", "ft-type-pair");
+      dims.append(w.wrap, h.wrap);
+      const dimsRow = el("div", "ft-with-action");
+      dimsRow.append(dims, el("span", "ft-action-gap"));
+      grid.appendChild(labeled("Resizing", dimsRow, true));
+
+      // Alignment, the nine dots: along the flow is recorded for the bake (a hugging frame has no room to move its
+      // layers along it), across it lines them up.
+      const box = el("div", "ft-al-box");
+      box.setAttribute("role", "group");
+      box.setAttribute("aria-label", "Alignment");
+      const POS = ["start", "center", "end"];
+      const COL = ["left", "center", "right"];
+      const ROW = ["top", "center", "bottom"];
+      let built = "";
+      let cells = [];
+      const cellOf = (L) => {
+        const m = POS.indexOf(L.main);
+        const c = POS.indexOf(L.cross);
+        return L.flow === "vertical" ? m * 3 + c : c * 3 + m;
+      };
+      const pickCell = (i) => write((L) => {
+        const col = L.flow === "vertical";
+        L.main = POS[col ? Math.floor(i / 3) : i % 3];
+        L.cross = POS[col ? i % 3 : Math.floor(i / 3)];
+      });
+      const build = (L) => {
+        cells = Array.from({ length: 9 }, (_, i) => {
+          const r = Math.floor(i / 3);
+          const c = i % 3;
+          const on = ICON[L.flow === "vertical" ? "alV_" + "LCR"[c] : "alH_" + "TCB"[r]];
+          const tip = "Align " + (r === 1 ? COL[c] : ROW[r] + " " + COL[c]);
+          const b = button("ft-al-cell", null, () => {
+            pickCell(i);
+            changed(true);
+          });
+          b.innerHTML = '<span class="ft-al-rest">' + ICON.alDot + '</span><span class="ft-al-on">' + on + "</span>";
+          b.setAttribute("data-ft-tip", tip);
+          b.setAttribute("aria-label", tip);
+          withTip(b);
+          return b;
+        });
+        box.replaceChildren(...cells);
+      };
+      box.addEventListener("keydown", (e) => {
+        const d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+        const L = live();
+        if (!d || !L || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+        e.preventDefault();
+        const at = cellOf(L);
+        const clamp = (n) => Math.min(2, Math.max(0, n));
+        const next = clamp(Math.floor(at / 3) + d[0]) * 3 + clamp((at % 3) + d[1]);
+        if (next === at) return;
+        pickCell(next);
+        changed(true);
+        if (cells[next]) cells[next].focus();
+      });
+      // Gap: a number, never below 0. No Auto: it spreads the layers across a frame's spare room, and a hugging
+      // frame has none.
+      const gap = numField(ICON.arrowsVertical, "Gap between items");
+      editable(gap.input, changed, (v) => {
+        const n = parseFloat(v);
+        if (isNum(n)) write((L) => { L.gap = Math.max(0, round1(n)); });
+      });
+      const alCell = labeled("Alignment", box);
+      alCell.classList.add("ft-al-top");
+      const gapCell = labeled("Gap", gap.wrap);
+      gapCell.classList.add("ft-al-top");
+      grid.append(alCell, gapCell);
+
+      // Padding, as on a container. The frame stays where it is, as in Figma: the layers move in by the change first,
+      // so the frame grows out to the right and down.
+      const writePad = (sides, v) => {
+        const n = parseFloat(v);
+        const L = live();
+        if (!isNum(n) || !L) return;
+        const pad = L.pad.slice();
+        sides.forEach((i) => { pad[i] = Math.max(0, round1(n)); });
+        const dl = pad[3] - L.pad[3];
+        const dt = pad[0] - L.pad[0];
+        history.quiet++;
+        if (dl || dt) alGeometry(L).flow.forEach((b) => layoutNudge(b.t, dl, dt));
+        history.quiet--;
+        write((l) => { l.pad = pad; });
+      };
+      const p0 = live().pad;
+      let split = p0[0] !== p0[2] || p0[1] !== p0[3];
+      const padH = numField(ICON.padH, "Horizontal padding");
+      const padV = numField(ICON.padV, "Vertical padding");
+      editable(padH.input, changed, (v) => writePad([1, 3], v));
+      editable(padV.input, changed, (v) => writePad([0, 2], v));
+      const each = el("div", "ft-span2 ft-pads");
+      const toggle = iconButton(ICON.padSides, "Individual padding", () => {
+        split = !split;
+        each.hidden = !split;
+        toggle.setAttribute("aria-pressed", String(split));
+      });
+      toggle.setAttribute("aria-pressed", String(split));
+      each.hidden = !split;
+      const side = (i, icon, tip) => {
+        const f = numField(ICON[icon], tip);
+        editable(f.input, changed, (v) => writePad([i], v));
+        return f;
+      };
+      const pl = side(3, "padLeft", "Left padding");
+      const pt = side(0, "padTop", "Top padding");
+      const pr = side(1, "padRight", "Right padding");
+      const pb = side(2, "padBottom", "Bottom padding");
+      [[pl, pt], [pr, pb]].forEach(([a, b]) => {
+        const pair = el("div", "ft-type-pair");
+        pair.append(a.wrap, b.wrap);
+        const row = el("div", "ft-with-action");
+        row.append(pair, el("span", "ft-action-gap"));
+        each.appendChild(row);
+      });
+      const padPair = el("div", "ft-type-pair");
+      padPair.append(padH.wrap, padV.wrap);
+      const padRow = el("div", "ft-with-action");
+      padRow.append(padPair, toggle);
+      grid.append(labeled("Padding", padRow, true), each);
+
+      // Clip content cuts what spills out of an element, and the group has none until it's in the code.
+      const clip = button("ft-check-row ft-span2", null, () => {});
+      clip.setAttribute("role", "checkbox");
+      clip.setAttribute("aria-checked", "false");
+      disable(clip, "Clip needs the group in the code", "Clip content");
+      withTip(clip);
+      const groupBox = el("span", "ft-check");
+      groupBox.innerHTML = ICON.checkDraw;
+      clip.append(groupBox, el("span", null, "Clip content"));
+      grid.appendChild(clip);
+      s.appendChild(grid);
+
+      draws.push((force) => {
+        const L = live();
+        if (!L) return;
+        flow.set(L.flow);
+        const horizontal = L.flow === "horizontal";
+        wrapBtn.hidden = !horizontal;
+        wrapGap.hidden = horizontal;
+        w.set("Hug", force);
+        h.set("Hug", force);
+        if (L.flow !== built) {
+          built = L.flow;
+          build(L);
+          gap.wrap.firstChild.innerHTML = ICON[horizontal ? "arrowsHorizontal" : "arrowsVertical"];
+        }
+        const on = cellOf(L);
+        cells.forEach((b, i) => b.setAttribute("aria-pressed", String(i === on)));
+        gap.set(L.gap, force);
+        const p = L.pad;
+        padH.set(p[3] === p[1] ? p[3] : "Mixed", force);
+        padV.set(p[0] === p[2] ? p[0] : "Mixed", force);
+        pt.set(p[0], force);
+        pr.set(p[1], force);
+        pb.set(p[2], force);
+        pl.set(p[3], force);
+      });
+      return s;
+    }
+
     function setOpacity(target, n) {
       setStyle(target, "opacity", String(Math.min(100, Math.max(0, Math.round(n))) / 100));
     }
@@ -6333,13 +10994,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       }
     }
 
+    // Figma's list. Plus darker and Plus lighter are CSS's plus-darker and plus-lighter, offered where the browser
+    // draws them (Chrome has no plus-darker).
     const BLENDS = [
-      ["normal", "Normal"], ["darken", "Darken"], ["multiply", "Multiply"], ["color-burn", "Color burn"],
-      ["lighten", "Lighten"], ["screen", "Screen"], ["color-dodge", "Color dodge"], ["overlay", "Overlay"],
+      ["normal", "Normal"], ["darken", "Darken"], ["multiply", "Multiply"], ["plus-darker", "Plus darker"], ["color-burn", "Color burn"],
+      ["lighten", "Lighten"], ["screen", "Screen"], ["plus-lighter", "Plus lighter"], ["color-dodge", "Color dodge"], ["overlay", "Overlay"],
       ["soft-light", "Soft light"], ["hard-light", "Hard light"], ["difference", "Difference"],
       ["exclusion", "Exclusion"], ["hue", "Hue"], ["saturation", "Saturation"], ["color", "Color"],
       ["luminosity", "Luminosity"],
-    ];
+    ].filter(([v]) => !/^plus-/.test(v) || (window.CSS && CSS.supports("mix-blend-mode", v)));
 
     // Figma's corner smoothing as CSS, fitted against Figma's own curve (her notes, 2026-09-27): at smoothing s the
     // radius is written R × m and corner-shape superellipse(k); the fields show R. Straight lines in between.
@@ -6435,6 +11098,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape" || !anchor || e.defaultPrevented || typing(e.target)) return;
         e.preventDefault();
+        e.stopPropagation();
         close();
       });
       return {
@@ -6471,12 +11135,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           const r = Math.round((parseFloat(cs.rx) || parseFloat(cs.ry) || 0) * vectorSize(target).sx * 10) / 10;
           return [r, r, r, r];
         }
+        // An elliptical corner (20px / 40px) has no one radius: Mixed.
+        return pairs().map(([h, v]) => (h === v ? h : NaN));
+      };
+      // Each corner as it draws, horizontal and vertical, in px: a % is of the box's width (horizontal) or height
+      // (vertical), as CSS reads it.
+      const pairs = () => {
         const cs = getComputedStyle(target);
         const m = smoothMap(smoothing(), 0, 1);
-        return CORNERS.map(([c]) => Math.round(((parseFloat(cs.getPropertyValue("border-" + c + "-radius")) || 0) / m) * 10) / 10);
+        const sz = sizeOf(target);
+        const px = (tok, side) => (/%$/.test(tok) ? (parseFloat(tok) / 100) * side : parseFloat(tok) || 0);
+        return CORNERS.map(([c]) => {
+          const toks = cs.getPropertyValue("border-" + c + "-radius").trim().match(/calc\([^)]*\)|\S+/g) || ["0"];
+          const h = px(toks[0], sz.w);
+          const v = px(toks[1] || toks[0], sz.h);
+          return [Math.round((h / m) * 10) / 10, Math.round((v / m) * 10) / 10];
+        });
       };
       // Writes the four radii and the smoothing as the code would: one border-radius when they match, else each
-      // corner's; each radius × m, and corner-shape superellipse(k) (none at 0%).
+      // corner's; each radius × m, and corner-shape superellipse(k) (none at 0%). A corner left as a pair (from
+      // pairs()) keeps its own shape, an elliptical one included.
       function writeCorners(rs, sm) {
         if (rect) {
           const u = round1(rs[0] / vectorSize(target).sx) + "px";
@@ -6485,10 +11163,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           return;
         }
         const m = smoothMap(sm, 0, 1);
-        const px = rs.map((r) => round1(Math.max(0, r) * m) + "px");
+        const one = (r) => round1(Math.max(0, r) * m) + "px";
+        const px = rs.map((r) => (Array.isArray(r) ? (r[0] === r[1] ? one(r[0]) : one(r[0]) + " " + one(r[1])) : one(r)));
         if (px.every((x) => x === px[0])) {
           CORNERS.forEach(([c]) => setStyle(target, "border-" + c + "-radius", ""));
-          setStyle(target, "border-radius", px[0]);
+          setStyle(target, "border-radius", px[0].replace(" ", " / "));
         } else {
           setStyle(target, "border-radius", "");
           CORNERS.forEach(([c], i) => setStyle(target, "border-" + c + "-radius", px[i]));
@@ -6502,7 +11181,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         // In Figma's groups, a line between them: normal, darken, lighten, contrast, difference, color.
         const breaks = ["darken", "lighten", "overlay", "difference", "hue"];
         menu.toggle(btn, BLENDS.flatMap(([value, label]) => (breaks.includes(value) ? [{ divider: true }] : []).concat({ label, value })), getComputedStyle(target).mixBlendMode, (v) => {
-          setStyle(target, "mix-blend-mode", v === "normal" ? "" : v);
+          // The page's own mode hands it back to the page; any other is written, Normal over the code's Multiply too.
+          setStyle(target, "mix-blend-mode", v === ownValue(target, "mix-blend-mode") ? "" : v);
           changed(true);
         });
       });
@@ -6522,7 +11202,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         toggleHidden(target);
         changed(true);
       });
-      eye.setAttribute("data-ft-tip-key", KEYS.shift + KEYS.mod + "H");
+      eye.setAttribute("data-ft-tip-key", KEYS.shiftMod + "H");
       const opacity = numField(ICON.checkerboard, "Opacity");
       opacity.wrap.querySelector(".ft-field-icon").setAttribute("data-ft-tip-key", "1–0");
       editable(opacity.input, changed, (v) => {
@@ -6548,7 +11228,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           const sz = sizeOf(target);
           return Math.max(1, Math.round(Math.min(sz.w, sz.h) / 2));
         };
-        const drawRadius = slideIn(radius, 0, shortSide, () => Math.max(...radii()), all);
+        const drawRadius = slideIn(radius, 0, shortSide, () => Math.max(0, ...radii().filter(isNum)), all);
         const radiusRow = el("div", "ft-with-action");
         radiusRow.appendChild(radius.wrap);
         // Each corner, then Corner smoothing: open when the corners differ, as Figma opens them.
@@ -6567,11 +11247,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
             editable(f.input, changed, (v) => {
               const n = parseFloat(v);
               if (!isNum(n) || n < 0) return;
-              const rs = radii();
+              // Only this corner changes: the others are written as they draw.
+              const rs = pairs();
               rs[i] = n;
               writeCorners(rs, smoothing());
             });
-            draws2.push((force) => f.set(radii()[i], force));
+            draws2.push((force) => f.set(isNum(radii()[i]) ? radii()[i] : "Mixed", force));
             return f;
           });
           const top = el("div", "ft-with-action");
@@ -6581,7 +11262,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           const bottom = el("div", "ft-with-action");
           const bottomPair = el("div", "ft-type-pair");
           bottomPair.append(fields[2].wrap, fields[3].wrap);
-          const smooth = iconButton(ICON.sliders, "Corner smoothing", () => smoothPop.toggle(smooth, bottom, smoothing, (v) => writeCorners(radii(), v)));
+          const smooth = iconButton(ICON.sliders, "Corner smoothing", () => smoothPop.toggle(smooth, bottom, smoothing, (v) => writeCorners(pairs(), v)));
           bottom.append(bottomPair, smooth);
           each.append(top, bottom);
           each.hidden = !split;
@@ -6665,10 +11346,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         fillLayers.push(layer);
         list.appendChild(fillRow(layer, () => {
           setStyle(target, "background-color", layer.visible ? rgba(layer) : "transparent");
+          recordFill(target, layer);
           picker.sync();
         }, null, picker));
       };
-      const now = toFill(getComputedStyle(target).backgroundColor);
+      // A fill she hid draws nothing, so it's read from what the panel kept.
+      const now = hiddenFill(target) || toFill(getComputedStyle(target).backgroundColor);
       if (now) show(now);
       else {
         const add = iconButton(ICON.plus, "Add fill", () => {
@@ -6700,15 +11383,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         fillLayers.push(layer);
         list.appendChild(fillRow(layer, () => {
           writeSvgPaint(target, "fill", layer);
+          recordFill(target, layer);
           picker.sync();
         }, (l, row) => {
           picker.closeFor(l);
           row.remove();
           clearSvgPaint(target, "fill");
+          recordFill(target, { visible: true });
           s.firstChild.appendChild(add);
         }, picker));
       }
-      if (paint.kind === "color") show(paint.layer);
+      const hid = hiddenFill(target);
+      if (hid) show(hid);
+      else if (paint.kind === "color") show(paint.layer);
       else if (paint.kind === "server") list.appendChild(el("div", "ft-field-label", "A gradient or pattern from the code"));
       else s.firstChild.appendChild(add);
       return s;
@@ -6717,11 +11404,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // An icon's fill is its color: the <svg>'s CSS color, which its shapes paint with (currentColor).
     function iconFill(target) {
       const s = section("Fill");
-      const layer = toFill(getComputedStyle(target).color) || { hex: "000000", opacity: 100, visible: true };
+      const layer = hiddenFill(target) || toFill(getComputedStyle(target).color) || { hex: "000000", opacity: 100, visible: true };
       fillLayers.push(layer);
       const list = el("div", "ft-fills");
       list.appendChild(fillRow(layer, () => {
         setStyle(target, "color", layer.visible ? rgba(layer) : "transparent");
+        recordFill(target, layer);
         picker.sync();
       }, null, picker));
       s.appendChild(list);
@@ -6732,13 +11420,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // icon's Fill). In the icon's own units, as its code writes it (Lucide's 2 in a 24 viewBox).
     function iconStroke(target) {
       const s = section("Stroke");
-      const shape = [...target.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect")].find((e) => getComputedStyle(e).stroke !== "none");
+      const stroked = [...target.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect")].filter((e) => getComputedStyle(e).stroke !== "none");
+      const shape = stroked[0];
       const weight = numField(ICON.strokeWeight, "Weight");
       const show = (force) => weight.set(Math.round(parseFloat(getComputedStyle(shape || target).strokeWidth) * 100) / 100, force);
+      // The code's value again takes the edit off.
+      const put = (e, n) => setStyle(e, "stroke-width", parseFloat(ownValue(e, "stroke-width")) === n ? "" : String(n));
       editable(weight.input, show, (v) => {
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
-        setStyle(target, "stroke-width", ownValue(target, "stroke-width") === String(n) ? "" : String(n));
+        // A shape with a stroke-width of its own (Figma's export writes one on each path) isn't reached by the
+        // <svg>'s: tried with a stand-in value, the weight goes on each of those shapes, and on the <svg> for the rest.
+        still(target, true);
+        const was = target.style.getPropertyValue("stroke-width");
+        target.style.setProperty("stroke-width", "123.25px");
+        const own = stroked.filter((e) => parseFloat(getComputedStyle(e).strokeWidth) !== 123.25);
+        if (was) target.style.setProperty("stroke-width", was);
+        else target.style.removeProperty("stroke-width");
+        flush();
+        still(target, false);
+        if (own.length < stroked.length || !stroked.length) put(target, n);
+        own.forEach((e) => put(e, n));
       });
       show(true);
       draws.push(show);
@@ -6820,7 +11522,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         // Anything SVG gets what a filter can draw: Drop shadow and Layer blur, with no spread.
         const svgFx = target instanceof SVGElement;
         const gear = iconButton(ICON.sun, "Effect settings", () => effectPop.toggle(fx, r, gear, put, svgFx));
-        const types = svgFx ? EFFECT_TYPES.filter(([t]) => t === "drop" || t === "layer") : EFFECT_TYPES;
+        // An image, a video or a canvas paints its pixels over an inset box-shadow, so Inner shadow would draw nothing.
+        const types = svgFx ? EFFECT_TYPES.filter(([t]) => t === "drop" || t === "layer")
+          : /^(IMG|VIDEO|CANVAS)$/.test(target.tagName) ? EFFECT_TYPES.filter(([t]) => t !== "inner") : EFFECT_TYPES;
         const type = dropdown((btn) => menu.toggle(btn, types.map(([value, label]) => ({ label, value })), fx.type, (v) => {
           fx.type = v;
           put();
@@ -6853,11 +11557,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
 
     // Layout, as in Figma: Resizing (text only) and Dimensions, labelled W and H, with the
-    // lock that keeps proportions (on for images, as in Figma).
+    // lock that keeps proportions (ratioLocks: off until she turns it on, so W and H each change only themselves).
     // Edits go on the element as inline styles, so they show live.
     function layout(target) {
       const s = section("Layout");
-      let locked = target.tagName === "IMG";
       const vector = isVector(target);
       // Words inside an SVG sit on a baseline, with no box to size.
       const fixed = inSvg(target) && !vector;
@@ -6868,16 +11571,45 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return {
           w: Math.round(v ? v.w : target.offsetWidth != null ? target.offsetWidth : r.width),
           h: Math.round(v ? v.h : target.offsetHeight != null ? target.offsetHeight : r.height),
-          resizing: target.style.width === "max-content" ? "hug" : target.style.height ? "fixed" : "auto",
         };
       };
-      // A new size, as the code writes it: a vector's geometry, anything else its width and height. Inside auto
-      // layout a typed number is Fixed, as in Figma, so grow, shrink and stretch let go of that axis.
-      const resize = (nw, nh) => {
-        if (vector || !layoutParentOf(target)) return setSize(target, nw, nh);
-        if (nw != null) fixAxis(target, "w", nw);
-        if (nh != null) fixAxis(target, "h", nh);
+      // Whether the text is as wide as its words on one line (max-content), read with that width swapped in.
+      const textHugs = () => {
+        const was = target.style.getPropertyValue("width");
+        const pri = target.style.getPropertyPriority("width");
+        still(target, true);
+        const now = target.offsetWidth;
+        target.style.setProperty("width", "max-content");
+        const mc = target.offsetWidth;
+        if (was) target.style.setProperty("width", was, pri);
+        else target.style.removeProperty("width");
+        flush();
+        still(target, false);
+        return Math.abs(now - mc) < 0.5;
       };
+      // Text's Resizing, read from the code as the W and H menus read theirs: Fixed size when a height holds the box
+      // (its own, or the code's rules), Auto width when it's as wide as its words (max-content, or hugging in a row),
+      // else Auto height.
+      const textMode = () => {
+        const ownH = target.style.height;
+        if ((ownH && /\d/.test(ownH) && !/%/.test(ownH)) || !sizedByLayout(target, "h")) return "fixed";
+        if (target.style.width === "max-content" || (!/\d/.test(target.style.width) && textHugs())) return "hug";
+        return "auto";
+      };
+      // The height left to the words: the code's own handed back, and auto written when the code sets one.
+      const freeHeight = () => {
+        handBack(target, "height");
+        if (!sizedByLayout(target, "h")) setStyle(target, "height", "auto");
+      };
+      // Auto width: max-content, written only when the code's own width doesn't already hug the words.
+      const hugWidth = () => {
+        handBack(target, "width");
+        if (!textHugs()) setStyle(target, "width", "max-content");
+      };
+      // A new size, as the code writes it (a vector's geometry, anything else its width and height), as a handle drag
+      // writes it: resizeLayer, so the other axis stays put unless the lock is on, and inside auto layout a typed
+      // number is Fixed, as in Figma. Its top-left stays put (typedResize), as the drag keeps it.
+      const resize = (nw, nh) => typedResize(target, nw, nh, { locked: ratioLocked(target) });
       const resizing = segmented([
         ["hug", "arrowLineRight", "Auto width"],
         ["auto", "resizeHeight", "Auto height"],
@@ -6893,28 +11625,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           else fixAxis(target, "w", Math.round(r.width));
           if (v === "fixed") fixAxis(target, "h", Math.round(r.height));
           else unfill(target, lp, "h");
-          if (v === "hug") setStyle(target, "width", "max-content");
-          if (v !== "fixed") setStyle(target, "height", "");
+          if (v === "hug") hugWidth();
+          if (v !== "fixed") freeHeight();
           return;
         }
-        setStyle(target, "width", v === "hug" ? "max-content" : Math.round(r.width) + "px");
-        setStyle(target, "height", v === "fixed" ? Math.round(r.height) + "px" : "");
+        if (v === "hug") hugWidth();
+        else setStyle(target, "width", Math.round(r.width) + "px");
+        if (v === "fixed") setStyle(target, "height", Math.round(r.height) + "px");
+        else freeHeight();
       });
       const w = numField("W");
       const h = numField("H");
       editable(w.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
-        const now = read();
-        const nh = locked && now.w ? Math.round((n * now.h) / now.w) : null;
-        resize(n, vector ? (nh != null ? nh : now.h) : nh);
+        resize(n, null);
       });
       editable(h.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
-        const now = read();
-        const nw = locked && now.h ? Math.round((n * now.w) / now.h) : null;
-        resize(vector ? (nw != null ? nw : now.w) : nw, n);
+        resize(null, n);
       });
       w.input.disabled = h.input.disabled = fixed;
       // Resizing's menus, from a caret on W and H (the kit's "_Menu resizing" order): Fixed always, Hug on an auto
@@ -6951,7 +11681,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         });
       }
       const lock = iconButton(ICON.lockRatio, "Constrain proportions", () => {
-        locked = !locked;
+        ratioLocks.set(target, !ratioLocked(target));
         changed(true);
       });
 
@@ -7051,7 +11781,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
             // Wrap is Horizontal's only (UI3 hides it on Vertical), so a wrap she turned on goes. A wrap the code
             // has stays as the code has it: writing nowrap would change the page's own layout.
             const wrapWas = originalOf(target).styles["flex-wrap"];
-            if (wrapWas != null && target.style.getPropertyValue("flex-wrap") !== wrapWas) handBack(target, "flex-wrap");
+            if (wrapWas != null && target.style.getPropertyValue("flex-wrap") !== wrapWas) {
+              handBack(target, "flex-wrap");
+              if (editedHere(target, "align-content")) handBack(target, "align-content");
+            }
           }
           // The section's rows change with the flow (Alignment, Gap and Padding on auto layout, Spacing off it).
           if (selection) selection.reshow();
@@ -7066,10 +11799,17 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         // Wrap sits in the action column beside the track, for Horizontal only, as in UI3. Off Horizontal its
         // slot keeps the track the same width.
         const wrapBtn = iconButton(ICON.flowWrap, "Wrap", () => {
-          // Turning it on where the code wraps (wrap-reverse too) hands back the code's own, so its order holds.
-          if (wrapOf()) setUnlessOwn(target, "flex-wrap", "nowrap");
-          else if (/^wrap/.test(ownValue(target, "flex-wrap"))) handBack(target, "flex-wrap");
-          else setStyle(target, "flex-wrap", "wrap");
+          // Turning it on where the code wraps (wrap-reverse too) hands back the code's own, so its order holds. A
+          // new wrap packs its rows where the alignment holds the layers, as Figma's do, so the Vertical gap is the
+          // space between them; off, that packing goes.
+          if (wrapOf()) {
+            setUnlessOwn(target, "flex-wrap", "nowrap");
+            if (editedHere(target, "align-content")) handBack(target, "align-content");
+          } else if (/^wrap/.test(ownValue(target, "flex-wrap"))) handBack(target, "flex-wrap");
+          else {
+            setStyle(target, "flex-wrap", "wrap");
+            packRows(target, alignOf(target).cross);
+          }
           // A wrapped row has a gap each way, so the section is rebuilt for what Spacing shows.
           if (selection) selection.reshow();
           changed(true);
@@ -7199,23 +11939,25 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
               const c = POS.indexOf(st.a.cross);
               return st.dir === "column" ? m * 3 + c : c * 3 + m;
             };
+            // Wrapped, align-content moves the rows too, so the Vertical gap is the space between them.
             const across = (cross) => {
               keepStretch(target);
               setAlignment(target, "align-items", ALIGN_CSS[cross]);
               dropStretch(target);
+              if (wrapOf()) packRows(target, cross);
+            };
+            const crossTo = (st, cross) => {
+              if (cross !== st.a.cross || wrapOf()) across(cross);
             };
             const pickCell = (i) => {
               const st = state();
-              if (st.auto) {
-                if (st.a.cross !== POS[i]) across(POS[i]);
-                return;
-              }
+              if (st.auto) return crossTo(st, POS[i]);
               const r = Math.floor(i / 3);
               const c = i % 3;
               const main = POS[st.dir === "column" ? r : c];
               const cross = POS[st.dir === "column" ? c : r];
               if (main !== st.a.main) setAlignment(target, "justify-content", ALIGN_CSS[main]);
-              if (cross !== st.a.cross) across(cross);
+              crossTo(st, cross);
             };
             // Each cell holds two glyphs: the one it shows at rest, and the one it shows picked (or under the pointer).
             const glyphs = (st, i) => {
@@ -7290,15 +12032,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
           // Padding: Horizontal and Vertical, or each side after Individual padding (open when the sides differ, as
           // Figma opens it). Longhands only. A Fixed frame keeps its size, so the padding comes out of its content;
-          // a hugging one grows, as in Figma. Until Resizing reads Fixed, Fixed is an inline px width or height.
+          // a hugging one grows, as in Figma. Fixed is what Resizing reads (a stylesheet's size too), and the size is
+          // written back only where the padding changed it (a border-box keeps its own).
           const writePad = (sides, v) => {
             const n = parseFloat(v);
             if (!isNum(n)) return;
             const sz = sizeOf(target);
-            const fw = /px$/.test(target.style.width);
-            const fh = /px$/.test(target.style.height);
+            const fw = sizeModeOf(target, "w") === "fixed";
+            const fh = sizeModeOf(target, "h") === "fixed";
             sides.forEach((side) => setPx(target, "padding-" + side, Math.max(0, n)));
-            if (fw || fh) setSize(target, fw ? sz.w : null, fh ? sz.h : null);
+            const now = sizeOf(target);
+            const kw = fw && Math.abs(now.w - sz.w) >= 0.5;
+            const kh = fh && Math.abs(now.h - sz.h) >= 0.5;
+            if (kw || kh) setSize(target, kw ? sz.w : null, kh ? sz.h : null);
           };
           const p0 = padOf(target);
           let split = p0[0] !== p0[2] || p0[1] !== p0[3];
@@ -7358,7 +12104,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       };
       if (container) {
         const box = el("span", "ft-check");
+        box.innerHTML = ICON.checkDraw;
         clip = button("ft-check-row ft-span2", null, () => {
+          toggling(clip);
           const next = clipped() ? "visible" : "hidden";
           setStyle(target, "overflow", ownValue(target, "overflow", "overflow-x") === next ? "" : next);
           changed(true);
@@ -7368,18 +12116,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         draws.push(() => {
           const on = clipped();
           clip.setAttribute("aria-checked", String(on));
-          box.innerHTML = on ? ICON.check16 : "";
         });
       }
       if (spacing) grid.appendChild(labeled("Spacing", spacing.wrap));
       // Clip content ends the section, as in Figma.
       if (clip) grid.appendChild(clip);
       s.appendChild(grid);
+      // Text's Resizing costs forced layouts too: read on a forced draw, the first, or when its own size changed.
+      let textKey = null;
+      let textNow = "auto";
       draws.push((force) => {
         const now = read();
-        resizing.set(now.resizing);
-        w.set(now.w, force);
-        h.set(now.h, force);
+        if (hasText(target) && !inSvg(target)) {
+          const key = target.style.width + "|" + target.style.height;
+          if (force || key !== textKey) {
+            textKey = key;
+            textNow = textMode();
+          }
+          resizing.set(textNow);
+        }
+        // In Scale, the size Scale shows, to two decimals (Layout and Scale both read 134.18, as in Figma).
+        if (scaleHolds(target) && !history.quiet) scaleFresh();
+        const sc = scaleHolds(target) ? scaleMode : null;
+        w.set(sc ? parseFloat(fmt2(sc.base.w * sc.f)) : now.w, force);
+        h.set(sc ? parseFloat(fmt2(sc.base.h * sc.f)) : now.h, force);
         // Resizing's mode costs forced layouts, so it's read on a forced draw (and the first), never on a scroll.
         if (sizeMenus && (force || modeOf.w == null)) {
           [["w", w], ["h", h]].forEach(([axis, f]) => {
@@ -7389,6 +12149,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
             f.input.placeholder = { hug: "Hug", fill: "Fill" }[modeOf[axis]] || "";
           });
         }
+        const locked = ratioLocked(target);
         lock.setAttribute("aria-pressed", String(locked));
         // The kit shows the link broken when off and joined when on. Swapped only on a change, so a draw
         // under the pointer never rebuilds the glyph.
@@ -7407,6 +12168,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function typography(target) {
       const s = section("Typography");
 
+      // Figma's vertical alignment. A block or a grid honors align-content; a one-line flex box (a button, a pill)
+      // ignores it, so there it's align-items, or justify-content in a column.
+      const vProp = (cs) => (!/flex/.test(cs.display) ? "align-content" : /column/.test(cs.flexDirection) ? "justify-content" : "align-items");
+      const vRead = (cs) => {
+        const prop = vProp(cs);
+        let v = cs.getPropertyValue(prop).trim().replace(/^(un)?safe /, "");
+        // flex-start is the bottom in a reversed column (and normal packs from there too), or across wrap-reverse.
+        const flip = prop === "justify-content" ? /reverse/.test(cs.flexDirection) : prop === "align-items" && cs.flexWrap === "wrap-reverse";
+        if (flip) v = { "flex-start": "flex-end", "flex-end": "flex-start", normal: prop === "justify-content" ? "flex-end" : v }[v] || v;
+        return { start: "top", "flex-start": "top", "self-start": "top", normal: "top", stretch: "top", baseline: "top",
+          center: "middle", end: "bottom", "flex-end": "bottom", "self-end": "bottom" }[v] || "";
+      };
+
       const read = () => {
         const cs = getComputedStyle(target);
         const size = parseFloat(cs.fontSize);
@@ -7420,25 +12194,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           // Inside an SVG, alignment is text-anchor.
           align: inSvg(target) ? { start: "left", middle: "center", end: "right" }[cs.textAnchor] || ""
             : { start: "left", left: "left", center: "center", end: "right", right: "right" }[cs.textAlign] || "",
-          // Figma's vertical alignment maps to align-content, which block elements honor in current browsers.
-          valign: { start: "top", "flex-start": "top", normal: "top", center: "middle", end: "bottom", "flex-end": "bottom" }[cs.alignContent] || "",
+          valign: vRead(cs),
         };
       };
 
-      // Keep the weight if the family has it; otherwise the nearest one it does.
-      const weightIn = (f, w) => familyWeights(f).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a));
+      // Keep the weight if the family has it (a variable face's range counts); otherwise the nearest one it does.
+      const weightIn = (f, w) => (familyHas(f, w) ? w : familyWeights(f).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a)));
       // Figma's hover preview: the text wears each family the pointer passes over, saving nothing.
       // The inline values it had are kept here to put back.
       let before = null;
+      // The field opens Figma's Fonts popover (makeFontsPop), not the dark menu.
       const family = dropdown((btn) => {
         const now = read();
-        menu.toggle(btn, pageFamilies(now.family).map((f) => ({ label: f, value: f })), now.family, (f) => {
-          setStyle(target, "font-family", '"' + f + '"');
+        fontsPop.toggle(btn, { current: now.family, onPick: (f) => {
+          // The family it has already changes nothing, as in Figma (writing it would drop the code's fallbacks).
+          if (f === now.family) return;
+          setStyle(target, "font-family", familyCss(f));
           const w = weightIn(f, now.weight);
           if (w !== now.weight) setStyle(target, "font-weight", String(w));
           changed(true);
-        }, (f) => {
-          if (f == null) {
+        }, onHover: (f) => {
+          if (f == null || f === now.family) {
             if (!before) return;
             target.style.fontFamily = before.family;
             target.style.fontWeight = before.weight;
@@ -7447,9 +12223,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           }
           if (!before) before = { family: target.style.fontFamily, weight: target.style.fontWeight };
           const w = weightIn(f, now.weight);
-          target.style.fontFamily = '"' + f + '"';
+          target.style.fontFamily = familyCss(f);
           target.style.fontWeight = w === now.weight ? before.weight : String(w);
-        });
+        } });
       });
       family.btn.classList.add("ft-span2");
       const weight = dropdown((btn) => {
@@ -7489,14 +12265,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         ["bottom", "arrowLineDown", "Align bottom"],
       ], (v) => {
         boxed(target);
-        setStyle(target, "align-content", { top: "start", middle: "center", bottom: "end" }[v]);
+        setStyle(target, vProp(getComputedStyle(target)), { top: "start", middle: "center", bottom: "end" }[v]);
       });
 
       function draw(force) {
         const now = read();
         // A preview resizes the text, which redraws the panel; the labels stay on the real font.
         if (!before) {
-          family.label.textContent = now.family;
+          // The display name, as the Fonts popover shows it; the field still writes the real family.
+          family.label.textContent = fontLabel(now.family);
           weight.label.textContent = WEIGHT_NAMES[now.weight] || String(now.weight);
         }
         size.set(Math.round(now.size * 10) / 10, force);
@@ -7521,7 +12298,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       editable(tracking.input, changed, (v) => {
         const t = String(v).trim().toLowerCase();
         const n = parseFloat(t);
-        if (isNum(n)) setStyle(target, "letter-spacing", t.endsWith("px") ? n + "px" : n / 100 + "em");
+        // Rounded, as a percent over 100 can land on float noise (2.2% is 0.022000000000000002).
+        if (isNum(n)) setStyle(target, "letter-spacing", t.endsWith("px") ? n + "px" : +(n / 100).toFixed(6) + "em");
       });
 
       const alignRow = el("div", "ft-type-pair");
@@ -7544,26 +12322,158 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // Words inside an SVG are painted by fill, not color.
       const svg = inSvg(target);
       const paint = svg ? svgPaint(target, "fill") : null;
-      textLayer = (svg ? paint.layer : toFill(getComputedStyle(target).color)) || { hex: "000000", opacity: 100, visible: true };
+      textLayer = hiddenFill(target) || (svg ? paint.layer : toFill(getComputedStyle(target).color)) || { hex: "000000", opacity: 100, visible: true };
       const layer = textLayer;
       const list = el("div", "ft-fills");
       list.appendChild(fillRow(layer, () => {
         if (svg) writeSvgPaint(target, "fill", layer);
         else setStyle(target, "color", layer.visible ? rgba(layer) : "transparent");
+        recordFill(target, layer);
         picker.sync();
       }, null, picker));
       s.appendChild(list);
       return s;
     }
 
+    // Figma's Scale section (K), in place of Appearance and everything after it: Width and Height (the size it scales
+    // to), Scale (the factor, with presets) and Anchor point (what stays put; a click only moves the anchor). Each typed
+    // value or preset is one undo step.
+    const SCALE_PRESETS = [0.5, 1, 2, 3];
+    const ANCHORS = ["Top left", "Top center", "Top right", "Left center", "Center", "Right center", "Bottom left", "Bottom center", "Bottom right"];
+    function scaleSection(target) {
+      const list = Array.isArray(target) ? target : [target];
+      const s = section("Scale");
+      const actions = el("div", "ft-head-actions");
+      actions.appendChild(iconButton(ICON.x, "Close", () => endScale()));
+      s.firstChild.appendChild(actions);
+      const commit = (f) => {
+        const m = scaleMode;
+        if (!m || !isNum(f) || !(f > 0)) return changed(true);
+        if (history.timer) commitStep();
+        const from = scaleFrom();
+        history.quiet++;
+        list.forEach((t) => still(t, true));
+        applyScale(Math.max(scaleLeast(m), f), from);
+        flush();
+        list.forEach((t) => still(t, false));
+        history.quiet--;
+        noteChange();
+        reflowFor(list);
+        if (scaleMode) scaleSeal(scaleMode);
+        changed(true);
+      };
+      const w = numField("W");
+      const h = numField("H");
+      editable(w.input, changed, (v) => commit(scaleMode ? parseFloat(v) / scaleMode.base.w : NaN));
+      editable(h.input, changed, (v) => commit(scaleMode ? parseFloat(v) / scaleMode.base.h : NaN));
+      // The factor takes 1.5, 1.5x or 150%; anything else (zero, below it, not a number) puts the old one back.
+      const factor = numField(ICON.scaleSmall, "Scale");
+      factor.wrap.querySelector(".ft-field-icon").setAttribute("data-ft-tip-key", "K");
+      editable(factor.input, changed, (v) => {
+        const m = /^\s*(\d*\.?\d+)\s*(x|%)?\s*$/i.exec(v);
+        commit(m ? parseFloat(m[1]) / (m[2] === "%" ? 100 : 1) : NaN);
+      });
+      // Figma's Scale list needs her screenshot of it open; the kit's Export multipliers stand in for now.
+      const presets = button("ft-scale-dd", null, () => menu.toggle(presets, SCALE_PRESETS.map((n) => ({ label: n + "x", value: n })),
+        scaleMode ? round4(scaleMode.f) : null, (v) => commit(v)));
+      presets.innerHTML = ICON.caretDown;
+      presets.setAttribute("aria-label", "Scale presets");
+      const combo = el("div", "ft-scale-combo");
+      combo.append(factor.wrap, presets);
+      // Anchor point: the nine dots' field; the picked cell's blue square fades in as the last one's fades out.
+      const box = el("div", "ft-anchor-box");
+      box.setAttribute("role", "group");
+      box.setAttribute("aria-label", "Anchor point");
+      const pickAnchor = (i) => {
+        if (scaleMode) scaleMode.anchor = [(i % 3) / 2, Math.floor(i / 3) / 2];
+        changed(false);
+      };
+      const cells = ANCHORS.map((tip, i) => {
+        const b = button("ft-anchor-cell", null, () => pickAnchor(i));
+        b.innerHTML = '<span class="ft-al-rest">' + ICON.alDot + '</span><span class="ft-anchor-sq"></span>';
+        b.setAttribute("data-ft-tip", tip);
+        b.setAttribute("aria-label", tip);
+        withTip(b);
+        return b;
+      });
+      box.append(...cells);
+      const anchorAt = () => (scaleMode ? Math.round(scaleMode.anchor[1] * 2) * 3 + Math.round(scaleMode.anchor[0] * 2) : 4);
+      box.addEventListener("keydown", (e) => {
+        const d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+        if (!d || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+        e.preventDefault();
+        // From the cell with focus (Tab can move it off the anchor), else the anchor.
+        const at = cells.includes(document.activeElement) ? cells.indexOf(document.activeElement) : anchorAt();
+        const clamp = (n) => Math.min(2, Math.max(0, n));
+        const next = clamp(Math.floor(at / 3) + d[0]) * 3 + clamp((at % 3) + d[1]);
+        if (next === at) return;
+        pickAnchor(next);
+        cells[next].focus();
+      });
+      const scaleCell = labeled("Scale", combo);
+      const anchorCell = labeled("Anchor point", box);
+      scaleCell.classList.add("ft-al-top");
+      anchorCell.classList.add("ft-al-top");
+      const grid = el("div", "ft-type ft-scale-grid");
+      grid.append(labeled("Width", w.wrap), labeled("Height", h.wrap), scaleCell, anchorCell);
+      s.appendChild(grid);
+      draws.push((force) => {
+        const m = scaleMode;
+        if (!m) return;
+        // An edit that wasn't a scale (Layout's W, an undo) shows the factor the size now has.
+        if (!history.quiet) scaleFresh();
+        w.set(fmt2(m.base.w * m.f), force);
+        h.set(fmt2(m.base.h * m.f), force);
+        // Never 0x: under 0.01 the factor keeps two significant digits.
+        factor.set((m.f < 0.01 ? String(+m.f.toPrecision(2)) : fmt2(m.f)) + "x", force);
+        const at = anchorAt();
+        cells.forEach((c, i) => c.setAttribute("aria-pressed", String(i === at)));
+      });
+      return s;
+    }
+    // K: Scale on for what's selected, or off. Not on text being edited, a turned or skewed layer, or the page.
+    function startScale() {
+      const list = Array.isArray(shown) ? shown : [shown];
+      if (shownColumn) return toast("Scale works on layers, not columns");
+      if (document.querySelector("[data-ft-editing]")) return toast("Scale doesn't work while text is being edited");
+      if (list.some((t) => t === document.body || t === document.documentElement)) return toast("Scale doesn't work on the page");
+      if (list.some((t) => !selection || !selection.resizable(t))) return toast("Scale doesn't work on a turned layer");
+      if (history.timer) commitStep();
+      beginScale(list, shownKind === "group" ? groupFor(list) : null);
+      showInPanel(shown, shownKind, shownColumn);
+      if (selection) selection.refresh();
+    }
+    endScale = () => {
+      if (!scaleMode) return;
+      dropScale();
+      showInPanel(shown, shownKind, shownColumn);
+      if (selection) selection.refresh();
+    };
+
     // The layer's kind, read from the code, and the element it is (its tag and first class or id).
     function kindLine(t) {
       const comp = document.documentElement.classList.contains("ft-motion") ? "" : componentOf(t);
-      if (comp) return componentLine(t, comp);
+      if (comp) return wordsNote(componentLine(t, comp), t);
       const kind = kindOf(t);
       const row = el("div", "ft-kind");
       row.append(el("span", "ft-kind-name", kind), el("span", "ft-kind-el", elName(t)));
-      if (kind === "Group") row.append(el("span", "ft-kind-dot", "·"), itemCount(Array.from(t.children).filter((c) => !isUi(c))));
+      if (kind === "Group") row.append(el("span", "ft-kind-dot", "·"), itemCount(layersOf(t)));
+      return wordsNote(row, t);
+    }
+    // Words the page rewrote after she retyped them (see watchWords) say so under the kind line, as soon as it happens:
+    // what she typed there won't hold, and the bake will ask before changing the code's expression.
+    function wordsNote(row, t) {
+      if (!hasText(t)) return row;
+      const note = el("span", "ft-kind-el", "These words are built in code: the page rewrote them.");
+      const stacked = row.classList.contains("ft-kind-comp");
+      const show = () => {
+        const on = !!(entryOf(t) || {}).htmlComputed;
+        note.hidden = !on;
+        row.classList.toggle("ft-kind-comp", stacked || on);
+      };
+      row.appendChild(note);
+      show();
+      draws.push(show);
       return row;
     }
     function kindOf(t) {
@@ -7592,7 +12502,18 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const mark = el("span");
       mark.innerHTML = ICON.instance;
       override.append(mark, el("span", null, "Override"));
-      row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", on ? "Editing only this " + name + "." : "Editing every " + name + "."), override);
+      // A cva component's variant follows its name, as a group's count follows its element ("Button · outline"):
+      // an edit reaches the instances of that variant only (see componentKey).
+      const variant = parseKey(componentKey(t)).variant;
+      let head = el("span", "ft-kind-name", name);
+      if (variant != null) {
+        const nameEl = head;
+        head = el("span", "ft-kind-head");
+        head.append(nameEl, el("span", "ft-kind-dot", "·"), el("span", "ft-kind-el", variant));
+      }
+      // One given no variant isn't called by a name its cva may not have (see variantOf).
+      const every = variant === NO_VARIANT ? name + " given no variant" : (variant != null ? variant + " " : "") + name;
+      row.append(head, el("span", "ft-kind-el", on ? "Editing only this " + name + "." : "Editing every " + every + "."), override);
       return row;
     }
 
@@ -7603,7 +12524,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const n = list.length;
       const b = button("ft-kind-count", null, () => menu.toggle(b,
         list.map((t, i) => ({ label: kindOf(t) + " · " + elName(t), value: i })), null,
-        (i) => selection.selectLayers([list[i]]),
+        (i) => selection.selectItem(list[i]),
         (i) => selection.preview(i == null ? null : list[i]), b.closest(".ft-kind")));
       b.append(el("span", null, n + (n === 1 ? " item" : " items")), caret());
       return b;
@@ -7629,6 +12550,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // page's Animations. Several layers show their kind line only: motion is set one layer at a time. Drawn while
     // the tab shows.
     const motionChosen = el("div", "ft-chosen");
+    // The drawn Animation section's listeners (on its layers and their JavaScript animations), let go when Motion
+    // redraws; watchJs hears a new animate() call on a layer while that section shows.
+    let motionOff = null;
+    let watchJs = null;
     let shown = null;
     let shownKind = null;
     // A column of the layout guide picked with (or without) the layers shown, as { i }.
@@ -7670,7 +12595,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }
     let tipClosed = false;
     try { tipClosed = localStorage.getItem(COLUMN_TIP_KEY) === "closed"; } catch (e) {}
-    const colTip = helpCard("Aligning layers to a column", "gridColumn", "Click empty space in a column to select it, and shift-click to add more. Then shift-click layers to align them to the columns or match their width.", () => {
+    // ⌥-click, since most pages leave no empty space in a column to click (Option on a Mac, Alt elsewhere).
+    const altClick = MAC ? "Option-click" : "Alt-click";
+    const colTip = helpCard("Aligning layers to a column", "gridColumn", altClick + " a column to select it, and shift-" + altClick.toLowerCase() + " to add more. Then shift-click layers to align them to the columns or match their width.", () => {
       tipClosed = true;
       try { localStorage.setItem(COLUMN_TIP_KEY, "closed"); } catch (e) {}
       drawColumnTip();
@@ -7737,7 +12664,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       [[w, "w"], [h, "h"]].forEach(([f, k]) => editable(f.input, changed, (v) => {
         const n = parseFloat(v);
         if (!isNum(n) || n < 0) return;
-        top.forEach((t) => setSize(t, k === "w" ? n : null, k === "h" ? n : null));
+        top.forEach((t) => typedResize(t, k === "w" ? n : null, k === "h" ? n : null, { locked: ratioLocked(t) }));
       }));
       const dims = el("div", "ft-type-pair");
       dims.append(w.wrap, h.wrap);
@@ -7765,20 +12692,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       changed(true);
       offerStyle();
     }
-    // After lining layers up with a column of a layout that isn't a saved style yet (once a visit per layout): a
-    // toast offers to save it, for this page or every page.
+    // After adding a layout, changing one's numbers, or lining layers up with a column of a layout that isn't a saved
+    // style yet (once a visit per layout): a toast offers to save it, for this page or every page. Typing in the
+    // fields redraws on every keystroke, so the offer waits until the numbers have stood still for a moment.
     const offered = new Set();
-    function offerStyle() {
-      const g = guides.find((gd) => gd.visible);
+    let offerTimer = 0;
+    function offerSoon(g) {
+      clearTimeout(offerTimer);
+      offerTimer = setTimeout(() => offerStyle(g), 1200);
+    }
+    function offerStyle(edited) {
+      const g = edited || guides.find((gd) => gd.visible);
       if (!g) return;
       const name = styleName(g);
-      if (offered.has(name) || [STYLES_PAGE, STYLES_ALL].some((k) => loadStyles(k).some((st) => st.name === name))) return;
+      // The page's own grid isn't new: Styles lists it as "Page grid".
+      if (pageDefault && styleName(pageDefault) === name) return;
+      if (offered.has(name) || [stylesPage(), STYLES_ALL].some((k) => loadStyles(k).some((st) => st.name === name))) return;
       offered.add(name);
-      toast("Save this new column style?", [{ label: "Page", run: () => saveStyle(STYLES_PAGE) }, { label: "Website", run: () => saveStyle(STYLES_ALL) }], 15000);
+      toast("Use this new layout guide as active default?", [{ label: "Page", run: () => saveStyle(stylesPage()) }, { label: "Website", run: () => saveStyle(STYLES_ALL) }], 15000);
     }
 
     function drawMotion() {
       motionChosen.textContent = "";
+      if (motionOff) motionOff.abort();
+      motionOff = null;
       animsSec.hidden = !!shown;
       motionTip.hidden = motionTipClosed || !!shown;
       waitSec.hidden = true;
@@ -7860,6 +12797,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         return f.wrap;
       };
 
+      // What the fields last saw of these keyframes away from rest (moveShape; each aspect's keyframes, by offset), so
+      // one typed back to rest edits the same keyframes when it's typed again.
+      let shape = null;
+      let restAt = {};
+      const fieldOf = (info, aspect) => {
+        const x = info && info[aspect];
+        if (!x) return null;
+        if (!x.rest) restAt[aspect] = x.frames.map((f) => f.at);
+        else if (restAt[aspect]) {
+          const fr = x.frames.filter((f) => restAt[aspect].includes(f.at));
+          if (fr.length) x.frames = fr;
+        }
+        return x;
+      };
+
       function build() {
         const name = a.first("animation-name");
         // A CSS animation can play other @keyframes of the page's; a JavaScript one's keyframes are in its call,
@@ -7868,6 +12820,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (a.swap) {
           which = dropdown((btn) => menu.toggle(btn, keyframeChoices(), name, (v) => {
             a.put("animation-name", keyframesFrom(v));
+            dropUnusedKeyframes();
+            shape = null;
+            restAt = {};
             build();
           }));
         } else {
@@ -7878,17 +12833,27 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const what = [label("Keyframes"), which.btn];
         const info = a.info();
         if (info && info.direction) {
+          // A move at 0 has no direction of its own: it shows the one it had, and a pick only sets where the next
+          // distance goes.
+          if (info.distance.n) shape = moveShape(info);
+          else if (shape) info.direction = shape.direction;
           const dir = segmented(MOVES, (v) => {
+            if (!info.distance.n) {
+              shape = turnShape(shape || stillShape(info), v);
+              return build();
+            }
             if (v !== info.direction) turnMoves(info, v);
             after();
           });
           dir.set(info.direction);
           what.push(label("Direction"), dir.seg, label("Distance"), num(ICON.ruler, "Distance",
             () => lengthText(info.distance), (n) => {
-              if (n >= 0) scaleMoves(info, n);
+              if (n >= 0 && info.distance.n) scaleMoves(info, n);
+              else if (n > 0) putShape(info, shape || stillShape(info), n);
               after();
             }));
         }
+        ["scale", "rotate", "opacity"].forEach((aspect) => fieldOf(info, aspect));
         if (info && info.scale) {
           what.push(label("Scale"), num(null, null, () => +info.scale.value.toFixed(3), (n) => {
             info.scale.frames.forEach((f) => writePart(f, "scale", n));
@@ -8223,20 +13188,32 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (rows.length === 1) rows[0].click();
       s.appendChild(list);
       drawPlay();
-      // Play and Pause follow the animations as they start and end; the listeners go with the section.
+      // Play and Pause follow the animations as they start and end: a CSS one's events on its layers, a JavaScript
+      // one's own finish and cancel (a later animate() call's too). The listeners go when Motion redraws (a looping
+      // animation never fires again to let them go itself).
+      const off = new AbortController();
+      if (motionOff) motionOff.abort();
+      motionOff = off;
       const follow = () => {
-        if (!s.isConnected) {
-          layers.forEach((t) => {
-            t.removeEventListener("animationstart", follow);
-            t.removeEventListener("animationend", follow);
-          });
-          return;
-        }
+        if (!s.isConnected) return off.abort();
         drawPlay();
       };
-      layers.forEach((t) => {
-        t.addEventListener("animationstart", follow);
-        t.addEventListener("animationend", follow);
+      const hearJs = (x) => ["finish", "cancel"].forEach((type) => x.addEventListener(type, follow, { signal: off.signal }));
+      layers.forEach((t) => ["animationstart", "animationend"].forEach((type) => t.addEventListener(type, follow, { signal: off.signal })));
+      jsAnims().forEach(hearJs);
+      // A page calling animate() every frame redraws the icon once a frame, not once a call.
+      let soonPlay = 0;
+      const watch = (t, x) => {
+        if (!layers.includes(t)) return;
+        hearJs(x);
+        if (!soonPlay) soonPlay = requestAnimationFrame(() => {
+          soonPlay = 0;
+          if (s.isConnected) drawPlay();
+        });
+      };
+      watchJs = watch;
+      off.signal.addEventListener("abort", () => {
+        if (watchJs === watch) watchJs = null;
       });
       return s;
     }
@@ -8279,7 +13256,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       waitList.replaceChildren(...waiting.map((w) => {
         const row = el("div", "ft-anim-row");
         const play = iconButton(ICON.play, "Play: adds ." + w.cls + " to " + layerNames(w.on) + ", as the page would", () => {
-          w.on.forEach((e) => e.classList.add(w.cls));
+          w.on.forEach((e) => {
+            if (e.classList.contains(w.cls)) return;
+            if (!playClasses.has(e)) playClasses.set(e, new Set());
+            playClasses.get(e).add(w.cls);
+            e.classList.add(w.cls);
+          });
           requestAnimationFrame(() => { if (selection) selection.selectLayers(w.animated); });
         });
         row.append(el("span", "ft-anim-name", layerNames(w.animated)), el("span", "ft-anim-meta", w.names.join(", ")), play);
@@ -8292,6 +13274,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     showInPanel = (target, kind, col) => {
       menu.close();
       imagePop.close();
+      fontsPop.close();
       if (textLayer) picker.closeFor(textLayer);
       fillLayers.forEach((l) => picker.closeFor(l));
       textLayer = null;
@@ -8303,6 +13286,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       shown = target;
       shownKind = kind;
       shownColumn = col || null;
+      // Scale stays on only while the same layers are shown (another selection, or none, leaves it).
+      if (scaleMode && (shownColumn || !scaleHolds(target))) dropScale();
       drawMotion();
       page.hidden = guideSec.hidden = !!(target || shownColumn);
       drawColumnTip();
@@ -8316,14 +13301,31 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         } else if (cols.length > 1) {
           chosen.appendChild(helpCard("Aligning layers to columns", "gridColumns", "Shift-click layers to align them to these columns or match their width."));
         } else {
-          chosen.appendChild(helpCard("Aligning layers to a column", "gridColumn", "Shift-click layers to align them to this column. Add more columns to align across them or match their width."));
+          chosen.appendChild(helpCard("Aligning layers to a column", "gridColumn", "Shift-click layers to align them to this column. Shift-" + altClick.toLowerCase() + " more columns to align across them or match their width."));
         }
         changed(true);
         return;
       }
       if (!target) return;
+      // An edit to what's shown (not a scroll, which changes no edit) lets a group's auto layout place its layers
+      // again first, so the sections after it read where they land. Not during a drag or an undo (both quiet): the
+      // drag places them when it ends, and an undo's step has them placed already. Selecting alone moves nothing.
+      flowTick = editTick;
+      const reflowList = Array.isArray(target) ? target : [target];
+      draws.push(() => {
+        if (history.quiet || flowTick === editTick) return;
+        flowTick = editTick;
+        reflowFor(reflowList);
+      });
       if (Array.isArray(target)) {
         chosen.append(kindLineMany(target, kind === "group"), setSection(target, kind === "group"));
+        if (kind === "group") chosen.appendChild(groupLayout(target));
+        if (scaleMode) chosen.appendChild(scaleSection(target));
+        changed(true);
+        return;
+      }
+      if (scaleMode) {
+        chosen.append(kindLine(target), position(target), layout(target), scaleSection(target));
         changed(true);
         return;
       }
@@ -8343,15 +13345,30 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // fill, the guides, the groups, and the panel for whatever is selected.
     applyEdits = (next) => {
       const sels = new Set(Object.keys(edits.elements).concat(Object.keys(next.elements)));
+      // The element each edit was made on (see resolve), not whatever its selector finds now.
+      const found = (sel) => resolve(sel, next.elements[sel] || edits.elements[sel]);
+      // Words first: new words are new layers inside, which then take their own edits again (images and
+      // deletes included, as they're fresh).
+      const rewritten = [];
       sels.forEach((sel) => {
-        let t = null;
-        try {
-          t = document.querySelector(sel);
-        } catch (e) {
-          return;
-        }
+        const t = found(sel);
+        const a = edits.elements[sel] || {};
+        const b = next.elements[sel] || {};
+        if (!t || a.html === b.html) return;
+        const h = b.html != null ? b.html : (originals[sel] || {}).html;
+        if (h == null) return;
+        // By React's rule (see writeWords): words it builds from several parts are left as they are.
+        if (!writeWords(t, h)) return void (b.html != null && wordsHeld.add(sel));
+        wordsHeld.delete(sel);
+        rewritten.push(t);
+        if (b.html != null) watchWords(t);
+      });
+      sels.forEach((sel) => {
+        const t = found(sel);
         if (!t) return;
-        const a = edits.elements[sel] || { styles: {} };
+        const fresh = rewritten.some((r) => r !== t && r.contains(t));
+        if (next.elements[sel]) applied.set(sel, t);
+        const a = fresh ? { styles: {} } : edits.elements[sel] || { styles: {} };
         const b = next.elements[sel] || { styles: {} };
         const o = originals[sel] || { styles: {} };
         new Set(Object.keys(a.styles).concat(Object.keys(b.styles))).forEach((prop) => {
@@ -8359,10 +13376,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           if (v) t.style.setProperty(prop, v);
           else t.style.removeProperty(prop);
         });
-        if (a.html !== b.html) {
-          const h = b.html != null ? b.html : o.html;
-          if (h != null) t.innerHTML = h;
-        }
+        tidyStyle(t);
         if (JSON.stringify(a.src) !== JSON.stringify(b.src)) {
           if (b.src) {
             t.removeAttribute("srcset");
@@ -8374,29 +13388,39 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         }
         if (JSON.stringify(a.adjust) !== JSON.stringify(b.adjust)) setToneFilter(toneId(sel), b.adjust || NO_ADJUST);
         if (!!a.deleted !== !!b.deleted) t.toggleAttribute("data-ft-deleted", !!b.deleted);
+        if (!!a.ungrouped !== !!b.ungrouped) t.toggleAttribute("data-ft-ungrouped", !!b.ungrouped);
+        new Set(Object.keys(a.attrs || {}).concat(Object.keys(b.attrs || {}))).forEach((name) => {
+          const v = b.attrs && name in b.attrs ? b.attrs[name] : (o.attrs || {})[name];
+          if (v != null) t.setAttribute(name, v);
+          else t.removeAttribute(name);
+        });
       });
       edits.elements = next.elements;
       // Components after the layers' own edits, so an override taken off falls back to the component's value.
-      instanceCache.clear();
+      forgetInstances();
+      sourceCache = new WeakMap();
       const nextComps = next.components || {};
+      // Each instance is written once, with every key that reaches it after the step (see paintComps), and the
+      // code's own back for what a key set before it.
+      const touched = new Map();
       new Set(Object.keys(edits.components).concat(Object.keys(nextComps))).forEach((name) => {
         const a = (edits.components[name] || { styles: {} }).styles;
         const b = (nextComps[name] || { styles: {} }).styles;
+        const adjA = (edits.components[name] || {}).adjust;
+        const adjB = (nextComps[name] || {}).adjust;
+        if (JSON.stringify(adjA) !== JSON.stringify(adjB)) setToneFilter(toneId("component " + name), adjB || NO_ADJUST);
         instancesOf(name).forEach((t) => {
-          const sel = selectorFor(t);
-          const own = (next.elements[sel] || { styles: {} }).styles;
-          const o = originals[sel] || { styles: {} };
-          new Set(Object.keys(a).concat(Object.keys(b))).forEach((prop) => {
-            if (own[prop] != null) return;
-            const v = prop in b ? b[prop] : o.styles[prop] || "";
-            if (v) t.style.setProperty(prop, v);
-            else t.style.removeProperty(prop);
-          });
+          appliedComp.add(t);
+          const props = touched.get(t) || touched.set(t, new Set()).get(t);
+          Object.keys(a).concat(Object.keys(b)).forEach((p) => props.add(p));
         });
       });
+      touched.forEach((props, t) => paintComps(t, Array.from(props), nextComps, (next.elements[keyOf(t)] || { styles: {} }).styles));
       edits.components = nextComps;
       edits.overrides = next.overrides || [];
       edits.groups = next.groups;
+      // A group's auto layout needs no relayout here: the moves that show it are element styles, put back above.
+      edits.autoLayout = next.autoLayout || [];
       paintNewKeyframes(next.newKeyframes || {});
       edits.newKeyframes = next.newKeyframes || {};
       paintKeyframes(next.keyframes);
@@ -8406,12 +13430,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
       layers.forEach((l) => picker.closeFor(l));
       edits.page = next.page;
+      if (next.page && next.pageView) edits.pageView = next.pageView;
+      else delete edits.pageView;
       if (next.page) {
         layers.splice(0, layers.length, ...next.page.map((l) => Object.assign({}, l)));
         paint();
       } else {
         layers.splice(0, layers.length, Object.assign({}, pageOwn.layer));
-        pageEl.style.backgroundColor = pageOwn.color;
+        livePage().style.backgroundColor = pageOwn.color;
         pageEl.style.backgroundImage = pageOwn.image;
       }
       drawRows();
@@ -8419,7 +13445,49 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       guidePop.close();
       edits.guides.splice(0, edits.guides.length, ...next.guides);
       drawGuides();
+      // A step back to a guide on the page's numbers, at a width with no grid now, sets it aside again.
+      followPage();
       if (selection) selection.reshow();
+    };
+
+    // A single-page app moved to another page and called finetune() there: the last page's edits come off what's
+    // left of it, and this page's (what Save kept for it) go on with a fresh history, its fill and its grid read
+    // off this page, as a load of it would.
+    switchPage = () => {
+      finishTyping();
+      if (selection) selection.selectLayers([]);
+      closeStyles();
+      closeSave();
+      history.quiet++;
+      applyEdits(blankRecord());
+      Object.keys(originals).forEach((k) => delete originals[k]);
+      // The last page's elements were its own.
+      applied.clear();
+      wordsHeld.clear();
+      forgetInstances();
+      sourceCache = new WeakMap();
+      editsPath = location.pathname;
+      const next = loadEdits();
+      Object.keys(next).forEach((k) => { if (k !== "guides") edits[k] = next[k]; });
+      guides.splice(0, guides.length, ...next.guides);
+      restoreEdits();
+      pageEl = pageCanvas();
+      Object.assign(pageOwn, {
+        layer: toFill(getComputedStyle(pageEl).backgroundColor)
+          || toFill(getComputedStyle(document.body).backgroundColor)
+          || { hex: "FFFFFF", opacity: 100, visible: true },
+        color: pageEl.style.backgroundColor,
+        image: pageEl.style.backgroundImage,
+      });
+      layers.splice(0, layers.length, ...(edits.page ? edits.page.map((l) => Object.assign({}, l)) : [Object.assign({}, pageOwn.layer)]));
+      if (edits.page) paint();
+      drawRows();
+      takePageGrid();
+      drawGuides();
+      history.quiet--;
+      history.past = [];
+      history.future = [];
+      startHistory();
     };
 
     // Chosen first: it's empty while the page's sections show, and they hide while it's full, so either way
@@ -8433,12 +13501,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const sc = cs.scale === "none" ? [1, 1] : cs.scale.trim().split(/\s+/).map(parseFloat);
       const sx = across ? -sc[0] : sc[0];
       const sy = across ? (sc.length > 1 ? sc[1] : sc[0]) : -(sc.length > 1 ? sc[1] : sc[0]);
+      const turn = turnOf(t);
       boxed(t);
       turnInPlace(t);
       setStyle(t, "scale", sx === 1 && sy === 1 ? "" : sx + " " + sy);
+      // Mirrored on the canvas, as the panel's flips are: a turned layer's turn goes the other way too.
+      if (Math.round(turn * 10) % 3600) setTurn(t, -turn);
     }
     const ALIGN_KEYS = { KeyA: "left", KeyH: "hcenter", KeyD: "right", KeyW: "top", KeyV: "vcenter", KeyS: "bottom" };
+    // As the selection's keys: one acted on here goes no further than document.
     document.addEventListener("keydown", (e) => {
+      const was = e.defaultPrevented;
+      designKey(e);
+      if (!was && e.defaultPrevented) e.stopPropagation();
+    });
+    function designKey(e) {
       if (root.hidden || e.defaultPrevented || e.repeat && !/^Arrow/.test(e.key) || typing(e.target)) return;
       const mod = MAC ? e.metaKey : e.ctrlKey;
       const only = (m, a, sh) => mod === m && e.altKey === a && e.shiftKey === sh;
@@ -8459,6 +13536,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         e.preventDefault();
         return alignColumns(shownColumn.cols, Array.isArray(shown) ? shown : [shown], COLUMN_KEYS[e.code]);
       }
+      // Figma's K, the Scale tool: on and off. V (the Move tool) leaves it too.
+      if (root.getAttribute("data-tab") === "design" && only(false, false, false) && e.code === "KeyK") {
+        e.preventDefault();
+        if (scaleMode) return endScale();
+        return shown ? startScale() : toast("Select a layer to scale");
+      }
+      if (scaleMode && only(false, false, false) && e.code === "KeyV") {
+        e.preventDefault();
+        return endScale();
+      }
       if (root.getAttribute("data-tab") !== "design" || !shown) return;
       const list = Array.isArray(shown) ? shown : [shown];
       const one = Array.isArray(shown) ? null : shown;
@@ -8477,12 +13564,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         const dy = e.key === "ArrowUp" ? -n : e.key === "ArrowDown" ? n : 0;
         return act(() => list.filter((t) => !list.some((o) => o !== t && o.contains(t))).forEach((t) => nudge(t, dx, dy)));
       }
-    });
+    }
 
     designPane.append(chosen, page, guideSec, colTip);
     // Playback speed, for debugging, shown while an animation is selected: its layers play slower (or faster)
-    // while she watches them, from 0.25× to 1.5×; the rest of the page stays at 1×. It's only a way of viewing:
-    // nothing is edited, saved or copied, and leaving Motion (or the selection) puts them back to 1×. A replay,
+    // while she watches them, from 0.25× to 1.5×; the rest of the page keeps its own speed. It's only a way of viewing:
+    // nothing is edited, saved or copied, and leaving Motion (or the selection) puts them back as they were. A replay,
     // or an animation the page starts later, takes it too.
     const SPEEDS = [0.25, 0.5, 1, 1.5];
     let speed = 1;
@@ -8502,24 +13589,53 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return b;
     });
     const drawSpeed = () => speedBtns.forEach((b, i) => b.setAttribute("aria-pressed", String(SPEEDS[i] === speed)));
-    // Only the animations it slowed go back to 1×, so a page's own playback rates are left alone.
-    const sped = new WeakSet();
-    function applySpeed() {
-      const on = motionPane.hidden || !shown ? [] : Array.isArray(shown) ? shown : [shown];
-      const all = new Set(document.getAnimations().filter((x) => !(x instanceof CSSTransition)));
-      waapi.forEach((en) => en.targets.forEach((tg) => all.add(tg.anim)));
-      all.forEach((x) => {
-        if (on.includes(x.effect && x.effect.target)) {
-          if (x.playbackRate !== speed) x.playbackRate = speed;
-          sped.add(x);
-        } else if (sped.has(x)) {
-          x.playbackRate = 1;
-          sped.delete(x);
-        }
-      });
+    // The animations it changed, with the rate each had: the speed is a multiple of the page's own rate, and only
+    // these go back, to that rate, so a page's own playback rates are left alone.
+    const sped = new Map();
+    const watched = () => (motionPane.hidden || !shown ? [] : Array.isArray(shown) ? shown : [shown]);
+    let sweepAt = 100;
+    function speedOne(x) {
+      // A watched layer the page animates every frame: the calls that are over go back now, not on leaving (looked
+      // at once the list doubles, so it costs little per call).
+      if (sped.size > sweepAt) {
+        sped.forEach((rate, a) => {
+          if (a.playState !== "finished" && a.playState !== "idle") return;
+          a.playbackRate = rate;
+          sped.delete(a);
+        });
+        sweepAt = Math.max(100, sped.size * 2);
+      }
+      if (!sped.has(x)) sped.set(x, x.playbackRate);
+      const rate = sped.get(x) * speed;
+      if (x.playbackRate !== rate) x.playbackRate = rate;
     }
-    document.addEventListener("animationstart", applySpeed, true);
-    afterAnimate = applySpeed;
+    function applySpeed() {
+      const now = new Set();
+      watched().forEach((t) => {
+        t.getAnimations({ subtree: true }).forEach((x) => {
+          if (x.effect && x.effect.target === t && !(x instanceof CSSTransition)) now.add(x);
+        });
+        waapiOf(t).forEach((en) => {
+          const tg = en.targets.get(t);
+          if (tg) now.add(tg.anim);
+        });
+      });
+      sped.forEach((rate, x) => {
+        if (now.has(x)) return;
+        x.playbackRate = rate;
+        sped.delete(x);
+      });
+      now.forEach(speedOne);
+    }
+    document.addEventListener("animationstart", (e) => {
+      if (watched().includes(e.target)) applySpeed();
+    }, true);
+    // A new animate() call: only one on a watched layer is touched, so the page's calls stay as quick as without finetune.
+    afterAnimate = (t, x) => {
+      if (!sped.size && speed === 1 && !watchJs) return;
+      if (watched().includes(t)) speedOne(x);
+      if (watchJs) watchJs(t, x);
+    };
     const speedLabel = el("div", "ft-speed-label", "Playback speed for debugging only");
     const speedRow = el("div", "ft-labeled");
     speedRow.append(speedLabel, speedSeg);
@@ -8571,17 +13687,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
   function finetune(opts) {
     opts = opts || {};
+    // Display names for the Fonts popover, added to any an earlier call gave (they only label rows).
+    if (opts.fontNames && typeof opts.fontNames === "object") Object.assign(fontNames, opts.fontNames);
     const id = String(opts.id || "finetune");
-    const hotkey = String(opts.key || "t").toLowerCase();
+    const hotkey = String(opts.key || "d").toLowerCase();
     // A later call without a layout keeps the one declared; one with a layout hands it to a panel already built.
     if (opts.layout) {
       declaredGrid = readLayout(opts.layout);
-      if (declaredGrid && inspector) adoptPageGrid();
+      // On another page of a single-page app, the switch to it takes the grid up (see mount).
+      if (declaredGrid && inspector && location.pathname === editsPath) adoptPageGrid();
     }
     const target = opts.target || ":root";
     const presets = opts.presets || {};
     const onChange = typeof opts.onChange === "function" ? opts.onChange : null;
-    const storeKey = "finetune:" + id;
+    // Its own prefix, so an id like "theme" or "styles" can't write over finetune's own keys.
+    const storeKey = "finetune:tuner:" + id;
+    const oldKey = "finetune:" + id;
 
     if (live[id]) live[id]();
 
@@ -8604,8 +13725,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 
     function load() {
       try {
-        const raw = JSON.parse(localStorage.getItem(storeKey));
-        return raw && typeof raw === "object" ? raw : {};
+        let s = localStorage.getItem(storeKey);
+        // Values kept before the prefix moved over once. Only a plain object is a tuner's: a theme string
+        // or a styles array under the old key is finetune's own and stays where it is.
+        if (s == null) {
+          const old = localStorage.getItem(oldKey);
+          const o = old == null ? null : JSON.parse(old);
+          if (o && typeof o === "object" && !Array.isArray(o)) {
+            s = old;
+            localStorage.setItem(storeKey, old);
+            localStorage.removeItem(oldKey);
+          }
+        }
+        const raw = JSON.parse(s);
+        return raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
       } catch (e) {
         return {};
       }
@@ -8812,15 +13945,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       head.addEventListener("pointercancel", end);
     });
 
-    function onKey(e) {
-      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || typing(e.target)) return;
-      if (String(e.key).toLowerCase() !== hotkey) return;
-      toggleUi();
-      // The controls panel (when this call has controls) shows with the toolbar; minimized, it hides with
-      // the inspector (CSS).
-      if (keys.length) panel.hidden = toolbar.hidden;
+    // A tuner belongs to the page that declared it. In an app that changes pages without a reload, the script
+    // (and this panel) outlive that page, so the panel stays hidden wherever its target isn't on the page.
+    function here() {
+      try {
+        return !!document.querySelector(target);
+      } catch (e) {
+        return true;
+      }
     }
-    window.addEventListener("keydown", onKey);
+    bindHideKey();
 
     keys.forEach((k) => sync[k]());
 
@@ -8830,6 +13964,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         style.id = STYLE_ID;
         style.textContent = PANEL_LOOK;
         document.head.appendChild(style);
+        loadInter();
       }
       const first = !inspector;
       if (first) {
@@ -8844,14 +13979,20 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // hidden with the inspector (the hotkey, open: false).
       if (keys.length) {
         document.body.appendChild(panel);
-        panel.hidden = inspector.hidden;
+        panel.hidden = inspector.hidden || !here();
       }
       apply();
       // After apply, so the page's own onChange doesn't write over a saved edit.
       if (first) {
         restoreEdits();
+        // From here on, edits follow the elements React re-creates.
+        watchPage();
         startHistory();
         afterReset();
+      } else if (location.pathname !== editsPath) {
+        // A grid declared by the last page was that page's; this one's call declares its own, or none.
+        if (!opts.layout) declaredGrid = null;
+        switchPage();
       }
     }
     // Called from <head>, the body isn't there yet; wait for it.
@@ -8859,10 +14000,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     else document.addEventListener("DOMContentLoaded", mount, { once: true });
 
     live[id] = () => {
-      window.removeEventListener("keydown", onKey);
       document.removeEventListener("DOMContentLoaded", mount);
       panel.remove();
       delete live[id];
+    };
+    live[id].key = hotkey;
+    live[id].refresh = () => {
+      if (keys.length && inspector) panel.hidden = inspector.hidden || !here();
     };
   }
 
@@ -8875,10 +14019,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     selection.sync();
     hideTip();
     drawUiButton();
+    refreshPanels();
   }
 
   // finetune.toggle() for a page's own button; finetune.toggle(false) hides it, say when the page goes away.
   finetune.toggle = showPanel;
+  // finetune.remove(id) takes a tuner's panel and hotkey off, for a page that goes away without a reload.
+  finetune.remove = (id) => {
+    if (live[id]) live[id]();
+  };
   // finetune.reset() for a page's own Reset button: the same as the panel's.
   finetune.reset = resetEdits;
   window.finetune = finetune;

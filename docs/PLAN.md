@@ -45,7 +45,10 @@ finetune/
 │   └── finetune/
 │       ├── SKILL.md             Claude Code: when to use it, "add a tuner", "bake"
 │       └── references/
-│           └── api.md           every option with its default, the Copy formats, the bake checklist
+│           ├── tuner-api.md     every option with its default, the controls, the tuner's Copy formats
+│           ├── bake.md          the Copy formats, where each line goes in the code, the bake checklists
+│           ├── panel.md         how the inspector behaves and looks (for people)
+│           └── api.md           a stub pointing to the three above
 └── docs/
     └── PLAN.md                  this file, once the scaffold lands
 ```

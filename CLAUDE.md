@@ -13,7 +13,7 @@ These override default behavior. Follow them exactly.
 - A schema's keys are the CSS custom properties they write. Keep that: the schema is the output format.
 - The library never writes to disk and never persists beyond localStorage. Bake is a separate, deliberate step, done by a person or by the skill.
 - `docs/PLAN.md` is the spec for v0. Anything not in it is a question, not a feature.
-- Type: every component finetune makes (the panel, the demo pages, the finetune page on her main site) is set in Inter. The page loads Inter (Google Fonts); the library itself never loads a font, it just puts `"Inter"` first in PANEL LOOK's font stack.
+- Type: every component finetune makes (the panel, the demo pages, the finetune page on her main site) is set in Inter. PANEL LOOK puts `"Inter"` first in its font stack, and the library loads Inter once from Google Fonts when the page has no Inter face of its own (her call, 2026-10-15), so every user sees the panel in Inter. That is the only font it ever loads.
 - Scope: finetune edits what's already on the page (select it, retype it, restyle it), and not much more. It doesn't add new elements. Anything past editing what exists is a question for her first.
 
 ## Writing
