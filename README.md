@@ -1,6 +1,6 @@
 # finetune
 
-Whether you're fine-tuning a Figma design or a website Claude made, the last tweaks are easiest by eye. finetune puts Figma's Design panel on your live page, so you can make those tweaks in the browser after handoff. Every edit bakes back into the code.
+Whether you're fine-tuning a Figma design or a website made by AI, the last tweaks are easiest by eye. finetune puts Figma's Design panel on your live page, so you can make those tweaks in the browser after handoff. Every edit bakes back into the code.
 
 ## The loop
 
