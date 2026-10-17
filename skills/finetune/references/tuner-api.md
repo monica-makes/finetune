@@ -56,7 +56,7 @@ A button grid, never a dropdown.
 | `options` | `[]` |
 | `cols` | `4` |
 
-Options are plain values or `{ label, value }`, so a button can read "H1 36" while writing `h1`. Writes the chosen option's value.
+Options are plain values or `{ label, value }`, so a button can read "H1 36" while writing `h1`. Writes the chosen option's value. A label stays on one line: `cols` is the most columns, and the grid takes fewer when the widest label won't fit one, so every button keeps the same width and height.
 
 ### toggle
 

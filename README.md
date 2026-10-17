@@ -8,8 +8,8 @@ Whether you're fine-tuning a Figma design or a website made by AI, the last twea
 
 1. **Select** a layer on the page, as you would on a Figma canvas. Click, shift-click, drag a marquee, double-click to go in.
 2. **Edit** it in the panel: text, fills, strokes, effects, layout and auto layout, and motion. The page is the preview, so you see each change as you make it.
-3. **Copy** (the toolbar's Copy, or ⇧⌘E) copies a list of every change, one line per layer.
-4. **Bake.** Paste the list into Claude Code and say "bake". The skill writes each change where it lives in your code, then lists every file and line it touched.
+3. **Copy** (the toolbar's Copy, or ⇧⌘E) copies a list of every change, one line per layer. It notes the window's width and the page's theme, and each layer's file and line when your dev build records them (React's development build, Lovable, TanStack Start).
+4. **Bake.** Paste the list into Claude Code. It asks for the bake itself, so there's nothing to type. The skill writes each change where it lives in your code (on a Tailwind site, as utilities in the element's `className`), then lists every file and line it touched.
 
 Edits show live but stay in memory until you press Save, which keeps them in this browser. Reset forgets them and reloads the page as written, so after a bake, Reset shows you the code.
 
@@ -48,6 +48,16 @@ Then:
 - **"Put finetune on this page."** Claude adds the script tag and one `finetune()` call. Nothing else.
 - **"Bake"**, with the Copy list pasted. Claude writes each change into the code, lists every file and line it touched, and asks before committing.
 - **"Add a tuner for X"** and **"Bake the hero tuner"** are for token tuners (below).
+
+## On vibecoded sites
+
+finetune works on sites made with Lovable, Claude Code, OpenAI Codex, Cursor, Bolt and v0 too, and on plain HTML. Those tools make a few kinds of site, and finetune is tested on each: Lovable's Vite, React, Tailwind v3 and shadcn apps and its TanStack Start and Tailwind v4 ones, Next.js with Tailwind v4, Vite with React and Tailwind, and a single HTML file with its own CSS.
+
+- **Your grid.** The layout grid starts as the page's own: its 12-column CSS grid, or, where the sections sit in one centred column (`.container`, `mx-auto max-w-7xl px-6`), the columns of the grids inside it. A site whose grid no CSS draws can name it with the `layout` option.
+- **Where each layer lives.** Copy adds each layer's file and line when the dev build records them: Lovable's apps (both kinds), and any React 18 development build. A React 19 development build (Next.js, for one) records the file but not the line. Plain HTML and production builds record neither, so the bake finds each layer by its selector.
+- **Tailwind.** The bake writes each change as utilities in the element's `className`, in place of the ones it changes, at the breakpoint you saw it at. It uses your theme's tokens (`tailwind.config`, or v4's `@theme`) where one matches, like `bg-primary`, `gap-6` or `rounded-lg`. Where none does, it writes the value (`gap-[18px]`) and tells you.
+- **Plain CSS.** The bake writes into your stylesheet: the `:root` custom property the element reads when it's the page's own, else the element's rule, with your tokens where one matches.
+- **Your styles.** On text, Typography and Fill each have a styles button (four circles) that lists what your CSS already defines, under "Defined in code": your text style classes (`.b1`) and your colour tokens (`--text-primary`). Hover a row to preview it, click to apply it. The bake adds the class or writes the token, never the numbers behind it, and never changes the token itself.
 
 ## What maps one-to-one to code
 
@@ -103,7 +113,7 @@ Anything that reads `var(--hero-size)` updates as you drag.
 | type | writes | takes |
 | --- | --- | --- |
 | `range` | `value + unit` | `min`, `max`, `step`, `unit`. A slider plus a number you can type. |
-| `select` | the chosen option | `options` as plain values or `{ label, value }`, `cols`. A button grid, never a dropdown. |
+| `select` | the chosen option | `options` as plain values or `{ label, value }`, `cols` (the most columns; fewer when a label won't fit on one line). A button grid, never a dropdown. |
 | `toggle` | `on` or `off` | `on` and `off` (default `1` and `0`). |
 | `color` | a hex | `chips`. Chips plus a hex field. |
 | `text` | the text | For copy. Use a key without `--` and apply it in `onChange`. |
