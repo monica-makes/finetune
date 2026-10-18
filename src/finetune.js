@@ -4603,7 +4603,20 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
       // A ⌘D copy: a new layer, a duplicate of its original right after it in the code. Its own edits follow on the
       // same line, made to the copy once it's in; its @ is the original's place, where the code to copy lives.
       const d = dupRecord(key);
-      if (d) parts.unshift("duplicate of " + named(d.of, q(d.of)));
+      let dupNote = "";
+      if (d) {
+        parts.unshift("duplicate of " + named(d.of, q(d.of)));
+        // A component edit made after the copy repaints the original (a real instance) but not the copy, which has
+        // no fiber: where their values differ now (and the copy's own edits don't say so), the note tells the bake
+        // the live copy lags — the baked copy, a real instance, takes the component's look by itself.
+        const orig = q(d.of);
+        const copy = q(key);
+        if (orig && copy && Object.keys(edits.components).some((name) => rankOf(orig, name) >= 0
+          && Object.keys(edits.components[name].styles).some((p) =>
+            !(p in e.styles) && orig.style.getPropertyValue(p) !== copy.style.getPropertyValue(p)))) {
+          dupNote = "its original is a component instance edited since the copy was made, so the copy shows the older look live; the baked copy, a real instance, takes the component's — no extra lines needed";
+        }
+      }
       if (e.html != null) keys.push("text");
       if (e.src) keys.push("src");
       if (e.attrs) keys.push("attributes");
@@ -4664,6 +4677,7 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
       if (parts.length) {
         lines.push([sel + tag + itemTag + where, parts.join("; ")]);
         viewNote(sel, e, keys);
+        if (dupNote) lines.push(["/* " + sel + ": " + dupNote + " */", null]);
       }
       // A text style she picked from Text styles, while the line still has every value its class gave: the bake adds
       // the class and doesn't write those values.
