@@ -799,10 +799,10 @@ html.ft-moving .ft-sel-box .ft-ne, html.ft-moving .ft-sel-box .ft-sw { cursor: u
 .ft-sel-box.is-small .ft-s { bottom: -9px; }
 .ft-sel-box.is-small .ft-e { right: -9px; }
 .ft-sel-box.is-small .ft-w { left: -9px; }
-/* Her resize cursor turned level for the left and right sides and upright for the top and bottom, the same glyph as
-   the corners' in a 32 box so the heads fit, its hotspot in the middle. */
-html.ft-moving .ft-sel-box .ft-e, html.ft-moving .ft-sel-box .ft-w { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM22.13 17.935L22.913 19.5L29.913 16L22.913 12.5L22.13 14.065ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167ZM9.87 14.065L9.087 12.5L2.087 16L9.087 19.5L9.87 17.935Z' stroke-width='2'/%3E%3Cpath d='M22.913 19.5L29.913 16L22.913 12.5M9.087 12.5L2.087 16L9.087 19.5' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167Z' fill='black'/%3E%3Cpath d='M22.913 19.5L29.913 16L22.913 12.5M9.087 12.5L2.087 16L9.087 19.5' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, ew-resize; }
-html.ft-moving .ft-sel-box .ft-n, html.ft-moving .ft-sel-box .ft-s { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM17.935 9.87L19.5 9.087L16 2.087L12.5 9.087L14.065 9.87ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666ZM14.065 22.13L12.5 22.913L16 29.913L19.5 22.913L17.935 22.13Z' stroke-width='2'/%3E%3Cpath d='M19.5 9.087L16 2.087L12.5 9.087M12.5 22.913L16 29.913L19.5 22.913' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666Z' fill='black'/%3E%3Cpath d='M19.5 9.087L16 2.087L12.5 9.087M12.5 22.913L16 29.913L19.5 22.913' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 16 16, ns-resize; }
+/* The left and right sides' cursor, and the top and bottom's: the corners' two heads turned level or upright, in a 32
+   box so they fit, hotspot in the middle, without the line outside each head (her call, 2026-10-17: only Scale's has it). */
+html.ft-moving .ft-sel-box .ft-e, html.ft-moving .ft-sel-box .ft-w { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167Z' stroke-width='2'/%3E%3C/g%3E%3Cpath d='M25.177 15.589A0.46 0.46 0 0 1 25.177 16.411L19.666 19.167A0.46 0.46 0 0 1 19 18.756L19 13.244A0.46 0.46 0 0 1 19.666 12.833ZM6.823 16.411A0.46 0.46 0 0 1 6.823 15.589L12.334 12.833A0.46 0.46 0 0 1 13 13.244L13 18.756A0.46 0.46 0 0 1 12.334 19.167Z' fill='black'/%3E%3C/svg%3E") 16 16, ew-resize; }
+html.ft-moving .ft-sel-box .ft-n, html.ft-moving .ft-sel-box .ft-s { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666Z' stroke-width='2'/%3E%3C/g%3E%3Cpath d='M15.589 6.823A0.46 0.46 0 0 1 16.411 6.823L19.167 12.334A0.46 0.46 0 0 1 18.756 13L13.244 13A0.46 0.46 0 0 1 12.833 12.334ZM16.411 25.177A0.46 0.46 0 0 1 15.589 25.177L12.833 19.666A0.46 0.46 0 0 1 13.244 19L18.756 19A0.46 0.46 0 0 1 19.167 19.666Z' fill='black'/%3E%3C/svg%3E") 16 16, ns-resize; }
 /* Figma's rotation: a zone just outside each corner (4 to 20px out, under the corner's own target) turns the layer
    about its pivot (the code's transform-origin, its centre unless the code moves it). Her rotate cursor bends away from the selection at each corner (on a turned layer, by the screen corner the zone sits at, data-glyph); while a turn is dragged the
    whole page keeps it (html.ft-turning-*), so it doesn't flicker back to the arrow off the zone. */
@@ -820,6 +820,9 @@ html.ft-moving .ft-sel-box .ft-rot-ne:not([data-glyph]), html.ft-moving .ft-sel-
 html.ft-moving .ft-sel-box .ft-rot-se:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="se"], html.ft-moving.ft-turning-se body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3.623 19.661A0.46 0.46 0 0 1 3.623 18.839L9.134 16.083A0.46 0.46 0 0 1 9.8 16.494L9.8 22.006A0.46 0.46 0 0 1 9.134 22.417ZM18.839 3.623A0.46 0.46 0 0 1 19.661 3.623L22.417 9.134A0.46 0.46 0 0 1 22.006 9.8L16.494 9.8A0.46 0.46 0 0 1 16.083 9.134Z' stroke-width='2'/%3E%3Cpath d='M19.25 9.2L19.25 14A5.25 5.25 0 0 1 14 19.25L9.2 19.25' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M3.623 19.661A0.46 0.46 0 0 1 3.623 18.839L9.134 16.083A0.46 0.46 0 0 1 9.8 16.494L9.8 22.006A0.46 0.46 0 0 1 9.134 22.417ZM18.839 3.623A0.46 0.46 0 0 1 19.661 3.623L22.417 9.134A0.46 0.46 0 0 1 22.006 9.8L16.494 9.8A0.46 0.46 0 0 1 16.083 9.134Z' fill='black'/%3E%3Cpath d='M19.25 9.2L19.25 14A5.25 5.25 0 0 1 14 19.25L9.2 19.25' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
 html.ft-moving .ft-sel-box .ft-rot-sw:not([data-glyph]), html.ft-moving .ft-sel-box .ft-rot[data-glyph="sw"], html.ft-moving.ft-turning-sw body * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='white' stroke='white' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M20.377 19.661A0.46 0.46 0 0 0 20.377 18.839L14.866 16.083A0.46 0.46 0 0 0 14.2 16.494L14.2 22.006A0.46 0.46 0 0 0 14.866 22.417ZM5.161 3.623A0.46 0.46 0 0 0 4.339 3.623L1.583 9.134A0.46 0.46 0 0 0 1.994 9.8L7.506 9.8A0.46 0.46 0 0 0 7.917 9.134Z' stroke-width='2'/%3E%3Cpath d='M4.75 9.2L4.75 14A5.25 5.25 0 0 0 10 19.25L14.8 19.25' fill='none' stroke-width='3.5'/%3E%3C/g%3E%3Cpath d='M20.377 19.661A0.46 0.46 0 0 0 20.377 18.839L14.866 16.083A0.46 0.46 0 0 0 14.2 16.494L14.2 22.006A0.46 0.46 0 0 0 14.866 22.417ZM5.161 3.623A0.46 0.46 0 0 0 4.339 3.623L1.583 9.134A0.46 0.46 0 0 0 1.994 9.8L7.506 9.8A0.46 0.46 0 0 0 7.917 9.134Z' fill='black'/%3E%3Cpath d='M4.75 9.2L4.75 14A5.25 5.25 0 0 0 10 19.25L14.8 19.25' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, default; }
 html.ft-moving.ft-scaling .ft-sel-box .ft-handle { cursor: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23f)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.93934 9.93934C8.52513 9.35355 9.47487 9.35355 10.0607 9.93934L11.5607 11.4393C12.1464 12.0251 12.1464 12.9749 11.5607 13.5607L11.1213 14H20.8787L20.4393 13.5607C19.8536 12.9749 19.8536 12.0251 20.4393 11.4393L21.9393 9.93934C22.5251 9.35355 23.4749 9.35355 24.0607 9.93934L28.5607 14.4393C29.1464 15.0251 29.1464 15.9749 28.5607 16.5607L24.0607 21.0607C23.4749 21.6464 22.5251 21.6464 21.9393 21.0607L20.4393 19.5607C19.8536 18.9749 19.8536 18.0251 20.4393 17.4393L20.8787 17H11.1213L11.5607 17.4393C12.1464 18.0251 12.1464 18.9749 11.5607 19.5607L10.0607 21.0607C9.47487 21.6464 8.52513 21.6464 7.93934 21.0607L3.43934 16.5607C2.85355 15.9749 2.85355 15.0251 3.43934 14.4393L7.93934 9.93934Z' fill='white'/%3E%3C/g%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9.35355 10.6464C9.54882 10.8417 9.54882 11.1583 9.35355 11.3536L5.20711 15.5L9.35355 19.6464C9.54882 19.8417 9.54882 20.1583 9.35355 20.3536C9.15829 20.5488 8.84171 20.5488 8.64645 20.3536L4.14645 15.8536C3.95118 15.6583 3.95118 15.3417 4.14645 15.1464L8.64645 10.6464C8.84171 10.4512 9.15829 10.4512 9.35355 10.6464ZM22.6464 10.6464C22.8417 10.4512 23.1583 10.4512 23.3536 10.6464L27.8536 15.1464C28.0488 15.3417 28.0488 15.6583 27.8536 15.8536L23.3536 20.3536C23.1583 20.5488 22.8417 20.5488 22.6464 20.3536C22.4512 20.1583 22.4512 19.8417 22.6464 19.6464L26.7929 15.5L22.6464 11.3536C22.4512 11.1583 22.4512 10.8417 22.6464 10.6464ZM10.8536 12.1464C11.0488 12.3417 11.0488 12.6583 10.8536 12.8536L8.70711 15H23.2929L21.1464 12.8536C20.9512 12.6583 20.9512 12.3417 21.1464 12.1464C21.3417 11.9512 21.6583 11.9512 21.8536 12.1464L24.8536 15.1464C25.0488 15.3417 25.0488 15.6583 24.8536 15.8536L21.8536 18.8536C21.6583 19.0488 21.3417 19.0488 21.1464 18.8536C20.9512 18.6583 20.9512 18.3417 21.1464 18.1464L23.2929 16H8.70711L10.8536 18.1464C11.0488 18.3417 11.0488 18.6583 10.8536 18.8536C10.6583 19.0488 10.3417 19.0488 10.1464 18.8536L7.14645 15.8536C6.95118 15.6583 6.95118 15.3417 7.14645 15.1464L10.1464 12.1464C10.3417 11.9512 10.6583 11.9512 10.8536 12.1464Z' fill='black'/%3E%3Cdefs%3E%3Cfilter id='f' x='0' y='7.5' width='32' height='18' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='1'/%3E%3CfeGaussianBlur stdDeviation='1.5'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") 16 16, ew-resize; }
+/* The corners take it turned to their diagonal, 45° (top-left / bottom-right) and −45° (top-right / bottom-left). */
+html.ft-moving.ft-scaling .ft-sel-box .ft-nw, html.ft-moving.ft-scaling .ft-sel-box .ft-se { cursor: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23f)'%3E%3Cg transform='rotate(45 16 16)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.93934 9.93934C8.52513 9.35355 9.47487 9.35355 10.0607 9.93934L11.5607 11.4393C12.1464 12.0251 12.1464 12.9749 11.5607 13.5607L11.1213 14H20.8787L20.4393 13.5607C19.8536 12.9749 19.8536 12.0251 20.4393 11.4393L21.9393 9.93934C22.5251 9.35355 23.4749 9.35355 24.0607 9.93934L28.5607 14.4393C29.1464 15.0251 29.1464 15.9749 28.5607 16.5607L24.0607 21.0607C23.4749 21.6464 22.5251 21.6464 21.9393 21.0607L20.4393 19.5607C19.8536 18.9749 19.8536 18.0251 20.4393 17.4393L20.8787 17H11.1213L11.5607 17.4393C12.1464 18.0251 12.1464 18.9749 11.5607 19.5607L10.0607 21.0607C9.47487 21.6464 8.52513 21.6464 7.93934 21.0607L3.43934 16.5607C2.85355 15.9749 2.85355 15.0251 3.43934 14.4393L7.93934 9.93934Z' fill='white'/%3E%3C/g%3E%3C/g%3E%3Cg transform='rotate(45 16 16)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9.35355 10.6464C9.54882 10.8417 9.54882 11.1583 9.35355 11.3536L5.20711 15.5L9.35355 19.6464C9.54882 19.8417 9.54882 20.1583 9.35355 20.3536C9.15829 20.5488 8.84171 20.5488 8.64645 20.3536L4.14645 15.8536C3.95118 15.6583 3.95118 15.3417 4.14645 15.1464L8.64645 10.6464C8.84171 10.4512 9.15829 10.4512 9.35355 10.6464ZM22.6464 10.6464C22.8417 10.4512 23.1583 10.4512 23.3536 10.6464L27.8536 15.1464C28.0488 15.3417 28.0488 15.6583 27.8536 15.8536L23.3536 20.3536C23.1583 20.5488 22.8417 20.5488 22.6464 20.3536C22.4512 20.1583 22.4512 19.8417 22.6464 19.6464L26.7929 15.5L22.6464 11.3536C22.4512 11.1583 22.4512 10.8417 22.6464 10.6464ZM10.8536 12.1464C11.0488 12.3417 11.0488 12.6583 10.8536 12.8536L8.70711 15H23.2929L21.1464 12.8536C20.9512 12.6583 20.9512 12.3417 21.1464 12.1464C21.3417 11.9512 21.6583 11.9512 21.8536 12.1464L24.8536 15.1464C25.0488 15.3417 25.0488 15.6583 24.8536 15.8536L21.8536 18.8536C21.6583 19.0488 21.3417 19.0488 21.1464 18.8536C20.9512 18.6583 20.9512 18.3417 21.1464 18.1464L23.2929 16H8.70711L10.8536 18.1464C11.0488 18.3417 11.0488 18.6583 10.8536 18.8536C10.6583 19.0488 10.3417 19.0488 10.1464 18.8536L7.14645 15.8536C6.95118 15.6583 6.95118 15.3417 7.14645 15.1464L10.1464 12.1464C10.3417 11.9512 10.6583 11.9512 10.8536 12.1464Z' fill='black'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='f' x='0' y='0' width='32' height='32' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='1'/%3E%3CfeGaussianBlur stdDeviation='1.5'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") 16 16, nwse-resize; }
+html.ft-moving.ft-scaling .ft-sel-box .ft-ne, html.ft-moving.ft-scaling .ft-sel-box .ft-sw { cursor: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg filter='url(%23f)'%3E%3Cg transform='rotate(-45 16 16)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.93934 9.93934C8.52513 9.35355 9.47487 9.35355 10.0607 9.93934L11.5607 11.4393C12.1464 12.0251 12.1464 12.9749 11.5607 13.5607L11.1213 14H20.8787L20.4393 13.5607C19.8536 12.9749 19.8536 12.0251 20.4393 11.4393L21.9393 9.93934C22.5251 9.35355 23.4749 9.35355 24.0607 9.93934L28.5607 14.4393C29.1464 15.0251 29.1464 15.9749 28.5607 16.5607L24.0607 21.0607C23.4749 21.6464 22.5251 21.6464 21.9393 21.0607L20.4393 19.5607C19.8536 18.9749 19.8536 18.0251 20.4393 17.4393L20.8787 17H11.1213L11.5607 17.4393C12.1464 18.0251 12.1464 18.9749 11.5607 19.5607L10.0607 21.0607C9.47487 21.6464 8.52513 21.6464 7.93934 21.0607L3.43934 16.5607C2.85355 15.9749 2.85355 15.0251 3.43934 14.4393L7.93934 9.93934Z' fill='white'/%3E%3C/g%3E%3C/g%3E%3Cg transform='rotate(-45 16 16)'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M9.35355 10.6464C9.54882 10.8417 9.54882 11.1583 9.35355 11.3536L5.20711 15.5L9.35355 19.6464C9.54882 19.8417 9.54882 20.1583 9.35355 20.3536C9.15829 20.5488 8.84171 20.5488 8.64645 20.3536L4.14645 15.8536C3.95118 15.6583 3.95118 15.3417 4.14645 15.1464L8.64645 10.6464C8.84171 10.4512 9.15829 10.4512 9.35355 10.6464ZM22.6464 10.6464C22.8417 10.4512 23.1583 10.4512 23.3536 10.6464L27.8536 15.1464C28.0488 15.3417 28.0488 15.6583 27.8536 15.8536L23.3536 20.3536C23.1583 20.5488 22.8417 20.5488 22.6464 20.3536C22.4512 20.1583 22.4512 19.8417 22.6464 19.6464L26.7929 15.5L22.6464 11.3536C22.4512 11.1583 22.4512 10.8417 22.6464 10.6464ZM10.8536 12.1464C11.0488 12.3417 11.0488 12.6583 10.8536 12.8536L8.70711 15H23.2929L21.1464 12.8536C20.9512 12.6583 20.9512 12.3417 21.1464 12.1464C21.3417 11.9512 21.6583 11.9512 21.8536 12.1464L24.8536 15.1464C25.0488 15.3417 25.0488 15.6583 24.8536 15.8536L21.8536 18.8536C21.6583 19.0488 21.3417 19.0488 21.1464 18.8536C20.9512 18.6583 20.9512 18.3417 21.1464 18.1464L23.2929 16H8.70711L10.8536 18.1464C11.0488 18.3417 11.0488 18.6583 10.8536 18.8536C10.6583 19.0488 10.3417 19.0488 10.1464 18.8536L7.14645 15.8536C6.95118 15.6583 6.95118 15.3417 7.14645 15.1464L10.1464 12.1464C10.3417 11.9512 10.6583 11.9512 10.8536 12.1464Z' fill='black'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='f' x='0' y='0' width='32' height='32' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeColorMatrix in='SourceAlpha' type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0' result='hardAlpha'/%3E%3CfeOffset dy='1'/%3E%3CfeGaussianBlur stdDeviation='1.5'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.35 0'/%3E%3CfeBlend mode='normal' in2='BackgroundImageFix' result='effect1_dropShadow'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='effect1_dropShadow' result='shape'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E") 16 16, nesw-resize; }
 /* Figma's spacing: 8 below the selection, 6 either side of the numbers. */
 .ft-size-label {
   position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%);
@@ -896,6 +899,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   resize: vertical;
 }
 .ft-out[hidden] { display: none; }
+/* T dims the panels to 20% and lets the pointer through them, to see and pick what they cover: the page doesn't
+   zoom out from under them as Figma's canvas would (her ask, 2026-10-17). */
+html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel) { opacity: 0.2; }
+html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel) * { pointer-events: none !important; }
 `;
   /* ============================ END PANEL LOOK ============================ */
 
@@ -1475,7 +1482,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       draw(true);
     });
     alpha.addEventListener("blur", () => {
-      const v = parseFloat(alpha.value);
+      const v = parseFloat(mathValue(alpha.value));
       const o = Math.min(100, Math.max(0, Math.round(v)));
       if (isNum(v) && o !== layer.opacity) {
         layer.opacity = o;
@@ -1562,7 +1569,68 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
   }
 
-  // A Figma field: a click selects all of it, Enter or blur commits, Escape puts the old value back.
+  // Figma's number fields take maths: 60-4 is 56, 16*1.5 is 24, (100-8)/2 is 46. A typed sum is worked out before the
+  // field reads it, keeping its unit (12%+4 is 16%, 45°+15 is 60°, 10vh+5 is 15vh). What isn't a sum is handed over as
+  // typed: a plain number (-4 is just -4) or a word (Auto, Mixed, a hex). A sum that can't be worked out is null, and
+  // the field keeps its value, as Figma's does: one cut short (16-), units that differ (1s+200ms), or a unit only after
+  // the first number (24+10% in a px field would turn its 24px into 24%).
+  const MATH_TOKEN = /\s*(?:(\d*\.?\d+)\s*([a-z%°]+)?|([-+*/()]))\s*/iy;
+  function mathValue(text) {
+    const s = String(text).trim();
+    const tokens = [];
+    const units = [];
+    for (let i = 0; i < s.length;) {
+      MATH_TOKEN.lastIndex = i;
+      const m = MATH_TOKEN.exec(s);
+      if (!m) return text;
+      i = MATH_TOKEN.lastIndex;
+      if (m[1] == null) tokens.push(m[3]);
+      else {
+        tokens.push(parseFloat(m[1]));
+        units.push((m[2] || "").toLowerCase());
+      }
+    }
+    // A sum has an operator after a number or a closing bracket.
+    if (!tokens.some((t, i) => i > 0 && /^[-+*/]$/.test(t) && (typeof tokens[i - 1] === "number" || tokens[i - 1] === ")"))) return text;
+    const unit = units[0] || "";
+    if (units.some((u) => u && u !== unit)) return null;
+    let at = 0;
+    const factor = () => {
+      const t = tokens[at++];
+      if (t === "-") return -factor();
+      if (t === "+") return factor();
+      if (t === "(") {
+        const v = expr();
+        return tokens[at++] === ")" ? v : NaN;
+      }
+      return typeof t === "number" ? t : NaN;
+    };
+    const term = () => {
+      let v = factor();
+      while (tokens[at] === "*" || tokens[at] === "/") {
+        const op = tokens[at++];
+        const r = factor();
+        v = op === "*" ? v * r : v / r;
+      }
+      return v;
+    };
+    function expr() {
+      let v = term();
+      while (tokens[at] === "+" || tokens[at] === "-") {
+        const op = tokens[at++];
+        const r = term();
+        v = op === "+" ? v + r : v - r;
+      }
+      return v;
+    }
+    const v = expr();
+    if (at !== tokens.length || !isFinite(v)) return null;
+    // Rounded, as 0.1+0.2 is 0.30000000000000004.
+    return String(Math.round(v * 10000) / 10000) + unit;
+  }
+
+  // A Figma field: a click selects all of it, Enter or blur commits, Escape puts the old value back. A sum typed in
+  // is worked out first (mathValue); one that can't be commits nothing, and the field shows its value again.
   function editable(input, show, commit) {
     let shown = "";
     input.addEventListener("focus", () => { shown = input.value; });
@@ -1581,7 +1649,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     });
     input.addEventListener("blur", () => {
       // Only a typed change commits: clicking into a field and out again records nothing.
-      if (input.value !== shown) commit(input.value);
+      const v = input.value !== shown ? mathValue(input.value) : null;
+      if (v != null) commit(v);
       show(false);
     });
   }
@@ -1742,7 +1811,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (h) setHex(h);
         return;
       }
-      const v = inputs.map((i) => parseFloat(i.value));
+      // Each channel as typed, a sum worked out (mathValue).
+      const v = inputs.map((i) => parseFloat(mathValue(i.value)));
       if (!v.every(isNum)) return;
       const c = v.map((x, i) => Math.min(MODES[mode].max[i], Math.max(0, x)));
       if (mode === "HSB") {
@@ -1999,6 +2069,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     if (inspector.hidden && !minimized) return showPanel(true);
     minimized = !minimized;
     inspector.hidden = toolbar.hidden = minimized;
+    // The panels come back undimmed (T), so Show UI and the panel can always be clicked.
+    if (minimized) document.documentElement.classList.remove("ft-dim");
     selection.sync();
     hideTip();
     drawUiButton();
@@ -2021,6 +2093,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (Object.keys(live).some((id) => live[id].key === k)) toggleUi();
     });
   }
+  // T dims the panels and lets clicks through them (PANEL LOOK, html.ft-dim); T again brings them back. Only while the
+  // panel shows (hidden or minimized, they come back undimmed), and a Hide UI key of `t` keeps T for itself.
+  window.addEventListener("keydown", (e) => {
+    if (!inspector || inspector.hidden) return;
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || e.repeat || typing(e.target)) return;
+    if (String(e.key).toLowerCase() !== "t" || Object.keys(live).some((id) => live[id].key === "t")) return;
+    document.documentElement.classList.toggle("ft-dim");
+  });
   window.addEventListener("keydown", (e) => {
     if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== "Backslash" || typing(e.target)) return;
     e.preventDefault();
@@ -2492,6 +2572,22 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       return false;
     }
   }
+  // The active grid: the layout a page opens on ("Use as active grid"), set for this page or for every page, this
+  // page's first. Kept the moment she sets it, as styles are. One on the page's own numbers (fromPage) follows the
+  // code's grid. Without one a page opens on its own grid (see takePageGrid).
+  const GRID_ALL = "finetune:grid";
+  const gridPage = () => "finetune:grid:" + editsPath;
+  function activeGrid() {
+    for (const key of [gridPage(), GRID_ALL]) {
+      try {
+        const g = JSON.parse(localStorage.getItem(key));
+        if (validGuide(g)) return copyGuides([g])[0];
+      } catch (e) {
+        // Storage blocked, or nothing kept.
+      }
+    }
+    return null;
+  }
   const guideName = (g) => "Columns (" + g.count + ")";
 
   // Every edit made in the panel, kept in memory until Save puts it in localStorage (per page) so a
@@ -2513,7 +2609,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const resetKey = () => "finetune:reset-undo:" + editsPath;
   const restoreKey = () => "finetune:restore:" + editsPath;
   let restored = false;
-  const blankRecord = () => ({ page: null, elements: {}, guides: [], groups: [], autoLayout: [], keyframes: {}, waapi: {}, newKeyframes: {}, components: {}, overrides: [] });
+  const blankRecord = () => ({ page: null, elements: {}, guides: [], groups: [], autoLayout: [], keyframes: {}, waapi: {}, newKeyframes: {}, components: {}, overrides: [], duplicates: [] });
   let edits = loadEdits();
 
   // Anything stored in a shape this file no longer writes is dropped, not trusted.
@@ -2605,6 +2701,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
     }
     if (Array.isArray(raw.overrides)) out.overrides = raw.overrides.filter((sel) => typeof sel === "string");
+    // Duplicates (⌘D): the original's key and the copy's own minted key, in the order they were made, so a copy
+    // made inside another one is remade after the one that holds it.
+    if (Array.isArray(raw.duplicates)) {
+      raw.duplicates.forEach((d) => {
+        if (d && typeof d.of === "string" && / \/\* dup \d+ \*\/$/.test(String(d.key))
+          && !out.duplicates.some((x) => x.key === d.key)) out.duplicates.push({ of: d.of, key: d.key });
+      });
+    }
     if (raw.elements && typeof raw.elements === "object") {
       Object.keys(raw.elements).forEach((sel) => {
         const e = raw.elements[sel];
@@ -2617,6 +2721,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (e.htmlComputed === true && entry.html != null) entry.htmlComputed = true;
         if (e.deleted === true) entry.deleted = true;
         if (e.ungrouped === true) entry.ungrouped = true;
+        // Made inside a ⌘D copy: its layer exists only in the copy (see resolve).
+        if (e.inDup === true) entry.inDup = true;
         // Which element the edit was made on (see fingerprint). A save without one skips the check, as before.
         const at = e.at;
         if (at && typeof at === "object" && typeof at.tag === "string" && /^[\w-]+$/.test(at.tag)
@@ -2640,6 +2746,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (typeof e.scaleSkipped === "string" && e.scaleSkipped) entry.scaleSkipped = e.scaleSkipped;
         if (typeof e.scalePseudo === "string" && e.scalePseudo) entry.scalePseudo = e.scalePseudo;
         if (e.attrs && typeof e.attrs.viewBox === "string") entry.attrs = { viewBox: e.attrs.viewBox };
+        // The margin a group's auto layout set in a flex container (spanGaps), so Copy still leaves it out.
+        const sg = e.spanGap;
+        if (sg && /^margin-(top|left)$/.test(sg.prop) && typeof sg.value === "string") {
+          entry.spanGap = { prop: sg.prop, value: sg.value };
+          if (typeof sg.was === "string" && sg.was) entry.spanGap.was = sg.was;
+        }
         // A resize's notes for Copy (resizeLayer's noteWhy): the value each was written with and why.
         if (e.why && typeof e.why === "object") {
           const why = {};
@@ -2753,17 +2865,31 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const sameNums = (a, b) => !!a && !!b && GUIDE_NUMS.every((k) => a[k] === b[k]);
   const untouchedGrid = (g) => sameNums(g, pageDefault) && !g.visible
     && ["hex", "opacity", "visible"].every((k) => g.color[k] === pageDefault.color[k]);
-  const guideEdited = () => edits.guides.some((g) => !untouchedGrid(g));
+  // With an active grid set, that's the page's default instead: a layout as she set it (its numbers, colour and eye)
+  // isn't an edit either, so Save leaves it out and a change to the active grid later still reaches this page. Read
+  // once, as the page opened (takePageGrid) or as she set it here: one set in another tab meanwhile doesn't make
+  // this page's layout an edit.
+  let openGrid = null;
+  const onDefault = (g) => {
+    const a = openGrid;
+    if (!a) return untouchedGrid(g);
+    return (a.fromPage && pageDefault ? sameNums(g, pageDefault) : sameNums(g, a)) && g.visible === a.visible
+      && ["hex", "opacity", "visible"].every((k) => g.color[k] === a.color[k]);
+  };
+  const guideEdited = () => edits.guides.some((g) => !onDefault(g));
   function savable() {
     // At a width with no grid the guide is set aside (followPage), still on the page's last numbers: it saves as one
-    // that follows the page, and is left out when untouched, as the page's own grid would be.
+    // that follows the page, and is left out when untouched, as the page's own grid would be (or as the active grid
+    // it was, when that one follows the page or has these numbers).
     const p = !edits.guides.length && parkedGuide();
     if (p) {
+      const a = openGrid;
       const def = newGuide().color;
-      const untouched = !p.visible && ["hex", "opacity", "visible"].every((k) => p.color[k] === def[k]);
+      const untouched = a ? (a.fromPage || sameNums(p, a)) && p.visible === a.visible && ["hex", "opacity", "visible"].every((k) => p.color[k] === a.color[k])
+        : !p.visible && ["hex", "opacity", "visible"].every((k) => p.color[k] === def[k]);
       return Object.assign({}, edits, { guides: untouched ? [] : [Object.assign({}, p, { fromPage: true })] });
     }
-    const guides = edits.guides.filter((g) => !untouchedGrid(g))
+    const guides = edits.guides.filter((g) => !onDefault(g))
       .map((g) => (sameNums(g, pageDefault) ? Object.assign({}, g, { fromPage: true }) : g));
     return Object.assign({}, edits, { guides });
   }
@@ -2937,7 +3063,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const lostAt = new Map();
   function keyOf(t) {
     const k = refound.get(t);
-    if (k && edits.elements[k]) return k;
+    if (k && (edits.elements[k] || dupRecord(k))) return k;
     // Its selector's saved edit can be another element's: the one it was made on, found again elsewhere after the
     // page changed, or one judged gone from the page. An edit to this one would merge into it and Copy would put both
     // on this element, so this one gets a key of its own: its selector and a CSS comment, which still finds it.
@@ -2947,14 +3073,59 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (!edits.elements[key] || (was && was.isConnected ? was === t : lostAt.get(key) !== "moved")) return key;
     }
   }
-  // A key as a selector to print: without the comment that sets apart a second edit on the same selector.
-  const bareKey = (k) => k.replace(/ \/\* \d+ \*\/$/, "");
+  // A key as a selector to print: without the comment that sets apart a second edit on the same selector, or the
+  // marker that names a ⌘D copy (a copy of a copy carries one per step).
+  const bareKey = (k) => k.replace(/( \/\* (?:dup )?\d+ \*\/)+$/, "");
+  // The duplicates (⌘D) are live clones finetune made, each under a minted key the page can't query: the clone is
+  // found through applied, never hunted for by selector or fingerprint, and the bake adds the copy in the code.
+  const dupRecord = (key) => edits.duplicates.find((d) => d.key === key);
+  // A copy as a live clone of its original, right after it (after the original's other copies, so each keeps its
+  // place among the siblings across reloads). Ids come off (no two elements share one, and the page's own scripts
+  // keep finding only the original); a nested copy's marker comes off too, since inside this copy it's plain content.
+  function buildDup(t) {
+    if (!t || !t.parentElement || t === document.body || t === document.documentElement) return null;
+    const clone = t.cloneNode(true);
+    [clone].concat(Array.from(clone.querySelectorAll("*"))).forEach((n) => {
+      if (n.removeAttribute) ["id", "data-ft-dup", "data-ft-editing", "data-ft-still"].forEach((a) => n.removeAttribute(a));
+    });
+    clone.setAttribute("data-ft-dup", "");
+    let anchor = t;
+    while (anchor.nextElementSibling && anchor.nextElementSibling.hasAttribute("data-ft-dup")) anchor = anchor.nextElementSibling;
+    anchor.after(clone);
+    return clone;
+  }
+  // Remade from its record: the original as it stands now (its edits applied), registered under its saved key.
+  function remakeDup(d, orig) {
+    const clone = orig && buildDup(orig);
+    if (!clone) return null;
+    refound.set(clone, d.key);
+    applied.set(d.key, clone);
+    return clone;
+  }
+  // A copy deleted is taken out whole (it was never in the code): its record, its node, its own entry, and the
+  // entries and copies of layers that exist only inside it.
+  function removeDup(key) {
+    const t = applied.get(key);
+    edits.duplicates = edits.duplicates.filter((d) => {
+      if (d.key === key) return false;
+      const n = applied.get(d.key);
+      return !(t && n && n !== t && t.contains(n));
+    });
+    Object.keys(edits.elements).forEach((sel) => {
+      const n = applied.get(sel);
+      if (sel === key || (t && n && n !== t && t.contains(n))) delete edits.elements[sel];
+    });
+    applied.delete(key);
+    if (t) t.remove();
+  }
 
   // An element's inner HTML as the code would hold it: the layers inside it with their own inline styles and
   // image sources put back and finetune's data-ft-* marks off. Their edits are their own lines, so the words
   // never carry them (and a reload or redo doesn't bring back one she has since changed).
   function codeHtml(t) {
     const copy = t.cloneNode(true);
+    // A ⌘D copy inside it isn't the code's: it goes (after the loop, so the live list still lines up).
+    const dups = Array.from(copy.querySelectorAll("[data-ft-dup]"));
     const live = t.querySelectorAll("*");
     copy.querySelectorAll("*").forEach((c, i) => {
       const o = live[i] && originals[keyOf(live[i])];
@@ -2970,6 +3141,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // the code either: the build adds them, so words copied with them would bake them in.
       Array.from(c.attributes).forEach((a) => { if (/^data-(?:ft-|lov-|component-|tsd-source$)/.test(a.name)) c.removeAttribute(a.name); });
     });
+    dups.forEach((c) => c.remove());
     return copy.innerHTML;
   }
 
@@ -3141,11 +3313,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     // Words she retyped inside it read as the code's, so an edit to words never makes its layer (or one holding it)
     // look like another element.
     const edited = (list || retyped()).filter(([n]) => t.contains(n));
-    if (!edited.length) return firstWords(t.textContent);
+    // A ⌘D copy inside it isn't the code's: its words come off too, so the element's fingerprint holds.
+    const hasDup = t.querySelector && t.querySelector("[data-ft-dup]");
+    if (!edited.length && !hasDup) return firstWords(t.textContent);
     const all = [t].concat(Array.from(t.querySelectorAll("*")));
     const copy = t.cloneNode(true);
     const twins = [copy].concat(Array.from(copy.querySelectorAll("*")));
     edited.forEach(([n, html]) => { twins[all.indexOf(n)].innerHTML = html; });
+    if (hasDup) all.forEach((n, i) => { if (i && n.hasAttribute("data-ft-dup")) twins[i].remove(); });
     return firstWords(copy.textContent);
   }
   function fingerprint(t, sel) {
@@ -3195,6 +3370,23 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   const byPlace = new Map();
   function resolve(sel, entry, within) {
     const e = entry || edits.elements[sel];
+    // A ⌘D copy is only ever the clone finetune made (its minted key matches no element, and its fingerprint is its
+    // original's, so a hunt would land on the original). An edit made inside a copy is likewise never hunted for
+    // elsewhere: its selector counts only while it finds a layer inside a tracked copy.
+    if (dupRecord(sel) || (e && e.inDup)) {
+      lostAt.delete(sel);
+      const was = applied.get(sel);
+      if (was && was.isConnected && !isUi(was)) return was;
+      if (e && e.inDup) {
+        const c = query(sel);
+        if (c && edits.duplicates.some((d) => { const n = applied.get(d.key); return n && n.contains(c); })) {
+          refound.set(c, sel);
+          return c;
+        }
+      }
+      lostAt.set(sel, "missing");
+      return null;
+    }
     const t = query(sel);
     lostAt.delete(sel);
     if (!e || !e.at) return t;
@@ -3235,11 +3427,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const entry = edits.elements[sel] || { styles: {} };
     // Read once, at the entry's first change, while the element is the one she changed.
     if (!entry.at) entry.at = fingerprint(target, sel);
+    // Inside a ⌘D copy: its layer exists only in the copy, so it's never hunted for elsewhere (see resolve).
+    if (!entry.inDup && target.closest("[data-ft-dup]")) entry.inDup = true;
     const before = viewKeys(entry);
     change(entry);
     stampView(entry, before);
     if (Object.keys(entry.styles).length || entry.html != null || entry.adjust || entry.src || "stroke" in entry || entry.effects || entry.fill || entry.deleted || entry.ungrouped
-      || entry.attrs || entry.scaled || entry.scaleSkipped || entry.scalePseudo) edits.elements[sel] = entry;
+      || entry.attrs || entry.scaled || entry.scaleSkipped || entry.scalePseudo || dupRecord(sel)) edits.elements[sel] = entry;
     else delete edits.elements[sel];
     // The element it's on, so the page watcher (see watchPage) can tell a fresh copy of it from the one it's on.
     applied.set(sel, target);
@@ -3995,6 +4189,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (t) applyEntry(sel, t);
       else if (lostAt.get(sel) === "moved") moved++;
     });
+    // The ⌘D copies, cloned from their originals now the originals' edits are on (the copy shows them too), in the
+    // order they were made (a copy made inside another is remade after the one that holds it). Their own edits, and
+    // those of layers inside them, land in a late pass: until a copy exists, resolve finds nothing for them.
+    if (edits.duplicates.length) {
+      edits.duplicates.forEach((d) => remakeDup(d, resolve(d.of)));
+      const late = Object.keys(edits.elements).filter((sel) => dupRecord(sel) || edits.elements[sel].inDup);
+      late.forEach((sel) => {
+        const t = edits.elements[sel].html != null && resolve(sel);
+        if (t) applyWords(sel, t);
+      });
+      late.forEach((sel) => {
+        const t = resolve(sel);
+        if (t) applyEntry(sel, t);
+      });
+    }
     // Saved component edits, on every instance but where one overrides that property. Each instance is written once,
     // with every key that reaches it, so the order the keys were saved in doesn't matter (see paintComps).
     const reached = new Set();
@@ -4131,6 +4340,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     sels.forEach((sel) => {
       const t = stale(sel);
       if (t) applyEntry(sel, t);
+    });
+    // A ⌘D copy thrown out with a re-rendered parent is remade from its original as it stands now, and the edits
+    // made on it (and inside it) go back on.
+    let remade = false;
+    edits.duplicates.forEach((d) => {
+      const was = applied.get(d.key);
+      if (was && was.isConnected) return;
+      const clone = remakeDup(d, resolve(d.of, null, fresh));
+      if (!clone) return;
+      remade = true;
+      const e = edits.elements[d.key];
+      if (e && e.html != null) applyWords(d.key, clone);
+      if (e) applyEntry(d.key, clone);
+    });
+    if (remade) sels.forEach((sel) => {
+      if (!edits.elements[sel].inDup) return;
+      const t = stale(sel);
+      if (!t) return;
+      if (edits.elements[sel].html != null) applyWords(sel, t);
+      applyEntry(sel, t);
     });
     if (!Object.keys(edits.components).length) return;
     fresh.forEach((n) => [n].concat(Array.from(n.querySelectorAll("*"))).forEach((t) => {
@@ -4366,9 +4595,15 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (carry.length) lines.push([sel, "carry to children: " + carry.join("; ")]);
         return viewNote(sel, e);
       }
-      const keys = Object.keys(e.styles).filter((p) => !(p === "translate" && laidOut.has(key)));
+      // Nor the margin a group's auto layout set in a flex container (spanGaps): the new element stands for it.
+      const keys = Object.keys(e.styles).filter((p) => !(p === "translate" && laidOut.has(key))
+        && !(laidOut.has(key) && e.spanGap && e.spanGap.prop === p && e.styles[p] === e.spanGap.value));
       const parts = keys.map((p) => p + ": " + e.styles[p]);
       if (codeMoved.has(key)) parts.unshift("translate: none");
+      // A ⌘D copy: a new layer, a duplicate of its original right after it in the code. Its own edits follow on the
+      // same line, made to the copy once it's in; its @ is the original's place, where the code to copy lives.
+      const d = dupRecord(key);
+      if (d) parts.unshift("duplicate of " + named(d.of, q(d.of)));
       if (e.html != null) keys.push("text");
       if (e.src) keys.push("src");
       if (e.attrs) keys.push("attributes");
@@ -5332,6 +5567,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       edits.groups.push(sels);
       // A group that lost layers to this one is a different group now, so its auto layout goes.
       edits.autoLayout = edits.autoLayout.filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
+      dropSpans();
       inside = null;
       show(null, list, sels);
       noteChange();
@@ -5348,6 +5584,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const L = layoutOf(group);
       edits.autoLayout = edits.autoLayout.filter((l) => l !== L);
       edits.groups = edits.groups.filter((g) => g !== group);
+      dropSpans();
       const list = many.slice();
       show(null, list, null);
       noteChange();
@@ -5409,6 +5646,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const sel = keyOf(t);
       edits.groups = edits.groups.map((g) => g.filter((s) => s !== sel)).filter((g) => g.length > 1);
       edits.autoLayout = edits.autoLayout.filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
+      dropSpans();
       inside = scope = null;
       hoverBox.hidden = true;
       selectMany(before.map(({ c }) => c), null);
@@ -5422,6 +5660,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const list = current().slice();
       const sels = list.map(keyOf);
       list.forEach((t) => {
+        // A ⌘D copy goes out whole (it was never in the code): its record, its node and the edits inside it (see
+        // removeDup); anything else is hidden and listed as "delete".
+        if (dupRecord(keyOf(t))) return removeDup(keyOf(t));
         record(t, (entry) => { entry.deleted = true; });
         t.setAttribute("data-ft-deleted", "");
       });
@@ -5434,12 +5675,50 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         touched.push(next);
         return next;
       }).filter((l) => edits.groups.some((g) => sameSet(g, l.sels)));
+      dropSpans();
       touched.filter((l) => edits.autoLayout.includes(l)).forEach(flowGroup);
       inside = scope = null;
       hoverBox.hidden = true;
       select(null);
       noteChange();
       actionToast("Deleted " + list.length + (list.length === 1 ? " layer" : " layers"));
+    }
+
+    // Figma's ⌘D, Duplicate selection: each selected layer gets a live copy right after it, and the copies are
+    // selected in place of the originals, ready to move. The live page only gains finetune's own node (the code is
+    // never touched, as a delete never takes it apart): the copy is tracked in edits.duplicates under a minted key,
+    // saved with Save, and Copy lists it as "duplicate of <selector>" for the bake to copy the element in the code.
+    // A ⌘G selection's copies come as a ⌘G group of their own (its auto layout isn't copied).
+    function duplicateSelection() {
+      const list = current().slice();
+      // Outermost only: a copy of a layer already holds copies of what's inside it.
+      const tops = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+      if (history.timer) commitStep();
+      const made = tops.map((t) => {
+        const of = keyOf(t);
+        let n = 1;
+        while (edits.elements[of + " /* dup " + n + " */"] || dupRecord(of + " /* dup " + n + " */")) n++;
+        const key = of + " /* dup " + n + " */";
+        const clone = buildDup(t);
+        if (!clone) return null;
+        edits.duplicates.push({ of, key });
+        edits.elements[key] = { styles: {} };
+        refound.set(clone, key);
+        applied.set(key, clone);
+        return clone;
+      }).filter(Boolean);
+      if (!made.length) return toast("Nothing to duplicate");
+      const wasGroup = group;
+      inside = scope = null;
+      hoverBox.hidden = true;
+      if (made.length === 1) select(made[0]);
+      else if (wasGroup) {
+        const g = made.map(keyOf).sort();
+        edits.groups.push(g);
+        selectMany(made, g);
+      } else selectMany(made, null);
+      noteChange();
+      actionToast("Duplicated " + made.length + (made.length === 1 ? " layer" : " layers"));
     }
 
     // Figma's ⇧A and ⌥⇧A on one layer that holds others. Adding reads the auto layout from how the layers sit
@@ -5510,6 +5789,8 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (!L) return toast("No auto layout to remove");
         if (history.timer) commitStep();
         edits.autoLayout = edits.autoLayout.filter((l) => l !== L);
+        // The margins it set in a flex container come off, its layers held where they are (dropSpans).
+        dropSpans();
         noteChange();
         reshow();
         return actionToast("Removed auto layout");
@@ -5536,7 +5817,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     function startEditing(t, x, y) {
       // Words React builds from several parts ("Plan {name} pricing") have no one node to retype, and swapping them
       // blanks the page at React's next update: they're changed in the code instead.
-      if (codeBuiltWords(t)) return toast("These words are built by the code. Change them in Claude Code.");
+      if (codeBuiltWords(t)) return toast("Editing this component would break the code. Change it with Claude Code.");
       // Editing the words leaves Scale, as Scale won't start on words being edited.
       endScale();
       editing = t;
@@ -5827,8 +6108,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const moving_ = live && motion() ? motionPick(target) : null;
       // ⌥ outlines the column under the pointer, whatever layer covers it, as an ⌥-click picks it.
       const altCol = live && alt && !isUi(target) ? columnAt(x) : null;
-      const t = !live || altCol ? null : moving_ || levelPick(target, deep).pick;
-      const unit = moving_ ? { list: motionGroupOf(moving_) } : deep ? null : unitOf(t);
+      // Over the one layer selected, a press keeps it (see the press handler), so that's what's outlined: nothing new.
+      const keep = live && !motion() && !altCol && !deep && !column && !!selected && selected.contains(target) && !!pickable(target);
+      const t = !live || altCol ? null : keep ? selected : moving_ || levelPick(target, deep).pick;
+      const unit = moving_ ? { list: motionGroupOf(moving_) } : deep || keep ? null : unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
       const now = current();
       // On the page itself, a column of the layout that shows outlines as a click would pick it.
@@ -5918,6 +6201,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         if (at) return e.shiftKey ? choose(current(), toggleColumn(at.i)) : choose([], { cols: [at.i] });
       }
       const deep = e.metaKey || e.ctrlKey;
+      // A press on the one layer selected keeps it, as in Figma, however it was picked (the layer menu, a group's list,
+      // a ⌘-click): her level becomes its own, so the press doesn't go back out to the layer around it, and a
+      // double-click on text edits it at once.
+      if (!deep && !e.shiftKey && !column && selected && selected.contains(e.target) && pickable(e.target)) {
+        const chain = levelOf(selected);
+        scope = chain[chain.length - 2] || null;
+        return startMove(e);
+      }
       const lp = levelPick(e.target, deep);
       let t = lp.pick;
       // With columns picked, a shift-click is for a layer to line up with them: the outermost layer under the pointer
@@ -5954,7 +6245,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     }, true);
 
     document.addEventListener("dblclick", (e) => {
-      if (!active() || editing || isUi(e.target) || motion()) return;
+      if (!active() || editing || motion()) return;
+      // Selected text's resize handles sit 4 in over its edges (a third of a 24px line): a double-click there is on its
+      // words as much as its edge, so it edits them rather than doing nothing.
+      const edge = e.target && e.target.closest && e.target.closest(".ft-sel-box .ft-handle");
+      if (edge && selected && hasText(selected)) return startEditing(selected, e.clientX, e.clientY);
+      if (isUi(e.target)) return;
       const deepest = pickable(e.target);
       if (!deepest) return;
       const t = levelPick(e.target).pick;
@@ -5964,8 +6260,29 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         inside = g;
         return select(t);
       }
-      // Into a container: one level down, toward what's under the pointer.
-      if (t !== deepest) {
+      // A double-click on words edits them at once, however deep they sit (her report, 2026-10-17: a name two
+      // containers in took a click and three double-clicks): the text layer under the pointer, a word set apart inside
+      // it (a <strong>, a link) counting as part of it. On anything else it goes one level in, below.
+      let words = deepest;
+      while (words !== t && words.parentElement && getComputedStyle(words).display === "inline"
+        && hasText(words.parentElement) && pickable(words.parentElement)) words = words.parentElement;
+      if (hasText(words)) {
+        const chain = levelOf(words);
+        scope = chain[chain.length - 2] || null;
+        select(words);
+        return startEditing(words, e.clientX, e.clientY);
+      }
+      // Into a container: one level down, toward what's under the pointer. Selected text is edited whole, as in Figma,
+      // even where the pointer is on a word set apart inside it (a <strong>, a link): only inline words between, not
+      // an icon, an image, a control or a block inside it, which a double-click still goes into.
+      const inlineWords = () => {
+        for (let x = deepest; x && x !== t; x = x.parentElement) {
+          if (!(x instanceof HTMLElement) || /^(IMG|PICTURE|VIDEO|CANVAS|IFRAME|INPUT|TEXTAREA|SELECT|BUTTON)$/.test(x.tagName)
+            || getComputedStyle(x).display !== "inline") return false;
+        }
+        return true;
+      };
+      if (t !== deepest && !(t === selected && hasText(t) && inlineWords())) {
         const chain = levelOf(deepest);
         scope = t;
         // A grouped layer there comes as its whole group, as a click at that level picks it.
@@ -6021,6 +6338,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if ((e.key === "Delete" || e.key === "Backspace") && !e.metaKey && !e.ctrlKey && !e.altKey && current().length) {
         e.preventDefault();
         return deleteSelection();
+      }
+      // Figma's ⌘D (Ctrl on Windows), Duplicate selection. The browser's bookmark key, so it's taken only with
+      // layers selected; Hide UI's plain D stays its own.
+      if ((MAC ? e.metaKey : e.ctrlKey) && !e.altKey && !e.shiftKey && String(e.key).toLowerCase() === "d" && current().length) {
+        e.preventDefault();
+        return duplicateSelection();
       }
       // Figma's layer keys, in Design: Shift+Enter and \ select the parent, Tab and Shift+Tab the next and previous
       // layer, Enter the children (on a text layer Enter edits its words instead, below, as Figma's does). A panel
@@ -7165,6 +7488,79 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     boxed(t);
     writeTranslate(t, cur, true);
   }
+  // A group's layers one after another in a real flex container, along the group's own flow, stand for one element of
+  // the code (the bake's new wrapper), so the container's gap doesn't fall between them (her report, 2026-10-17: the
+  // outer gap changed the inner group's spacing). A margin on each layer after the first takes that gap off and puts
+  // the group's gap in, so the layers are in place and the ones after the group move with it, as they will once the
+  // wrapper is in the code. It stands in for the wrapper alone: Copy leaves it out (entry.spanGap), and it goes with
+  // the group's auto layout (dropSpans).
+  // The layer's own margin on that side comes back: hers from before the span (was), else the code's. On the element
+  // only, as the span was (a component's root keeps its component's margin).
+  function unspan(t) {
+    const e = entryOf(t);
+    if (!e || !e.spanGap) return;
+    const { prop, value, was } = e.spanGap;
+    if (e.styles[prop] === value) {
+      if (was) setStyle(t, prop, was, true);
+      else {
+        setStyle(t, prop, "", true);
+        if (Object.keys(edits.components).some((k) => rankOf(t, k) >= 0)) paintComps(t, [prop]);
+        else if (originalOf(t).styles[prop]) t.style.setProperty(prop, originalOf(t).styles[prop]);
+      }
+    }
+    record(t, (x) => { delete x.spanGap; });
+  }
+  function spanGaps(L) {
+    const y = L.flow === "vertical";
+    const prop = y ? "margin-top" : "margin-left";
+    const placed = groupMembers(L.sels.filter((s) => !L.ignore.includes(s))).filter((t) => !t.hasAttribute("data-ft-deleted")).sort(domOrder);
+    const p = placed.length > 1 ? placed[0].parentElement : null;
+    const cs = p && getComputedStyle(p);
+    const kids = p ? flowChildren(p) : [];
+    const at = placed.map((t) => kids.indexOf(t));
+    const fits = !!cs && /flex/.test(cs.display) && cs.flexWrap === "nowrap" && (y ? cs.flexDirection === "column" : cs.flexDirection === "row")
+      && L.main !== "space-between" && isNum(L.gap) && placed.every((t) => t.parentElement === p) && at.every((v, i) => v >= 0 && (!i || v === at[i - 1] + 1));
+    const G = fits ? parseFloat(y ? cs.rowGap : cs.columnGap) || 0 : 0;
+    // A layer that ignores the layout isn't placed by the group, so it has no span.
+    groupMembers(L.ignore).forEach(unspan);
+    placed.forEach((t, i) => {
+      if (!fits || !i) return unspan(t);
+      // The group's gap after the layer before, as flowGroup measures it (margins aside): the container's gap and that
+      // layer's own margin on this side come off.
+      const before = parseFloat(getComputedStyle(placed[i - 1])[y ? "marginBottom" : "marginRight"]) || 0;
+      const e = entryOf(t);
+      const value = Math.round((L.gap - G - before) * 100) / 100 + "px";
+      if (e && e.spanGap && e.spanGap.value === value && e.styles[prop] === value) return;
+      // Her own margin on that side, kept to put back when the span goes (unspan).
+      const was = e && e.spanGap ? e.spanGap.was || "" : (e && e.styles[prop]) || "";
+      // On this layer only: on a component's root it would otherwise reach every instance of the component.
+      setStyle(t, prop, value, true);
+      record(t, (x) => { x.spanGap = Object.assign({ prop, value }, was ? { was } : {}); });
+    });
+  }
+  // A group layout gone (Freeform, an ungroup, a layer leaving it): the margins it set come off its layers, and they
+  // stay where they were as plain moves, as nothing moves in Figma. All are measured before any margin comes off, since
+  // each one moves the layers after it too.
+  function dropSpans() {
+    const kept = new Set(edits.autoLayout.flatMap((l) => l.sels.filter((s) => !l.ignore.includes(s))));
+    const gone = [];
+    Object.keys(edits.elements).forEach((sel) => {
+      const e = edits.elements[sel];
+      if (!e || !e.spanGap || kept.has(sel)) return;
+      const t = groupMembers([sel])[0];
+      if (t) gone.push(t);
+    });
+    if (!gone.length) return;
+    // The layers after them in the same container move with them too, so they're held as well.
+    const held = new Set(gone);
+    gone.forEach((t) => { if (t.parentElement) flowChildren(t.parentElement).forEach((c) => held.add(c)); });
+    const at = Array.from(held).map((t) => [t, t.getBoundingClientRect()]);
+    gone.forEach(unspan);
+    at.forEach(([t, r]) => {
+      const now = t.getBoundingClientRect();
+      if (Math.abs(now.left - r.left) >= 0.05 || Math.abs(now.top - r.top) >= 0.05) nudge(t, r.left - now.left, r.top - now.top);
+    });
+  }
   function flowGroup(L) {
     const y = L.flow === "vertical";
     const across = (span, size) => (L.cross === "center" ? (span - size) / 2 : L.cross === "end" ? span - size : 0);
@@ -7174,6 +7570,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       const tr = codeTranslate(t);
       if (tr) setStyle(t, "translate", tr);
     });
+    spanGaps(L);
     for (let pass = 0; pass < 2; pass++) {
       const f = alGeometry(L);
       if (!f.flow.length) break;
@@ -7200,6 +7597,13 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   function reflowFor(list) {
     const sels = list.map(keyOf);
     edits.autoLayout.filter((l) => l.sels.some((s) => sels.includes(s))).forEach(flowGroup);
+  }
+  // And the groups inside a layer: a container's own layout (its gap, padding, alignment) moves the layers a group in
+  // it places, so that group places them again, as a frame inside Figma's auto layout keeps its own spacing.
+  function reflowAround(list) {
+    const sels = list.map(keyOf);
+    edits.autoLayout.filter((l) => l.sels.some((s) => sels.includes(s))
+      || groupMembers(l.sels).some((m) => list.some((t) => t !== m && t.contains(m)))).forEach(flowGroup);
   }
   // The frame a group layout draws: the box around the layers it places, plus its padding.
   function alFrame(L) {
@@ -7242,9 +7646,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const y = L.flow === "vertical";
     const SIDES = ["top", "right", "bottom", "left"];
     const n = (v) => parseFloat(v) || 0;
+    // The code's own margins: the one spanGaps sets in a flex container stands in for the new element, not the code.
     const marginsOf = (t) => {
       const cs = getComputedStyle(t);
-      return [cs.marginTop, cs.marginRight, cs.marginBottom, cs.marginLeft].map(n);
+      const span = entryOf(t) && entryOf(t).spanGap;
+      return ["top", "right", "bottom", "left"].map((side) => n(span && span.prop === "margin-" + side ? ownValue(t, span.prop) : cs["margin" + side[0].toUpperCase() + side.slice(1)]));
     };
     const wrap = [0, 0, 0, 0];
     const ms = new Map(f.flow.map((b) => [b, marginsOf(b.t)]));
@@ -7735,11 +8141,21 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   }
 
   // Figma's Alignment for a selection: every layer lines up on an edge or the middle of the selection's box (or
-  // of box, a column's). A selected group moves as one; a selection that is just one group lines up its own
-  // layers. A layer inside another selected one rides along with it. Every move is recorded.
+  // of box, a column's). A selected group moves as one. A selection that is just one group is one unit too (her rule,
+  // 2026-10-17: groups are always a single unit): it lines up inside the layer that holds its layers, as one layer
+  // lines up inside its parent, its layers keeping their places in it. A layer inside another selected one rides along
+  // with it. Every move is recorded.
   function alignSelection(list, how, box) {
     const top = outermost(list);
-    alignTo(selectionUnits(list), box || unionRect(top), how);
+    const units = selectionUnits(list);
+    if (units.length === top.length && top.length > 1 && edits.groups.some((g) => sameSet(g, top.map(keyOf)))) {
+      // The layer that holds them all (their parent, through any display: contents wrapper).
+      let holder = top[0].parentElement;
+      while (holder && !top.every((t) => holder.contains(t))) holder = holder.parentElement;
+      if (box) return alignTo([top], box, how);
+      if (holder) return alignTo([top], innerBox(holder), how);
+    }
+    alignTo(units, box || unionRect(top), how);
   }
   const outermost = (list) => list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
   // What a selection's alignment and spacing move, each unit as one: a ⌘G group whose layers are all in it, then
@@ -7758,6 +8174,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     let p = t.parentElement;
     while (p && p !== document.body && getComputedStyle(p).display === "contents") p = p.parentElement;
     if (!p) return;
+    alignTo([[t]], innerBox(p), how);
+  }
+  // A layer's box inside its border and padding, what the layers it holds line up in (a display: contents layer has
+  // no box, so the one holding it counts).
+  function innerBox(p) {
+    while (p && p !== document.body && getComputedStyle(p).display === "contents") p = p.parentElement;
     const r = p.getBoundingClientRect();
     const cs = getComputedStyle(p);
     const px = (k) => parseFloat(cs[k]) || 0;
@@ -7765,7 +8187,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     const right = r.right - px("borderRightWidth") - px("paddingRight");
     const top = r.top + px("borderTopWidth") + px("paddingTop");
     const bottom = r.bottom - px("borderBottomWidth") - px("paddingBottom");
-    alignTo([[t]], { left, right, top, bottom, width: right - left, height: bottom - top }, how);
+    return { left, right, top, bottom, width: right - left, height: bottom - top };
   }
 
   function alignTo(units, box, how) {
@@ -9363,8 +9785,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
   // An alignment, handed back when the code's own means the same (normal and flex-start are both start).
   function setAlignment(t, prop, value) {
     const own = ownValue(t, prop);
+    // Across, the code's normal is stretch, not start: a layer that hugs would fill again if handed back to it.
     const same = value === "space-between" ? alignWord(own) === value
-      : prop === "justify-content" ? mainOf(own) === mainOf(value) : crossOf(own) === crossOf(value);
+      : prop === "justify-content" ? mainOf(own) === mainOf(value) : crossOf(own) === crossOf(value) && stretchy(own) === stretchy(value);
     if (same) handBack(t, prop);
     else setStyle(t, prop, value);
   }
@@ -9495,10 +9918,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     return { flow, gap, pad, cross, main: "start", moves, dropMargins };
   }
 
+  // A layer whose look is only its words: nothing paints its box (no fill, border, shadow, outline, ::before or
+  // ::after), and, across a column, its lines start at its start edge. Hugging the words puts them where they
+  // already are (a line too long to fit still fills, as fit-content does), so it needn't fill across.
+  function onlyWords(e, column) {
+    if (!(e instanceof HTMLElement) || !hasText(e)) return false;
+    const cs = getComputedStyle(e);
+    const none = (which) => /^(none|normal)$/.test(getComputedStyle(e, which).content);
+    return cs.backgroundColor === "rgba(0, 0, 0, 0)" && cs.backgroundImage === "none"
+      && ["Top", "Right", "Bottom", "Left"].every((side) => cs["border" + side + "Style"] === "none" || parseFloat(cs["border" + side + "Width"]) === 0)
+      && cs.boxShadow === "none" && cs.outlineStyle === "none" && none("::before") && none("::after")
+      && (!column || cs.textAlign === "start" || cs.textAlign === (cs.direction === "rtl" ? "right" : "left"));
+  }
+
   // Turns a real container into auto layout from how its layers sit, so they don't jump: display (inline stays
   // inline), direction, the gap, align-items (always written, so the layers hug as Figma's do) and the padding,
   // each a longhand through setUnlessOwn, so what the code already has leaves no edit. A layer that filled across
-  // keeps filling (align-self: stretch). Spacing's moves on the layers go, the gap takes over from them.
+  // keeps filling (align-self: stretch), unless it's only words (onlyWords). Spacing's moves on the layers go, the
+  // gap takes over from them.
   // The padding and margins written only to hold the layers are marked (entry.inferred), so going back to
   // Freeform can take them off again: the code's block layout places the layers without them.
   // readInferred is the read alone, so the Layout header can say what ⇧A would pick without writing anything.
@@ -9518,8 +9955,10 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       entry.inferred = Object.assign({}, entry.inferred, { [prop]: entry.styles[prop] });
     });
     const y = inf.flow === "vertical";
+    // A layer that spans across keeps filling, unless its look is only its words (onlyWords): those sit in the same
+    // place hugging them, so it hugs, as a text layer does in Figma's auto layout, and the alignment then moves it.
     const fills = boxes.filter((b) => (y ? Math.abs(b.l - content.l) < 0.5 && Math.abs(b.r - content.r) < 0.5
-      : Math.abs(b.t - content.t) < 0.5 && Math.abs(b.b - content.b) < 0.5));
+      : Math.abs(b.t - content.t) < 0.5 && Math.abs(b.b - content.b) < 0.5) && !onlyWords(b.el, y));
     // Block margins that collapsed out through the container (nothing on that side stops them: no padding, no
     // border, and at the bottom an auto height) sit outside its box. Flex collapses none, so they'd land inside it
     // and grow it. They move onto the container's own margin, where they collapse as before, so nothing moves. A
@@ -9646,20 +10085,28 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     let start = g[key];
     const parse = (v) => (whole ? Math.round(parseFloat(v)) : parseFloat(v));
     f.input.addEventListener("focus", () => { start = g[key]; });
+    // Live as she types, a sum once it adds up (16-2 shows 14; 16- shows nothing new yet).
     f.input.addEventListener("input", () => {
-      const n = parse(f.input.value);
+      const n = parse(mathValue(f.input.value));
       if (!isNum(n) || n < min) return;
       g[key] = n;
       onChange();
     });
-    f.input.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
+    const back = () => {
+      if (g[key] === start) return;
       g[key] = start;
       onChange();
+    };
+    f.input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") back();
+    });
+    // A sum left unfinished goes back to the value from before the typing, as a refused one does below.
+    f.input.addEventListener("blur", () => {
+      if (mathValue(f.input.value) === null) back();
     });
     editable(f.input, (force) => f.set(g[key], force), (v) => {
       const n = parse(v);
-      if (!isNum(n) || n < min) return;
+      if (!isNum(n) || n < min) return back();
       g[key] = n;
       onChange();
     });
@@ -10708,7 +11155,19 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (pageDefault) pageDefault.visible = false;
       anchor = pageDefault;
       parked = null;
-      tookPage = !!pageDefault || guides.length > 0;
+      // With no layout saved for the page, it opens on the active grid she set (this page's, else every page's). One
+      // that follows the page's own grid, on a page or at a width with none, is set aside as a guide on the page's
+      // grid is (followPage brings it back at a width with one), not shown on another page's numbers.
+      openGrid = activeGrid();
+      let parkActive = false;
+      if (!guides.length && openGrid) {
+        if (openGrid.fromPage && !pageDefault) {
+          parked = copyGuides([openGrid])[0];
+          delete parked.fromPage;
+          parkActive = true;
+        } else guides.push(copyGuides([openGrid])[0]);
+      }
+      tookPage = !!pageDefault || guides.length > 0 || parkActive;
       if (!guides.length) {
         if (pageDefault) guides.push(copyGuides([pageDefault])[0]);
         return;
@@ -10870,28 +11329,79 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (saveAnchor) saveAnchor.classList.remove("is-open");
       saveAnchor = null;
     };
-    function saveStyle(key) {
+    // active: "Use as active grid" (the bookmark, or the toast's offer). The layout in use also becomes the one this page,
+    // or every page, opens on (activeGrid), as it shows now, eye included, whether it's a saved style already or not.
+    // Every page's clears this page's own, so it shows here too; and a layout Save kept for this page goes, or it would
+    // open on that instead.
+    function saveStyle(key, active) {
       closeSave();
       const g = guides[0];
       if (!g) return;
       const name = styleName(g);
       const list = loadStyles(key);
       // The page's own grid is already listed in Styles ("Page grid"), so this page needn't keep it twice.
-      if (list.some((st) => st.name === name) || (key !== STYLES_ALL && pageDefault && styleName(pageDefault) === name)) return toast("Already saved");
-      const kept = Object.assign(copyGuides([g])[0], { visible: true });
-      delete kept.fromPage;
-      list.push({ name, guide: kept });
-      if (!storeStyles(key, list)) return toast("Couldn't save: storage is blocked or full");
+      const had = list.some((st) => st.name === name) || (key !== STYLES_ALL && pageDefault && styleName(pageDefault) === name);
+      if (had && !active) return toast("Already saved");
+      const put = (k, v) => {
+        try {
+          if (v == null) localStorage.removeItem(k);
+          else localStorage.setItem(k, v);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
+      // What the active grid touches, as it was, for Undo.
+      const keys = active ? [GRID_ALL, gridPage(), editsKey()] : [];
+      const before = keys.map((k) => {
+        try {
+          return localStorage.getItem(k);
+        } catch (e) {
+          return null;
+        }
+      });
+      const unsave = () => storeStyles(key, loadStyles(key).filter((st) => st.name !== name));
+      if (!had) {
+        const kept = Object.assign(copyGuides([g])[0], { visible: true });
+        delete kept.fromPage;
+        list.push({ name, guide: kept });
+        if (!storeStyles(key, list)) return toast("Couldn't save: storage is blocked or full");
+      }
+      if (active) {
+        const grid = copyGuides([g])[0];
+        delete grid.fromPage;
+        if (sameNums(g, pageDefault)) grid.fromPage = true;
+        let ok = put(key === STYLES_ALL ? GRID_ALL : gridPage(), JSON.stringify(grid));
+        if (ok && key === STYLES_ALL) ok = put(gridPage(), null);
+        try {
+          const saved = JSON.parse(localStorage.getItem(editsKey()));
+          if (ok && saved && Array.isArray(saved.guides) && saved.guides.length) ok = put(editsKey(), JSON.stringify(Object.assign(saved, { guides: [] })));
+        } catch (e) {
+          // Nothing saved for the page.
+        }
+        if (!ok) {
+          keys.forEach((k, i) => put(k, before[i]));
+          if (!had) unsave();
+          return toast("Couldn't save: storage is blocked or full");
+        }
+      }
+      // The layout as set here is now the page's default (onDefault), not an edit.
+      if (active) openGrid = activeGrid();
       if (!stylesPop.hidden) drawStyles();
-      undoToast("Saved style", () => {
-        storeStyles(key, loadStyles(key).filter((st) => st.name !== name));
+      historyChanged();
+      undoToast(!active ? "Saved style" : key === STYLES_ALL ? "Active grid for all pages" : "Active grid for this page", () => {
+        keys.forEach((k, i) => put(k, before[i]));
+        if (!had) unsave();
+        if (active) openGrid = activeGrid();
         if (!stylesPop.hidden) drawStyles();
+        historyChanged();
       });
     }
     const saveBody = el("div", "ft-save-body");
+    // The bookmark's two choices set the active grid; the Styles popover's + only saves a style.
     saveBody.append(
-      button("ft-choice", "Apply to all pages", () => saveStyle(STYLES_ALL)),
-      button("ft-choice", "Just this page", () => saveStyle(stylesPage()))
+      button("ft-choice", "Apply to all pages", () => saveStyle(STYLES_ALL, saveAnchor === saveBtn)),
+      button("ft-choice", "Just this page", () => saveStyle(stylesPage(), saveAnchor === saveBtn))
     );
     savePop.appendChild(saveBody);
     // The bookmark in the Horizontal layout header and the + in the Styles popover's header both open it, under the one
@@ -11314,8 +11824,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         ignore = iconButton(ICON.ignoreLayout, "Ignore auto layout", () => {
           const L = layoutWith(target);
           if (!L) return;
+          // A layer that starts ignoring the layout stays where it is (its span margin comes off with it, see spanGaps).
+          const was = !L.ignore.includes(sel) && target.getBoundingClientRect();
           L.ignore = L.ignore.includes(sel) ? L.ignore.filter((s2) => s2 !== sel) : L.ignore.concat(sel);
           flowGroup(L);
+          if (was) {
+            const now = target.getBoundingClientRect();
+            if (Math.abs(now.left - was.left) >= 0.05 || Math.abs(now.top - was.top) >= 0.05) nudge(target, was.left - now.left, was.top - now.top);
+          }
           changed(true);
         });
         actions.appendChild(ignore);
@@ -11476,11 +11992,70 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         draws.push((force) => {
           if (!force || groupLayoutRefusal(list)) return;
           const inf = inferGroup(list);
-          const tip = "Add " + inf.flow + " auto layout" + (inf.moves || inf.reordered ? " (layers move)" : " · gap " + inf.gap);
+          const tip = "Add " + inf.flow + " auto layout" + (inf.moves || inf.reordered ? " (layers move)" : "");
           addBtn.setAttribute("data-ft-tip", tip);
           addBtn.setAttribute("aria-label", tip);
           const glyph = inf.flow === "horizontal" ? "alAddH" : "alAddV";
           if (addBtn.dataset.ftIcon !== glyph) { addBtn.innerHTML = ICON[glyph]; addBtn.dataset.ftIcon = glyph; }
+        });
+        // Dimensions, as Figma shows a new group's (her ask, 2026-10-17): the box around its layers. A typed W or H
+        // resizes the group as Figma's does: each layer grows or shrinks along that axis by the same factor and keeps
+        // its place in the box (its offset from the group's left or top scaled too); with the lock on, both axes. One
+        // undo step.
+        const top = list.filter((t) => !list.some((o) => o !== t && o.contains(t)));
+        const box = () => {
+          const rs = top.map((t) => t.getBoundingClientRect());
+          const l = Math.min(...rs.map((r) => r.left));
+          const t0 = Math.min(...rs.map((r) => r.top));
+          return { l, t: t0, w: Math.max(...rs.map((r) => r.right)) - l, h: Math.max(...rs.map((r) => r.bottom)) - t0 };
+        };
+        const resizeGroup = (axis, n) => {
+          const b0 = box();
+          const f = n / (axis === "w" ? b0.w : b0.h);
+          if (!isNum(f) || !(f > 0) || Math.abs(f - 1) < 1e-6) return;
+          const both = ratioLocked(g);
+          const fx = axis === "w" || both ? f : 1;
+          const fy = axis === "h" || both ? f : 1;
+          if (history.timer) commitStep();
+          history.quiet++;
+          const starts = top.map((t) => ({ t, r: t.getBoundingClientRect() }));
+          starts.forEach(({ t, r }) => typedResize(t, fx !== 1 ? r.width * fx : null, fy !== 1 ? r.height * fy : null, { locked: false }));
+          // Placed once every size has landed (a wider line can wrap less and lift the ones under it), along the axes
+          // that changed.
+          starts.forEach(({ t, r }) => {
+            const now = t.getBoundingClientRect();
+            const dx = fx !== 1 ? b0.l + (r.left - b0.l) * fx - now.left : 0;
+            const dy = fy !== 1 ? b0.t + (r.top - b0.t) * fy - now.top : 0;
+            if (Math.abs(dx) >= 0.05 || Math.abs(dy) >= 0.05) nudge(t, dx, dy);
+          });
+          history.quiet--;
+          noteChange();
+          changed(true);
+        };
+        const w = numField("W");
+        const h = numField("H");
+        [[w, "w"], [h, "h"]].forEach(([fld, axis]) => editable(fld.input, changed, (v) => {
+          const n = parseFloat(v);
+          if (isNum(n) && n > 0) resizeGroup(axis, n);
+        }));
+        const lock = iconButton(ICON.linkBroken, "Constrain proportions", () => {
+          if (g) ratioLocks.set(g, !ratioLocked(g));
+          changed(true);
+        });
+        const dims = el("div", "ft-type-pair");
+        dims.append(w.wrap, h.wrap);
+        const dimsRow = el("div", "ft-with-action");
+        dimsRow.append(dims, lock);
+        const grid = el("div", "ft-type");
+        grid.appendChild(labeled("Dimensions", dimsRow, true));
+        s.appendChild(grid);
+        draws.push((force) => {
+          const b = box();
+          w.set(Math.round(b.w), force);
+          h.set(Math.round(b.h), force);
+          const locked = ratioLocked(g);
+          lock.setAttribute("aria-pressed", String(locked));
+          if (lock.dataset.ftIcon !== String(locked)) { lock.innerHTML = locked ? ICON.lockRatio : ICON.linkBroken; lock.dataset.ftIcon = String(locked); }
         });
         return s;
       }
@@ -12283,15 +12858,16 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         };
       };
       // Whether the text is as wide as its words on one line (max-content), read with that width swapped in.
+      // Measured with shrink off too: in a crowded flex row max-content still shrinks to the longest word, so the
+      // words would wrap while this read as hugging them (her report, 2026-10-17: "Previously at Meta" in two lines).
       const textHugs = () => {
-        const was = target.style.getPropertyValue("width");
-        const pri = target.style.getPropertyPriority("width");
+        const held = ["width", "flex-shrink"].map((p) => [p, target.style.getPropertyValue(p), target.style.getPropertyPriority(p)]);
         still(target, true);
         const now = target.offsetWidth;
         target.style.setProperty("width", "max-content");
+        target.style.setProperty("flex-shrink", "0");
         const mc = target.offsetWidth;
-        if (was) target.style.setProperty("width", was, pri);
-        else target.style.removeProperty("width");
+        held.forEach(([p, v, pri]) => (v ? target.style.setProperty(p, v, pri) : target.style.removeProperty(p)));
         flush();
         still(target, false);
         return Math.abs(now - mc) < 0.5;
@@ -12326,21 +12902,29 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       ], (v) => {
         boxed(target);
         const r = target.getBoundingClientRect();
+        // Whole px rounded up: one rounded down cuts the words' own width (197.3 → 197) and the last word wraps.
+        const wPx = Math.ceil(r.width - 0.01);
+        const hPx = Math.ceil(r.height - 0.01);
         // Inside auto layout this row is Resizing too: a Fill would keep sizing the box over any width written
         // here, so it lets go first, and a px size is Fixed, with grow, shrink and stretch off.
         const lp = layoutParentOf(target);
         if (lp && lp.inFlow) {
           if (v === "hug") unfill(target, lp, "w");
-          else fixAxis(target, "w", Math.round(r.width));
-          if (v === "fixed") fixAxis(target, "h", Math.round(r.height));
+          else fixAxis(target, "w", wPx);
+          if (v === "fixed") fixAxis(target, "h", hPx);
           else unfill(target, lp, "h");
           if (v === "hug") hugWidth();
+          // Auto width doesn't shrink in a row, as Figma's hugging text doesn't: squeezed, it would wrap at its longest
+          // word while it read as hugging.
+          if (v === "hug" && lp.main === "w") setUnlessOwn(target, "flex-shrink", "0");
           if (v !== "fixed") freeHeight();
+          // In both auto modes the words set the height, so a stretch across a row lets go of it.
+          if (v !== "fixed" && lp.main !== "h" && stretches(target, lp, "h")) setUnlessOwn(target, selfProp(lp, "h"), lp.flex ? "flex-start" : "start");
           return;
         }
         if (v === "hug") hugWidth();
-        else setStyle(target, "width", Math.round(r.width) + "px");
-        if (v === "fixed") setStyle(target, "height", Math.round(r.height) + "px");
+        else setStyle(target, "width", wPx + "px");
+        if (v === "fixed") setStyle(target, "height", hPx + "px");
         else freeHeight();
       });
       const w = numField("W");
@@ -12549,7 +13133,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
             readAt = at;
             const { inf } = readInferred(target);
             const tip = inf.reason ? "Add auto layout"
-              : "Add " + inf.flow + " auto layout" + (inf.moves ? " (layers move)" : " · gap " + inf.gap);
+              : "Add " + inf.flow + " auto layout" + (inf.moves ? " (layers move)" : "");
             addBtn.setAttribute("data-ft-tip", tip);
             addBtn.setAttribute("aria-label", tip);
             // Swapped only on a change, so a draw under the pointer never rebuilds the glyph.
@@ -12991,12 +13575,24 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         } });
       });
       family.btn.classList.add("ft-span2");
+      // Each weight previews on the text as the pointer passes over it, as the Fonts list does (her ask, 2026-10-17),
+      // saving nothing: the inline weight it had is kept here to put back.
+      let heldWeight = null;
       const weight = dropdown((btn) => {
         const now = read();
         const items = familyWeights(now.family).map((w) => ({ label: WEIGHT_NAMES[w] || String(w), value: w }));
         menu.toggle(btn, items, now.weight, (w) => {
           setStyle(target, "font-weight", String(w));
           changed(true);
+        }, (w) => {
+          if (w == null || w === now.weight) {
+            if (heldWeight == null) return;
+            target.style.fontWeight = heldWeight;
+            heldWeight = null;
+            return;
+          }
+          if (heldWeight == null) heldWeight = target.style.fontWeight;
+          target.style.fontWeight = String(w);
         });
       });
       const size = numField(null);
@@ -13032,8 +13628,9 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       });
 
       function draw(force) {
-        // A text style's preview resizes the text, which redraws the panel; every field stays on the real values.
-        if (held) return;
+        // A text style's or a weight's preview resizes the text, which redraws the panel; every field stays on the
+        // real values.
+        if (held || heldWeight != null) return;
         const now = read();
         // A preview resizes the text, which redraws the panel; the labels stay on the real font.
         if (!before) {
@@ -13522,7 +14119,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       if (pageDefault && styleName(pageDefault) === name) return;
       if (offered.has(name) || [stylesPage(), STYLES_ALL].some((k) => loadStyles(k).some((st) => st.name === name))) return;
       offered.add(name);
-      toast("Use this new layout guide as active default?", [{ label: "Page", run: () => saveStyle(stylesPage()) }, { label: "Website", run: () => saveStyle(STYLES_ALL) }], 15000);
+      toast("Use this new layout guide as active default?", [{ label: "Page", run: () => saveStyle(stylesPage(), true) }, { label: "Website", run: () => saveStyle(STYLES_ALL, true) }], 15000);
     }
 
     function drawMotion() {
@@ -14132,7 +14729,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       draws.push(() => {
         if (history.quiet || flowTick === editTick) return;
         flowTick = editTick;
-        reflowFor(reflowList);
+        reflowAround(reflowList);
       });
       if (Array.isArray(target)) {
         chosen.append(kindLineMany(target, kind === "group"), setSection(target, kind === "group"));
@@ -14165,6 +14762,14 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
       // the values from before it over the step's.
       textStylesPop.close();
       colorStylesPop.close();
+      // ⌘D copies the step takes away go first (the edits on and inside them resolve to nothing once the node is
+      // out); ones the step brings come after the layers' styles land, cloned from the original as the step leaves it.
+      const nextDups = next.duplicates || [];
+      edits.duplicates.filter((d) => !nextDups.some((x) => x.key === d.key)).forEach((d) => {
+        const t = applied.get(d.key);
+        applied.delete(d.key);
+        if (t) t.remove();
+      });
       const sels = new Set(Object.keys(edits.elements).concat(Object.keys(next.elements)));
       // The element each edit was made on (see resolve), not whatever its selector finds now.
       const found = (sel) => resolve(sel, next.elements[sel] || edits.elements[sel]);
@@ -14216,7 +14821,26 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
           else t.removeAttribute(name);
         });
       });
+      const newDups = nextDups.filter((d) => !edits.duplicates.some((x) => x.key === d.key));
       edits.elements = next.elements;
+      edits.duplicates = nextDups;
+      // The copies the step brings (a redo of ⌘D), remade now the originals are as the step leaves them, then the
+      // edits saved on them and on the layers inside them.
+      newDups.forEach((d) => {
+        const clone = remakeDup(d, resolve(d.of));
+        if (!clone) return;
+        const e = edits.elements[d.key];
+        if (e && e.html != null) applyWords(d.key, clone);
+        if (e) applyEntry(d.key, clone);
+      });
+      if (newDups.length) Object.keys(edits.elements).forEach((sel) => {
+        const e = edits.elements[sel];
+        if (!e.inDup || (applied.get(sel) && applied.get(sel).isConnected)) return;
+        const t = resolve(sel);
+        if (!t) return;
+        if (e.html != null) applyWords(sel, t);
+        applyEntry(sel, t);
+      });
       // Components after the layers' own edits, so an override taken off falls back to the component's value.
       forgetInstances();
       sourceCache = new WeakMap();
@@ -14629,18 +15253,43 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
         slider.min = c.min;
         slider.max = c.max;
         slider.step = c.step;
-        // No min or max on the number: typing past the slider's ends is allowed.
+        // No min or max on the number: typing past the slider's ends is allowed. A text box, not type=number, so it
+        // takes a sum as the inspector's fields do (60-4 is 56, see mathValue); ↑ and ↓ still step it.
+        // No inputMode: a phone's full keyboard keeps the minus and the operators a sum needs.
         const num = el("input", "ft-num");
-        num.type = "number";
-        num.step = c.step;
+        num.type = "text";
+        num.spellcheck = false;
         const dp = decimals(c.step);
         // Slider steps can land on float noise (0.30000000000000004); round to the step's precision.
         slider.addEventListener("input", () => set(k, Number(parseFloat(slider.value).toFixed(dp))));
+        // Live as she types, a sum once it adds up. A sum left unfinished or refused (16-, 24+10%) goes back to the
+        // value from before the typing on blur, as the inspector's fields do; so does Escape.
+        let start = values[k];
+        const back = () => { if (values[k] !== start) set(k, start); };
+        num.addEventListener("focus", () => { start = values[k]; });
         num.addEventListener("input", () => {
-          const v = parseFloat(num.value);
+          const v = parseFloat(mathValue(num.value));
           if (isNum(v)) set(k, v);
         });
-        num.addEventListener("blur", () => sync[k]());
+        num.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") return num.blur();
+          if (e.key === "Escape") {
+            back();
+            return num.blur();
+          }
+          const d = e.key === "ArrowUp" ? 1 : e.key === "ArrowDown" ? -1 : 0;
+          if (!d) return;
+          e.preventDefault();
+          // A preset can hand over a number as a string ("8").
+          const base = Number(values[k]);
+          if (!isNum(base)) return;
+          set(k, Number((base + d * c.step).toFixed(dp)));
+          num.value = values[k];
+        });
+        num.addEventListener("blur", () => {
+          if (mathValue(num.value) === null) back();
+          sync[k]();
+        });
         sync[k] = () => {
           slider.value = values[k];
           if (document.activeElement !== num) num.value = values[k];
@@ -14871,6 +15520,7 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
     inspector.hidden = show === undefined ? !inspector.hidden : !show;
     toolbar.hidden = inspector.hidden;
     minimized = false;
+    if (inspector.hidden) document.documentElement.classList.remove("ft-dim");
     selection.sync();
     hideTip();
     drawUiButton();

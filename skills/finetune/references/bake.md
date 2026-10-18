@@ -100,6 +100,16 @@ Comment lines (`/* ... */`) carry notes for the line above them (a `not found` n
 6. List every file and line touched, then tell her to press Reset (in the left toolbar, under Save) so the page shows the baked code, not the saved edits. If a tuner's `value` changed, also tell her to press that tuner panel's Reset, so its saved value gives way to the new one.
 7. Ask before committing. Do not commit until she says yes.
 
+## Bake the design, not the moves
+
+The list records how she got there (freeform drags, deletes, retyped words), not how the code should say it. Before writing anything, work out the layout she ended with (where each element lands, what lines up with what, what reads as one set), then write that layout the way a careful developer would in this codebase: its own grid, flex and spacing tokens, its own classes and components, its markup order. The lines are the spec for what shows, not code to transcribe.
+
+- **Big moves are a new layout.** A `translate` of more than a small nudge, or moves that carry elements into another column, row or section (`translate: 238px -851px` lifting a meta item up beside the title), mean the element belongs somewhere else: move it in the markup and place it with the layout (a grid cell, a flex row, a new wrapper in the page's naming style). A translate stays only for a nudge the layout can't express.
+- **Keep the structure the code had.** A label she deleted with its words retyped into the value (`delete` on `.se-label`, then `text: Role<br>Sole Product Designer` on the `.se-body` beside it) is still a label over a value: keep two elements on their own classes and give them the look she ended with, rather than one element split by a `<br>`. The same for a list built from data (`(item "Role", 1 of 3)`): change the data and the shared JSX, not each item by hand.
+- **One set, one rule.** Elements that read as one set (the meta pairs, a row of cards) get one shared rule. Where her freeform left them a few px apart (`-590px` and `-592px`, a `-2px` stray) or styled apart (one label primary, the others secondary; one value 12px, the others 14px), snap them to one value and list each snap, or ask when it isn't clear which one she meant.
+- **Superseded lines.** A `not found` line whose element has a later line doing the same job (an earlier retype of the same words, an earlier move of the same item) was an earlier pass of this one: drop it and say so. Ask only about the ones nothing later covers.
+- **Show the plan first** when the result restructures markup: a short list of the layout you'll write (which elements move where, what new wrapper or grid, which snaps), then bake on her yes.
+
 ## Tailwind projects
 
 Most vibecoded apps style elements with Tailwind utilities in their markup, not CSS rules. A project is on Tailwind when it has a `tailwind.config.*`, or a stylesheet with `@tailwind base` (v3) or `@import "tailwindcss"` and `@theme` (v4); `tailwindcss` in `package.json` gives the version. Lovable's Vite apps are v3; its TanStack Start apps and create-next-app are v4; Codex's Vite apps can be either. A plain CSS site (one HTML file with a `<style>` and `:root` tokens, Codex's vanilla `styles.css`) keeps the rule-based route of step 2.
@@ -188,6 +198,10 @@ How Copy writes it: Copy lists a group's auto layout after the group's line (whi
 ### Deletes
 
 `<selector>  delete` means she deleted that layer (Delete or Backspace). Remove the element from the code, and anything that only styled or fed it. If it's rendered by a loop, a shared component or data used elsewhere, say what else would go and ask first.
+
+### Duplicates
+
+`<selector>  duplicate of <selector>` means she duplicated a layer (⌘D, Figma's Duplicate). The second selector is the original; the first is the copy as it sits on the page now (right after the original, so often the original's selector with the next `:nth-of-type()`). Add a copy of the original's element in the code, right after it as a sibling — after the original's own lines are baked, so the copy carries them too: she cloned the original as edited. Anything else on the same line (`; translate: 24px 0px`, a `text:`, a size) is the copy's own edit, made to the new element only, by the same rules as any other line; lines for layers inside the copy (`div.card:nth-of-type(2) > p.card-label  …`) edit the copy's children, never the original's. The line's `@` is the original's place: that's where the code to copy lives. `duplicate of` an original that is itself a copy means the copy an earlier duplicate line made: bake duplicate lines in the order they're listed. If the original is rendered by a loop or from data (an `(item …)` part), the right bake is usually one more entry in the data, not pasted JSX: write it there, or ask when the data has no room for it. If the original also has a `delete` line, she kept the copy and dropped the original — usually a move in disguise: add the copy, take the original out, and fold the two into one element where that reads cleaner ("Bake the design, not the moves").
 
 ### Ungroups
 
