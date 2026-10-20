@@ -1,5 +1,7 @@
 # finetune
 
+**[Live demo](https://www.monicalin.xyz/projects/finetune-demo)**
+
 Whether you're fine-tuning a Figma design or a website made by AI, the last tweaks are easiest by eye. finetune puts Figma's Design panel on your live page, so you can make those tweaks in the browser after handoff. Every edit bakes back into the code.
 
 ## The loop
@@ -22,7 +24,7 @@ Edits show live but stay in memory until you press Save, which keeps them in thi
 </script>
 ```
 
-Open the page and the panel shows. <kbd>D</kbd> hides the panel and its overlays and brings them back (⌘\ does too, as in Figma). <kbd>⌥⌘T</kbd> flips the panel between light and dark. It works from a file opened straight from Finder, no server. [`demos/index.html`](demos/index.html) is a full example.
+Open the page and the panel shows. <kbd>D</kbd> hides the panel and its overlays and brings them back (⌘\ does too, as in Figma). <kbd>⌥⌘T</kbd> flips the panel between light and dark. It works from a file opened straight from Finder, no server. [`demos/index.html`](demos/index.html) is a full example. Try it live: [monicalin.xyz/projects/finetune-demo](https://www.monicalin.xyz/projects/finetune-demo).
 
 Two things for an app:
 
