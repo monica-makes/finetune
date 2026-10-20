@@ -770,6 +770,15 @@ html.ft-motion .ft-menu-item:hover { background: var(--ft-pink); }
   border: 1px solid var(--ft-blue);
 }
 .ft-hover-box[hidden], .ft-sel-box[hidden] { display: none; }
+/* A layer tipped in 3D: the box stays around it (for the label), unpainted, and its outline is its own slanted shape. */
+.ft-quad { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; display: none; }
+.ft-quad polygon { fill: none; stroke: var(--ft-blue); stroke-width: 1; vector-effect: non-scaling-stroke; }
+html.ft-motion .ft-quad polygon { stroke: var(--ft-pink); }
+.ft-hover-box.is-quad, .ft-sel-box.is-quad { border-color: transparent; }
+.ft-hover-box.is-quad > .ft-quad, .ft-sel-box.is-quad > .ft-quad { display: block; }
+.ft-sel-box.is-quad .ft-handle, .ft-sel-box.is-quad .ft-rot { display: none; }
+/* Its layer turned away (its back hidden): nothing shows, so neither does its outline. */
+.ft-hover-box.is-away, .ft-sel-box.is-away { visibility: hidden; }
 /* A column of the layout guide she's picked: outlined as a selection is, without corners or a label. */
 .ft-col-box { border-color: var(--ft-blue); }
 /* Figma's help card (its "Creating a connection"): a title band, then its icon beside a line or two of how-to. */
@@ -5135,12 +5144,28 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     }
     const current = () => (selected ? [selected] : many);
 
-    function frameRect(b, r) {
+    // list: the one layer the box outlines; a layer tipped in 3D (quadOf) gets its own slanted outline inside the box.
+    function frameRect(b, r, list) {
       b.style.left = r.left + "px";
       b.style.top = r.top + "px";
       b.style.width = r.width + "px";
       b.style.height = r.height + "px";
+      const svg = b.querySelector(":scope > .ft-quad");
+      if (!svg) return;
+      const q = list && list.length === 1 ? quadOf(list[0]) : null;
+      b.classList.toggle("is-quad", !!q);
+      b.classList.toggle("is-away", !!q && facingAway(list[0]));
+      if (!q || !q.pts.length) return;
+      svg.setAttribute("width", Math.max(1, r.width));
+      svg.setAttribute("height", Math.max(1, r.height));
+      svg.firstChild.setAttribute("points", q.pts.map(([x, y]) => (x - r.left).toFixed(2) + "," + (y - r.top).toFixed(2)).join(" "));
     }
+    [hoverBox, selBox].forEach((b) => {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "ft-quad");
+      svg.appendChild(document.createElementNS("http://www.w3.org/2000/svg", "polygon"));
+      b.prepend(svg);
+    });
 
     // One layer, not turned, not words inside an SVG: anything else hides the corners (her call: leave out
     // what would be finicky).
@@ -5165,7 +5190,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       if (selected) {
         const sr = selected.getBoundingClientRect();
         selBox.classList.toggle("is-small", Math.min(sr.width, sr.height) < 30);
-        frameRect(selBox, sr);
+        frameRect(selBox, sr, [selected]);
         placeTurnZones(selected, sr);
         // The size before any rotation, as Figma shows it: the same numbers as Dimensions (a vector's geometry).
         const { w, h } = sizeOf(selected);
@@ -5439,7 +5464,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         frameRect(marquee, { left: r.left, top: r.top, width: r.right - r.left, height: r.bottom - r.top });
         marquee.hidden = false;
         const touches = (b) => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top;
-        const hit = units.filter((u) => u.some((t) => touches(t.getBoundingClientRect()))).flat();
+        const hit = units.filter((u) => u.some((t) => !facingAway(t) && touches(t.getBoundingClientRect()))).flat();
         pick(base.concat(hit.filter((h) => !base.includes(h))), baseCol);
       };
       const up = () => {
@@ -6269,7 +6294,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       previewed = t || null;
       hoverBox.hidden = !previewed;
       if (!previewed) return;
-      frameRect(hoverBox, unionRect([previewed]));
+      frameRect(hoverBox, unionRect([previewed]), [previewed]);
       hoverBox.classList.toggle("is-comp", !motion() && !!componentOf(previewed));
     }
 
@@ -6298,7 +6323,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
       hovered = hoverBox.hidden ? null : { over, g: unit && unit.g };
       if (!hoverBox.hidden) {
-        frameRect(hoverBox, hovered.g ? boxOf(over, hovered.g) : unionRect(over));
+        frameRect(hoverBox, hovered.g ? boxOf(over, hovered.g) : unionRect(over), hovered.g ? null : over);
         trackHover();
       }
       hoverBox.classList.toggle("is-comp", !motion() && over.length === 1 && !!componentOf(over[0]));
@@ -6321,7 +6346,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         const key = [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10)).join();
         if (key !== last) {
           last = key;
-          frameRect(hoverBox, r);
+          frameRect(hoverBox, r, hovered.g ? null : hovered.over);
         }
         hoverLoop = requestAnimationFrame(tick);
       };
@@ -7896,6 +7921,58 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     const reordered = boxes.some((b, i) => i && b[lo] < boxes[i - 1][lo] - 0.5);
     const out = inferLayout(boxes.slice().sort((a, b) => a[lo] - b[lo]), { flow: inf.flow });
     return Object.assign(out, { reordered, moves: out.moves || overlap });
+  }
+
+  // A layer tipped in 3D (a perspective() or a turn about x or y in its transform) is drawn as a slanted shape, not
+  // a rectangle: its four corners on screen, so its outline hugs it instead of the box around it (getBoundingClientRect).
+  // Worked out from its layout box and its own transform; null for a flat layer, or when a layer above it is
+  // transformed too (it keeps the box). back: it's turned away from the window.
+  const NUM_PX = /^-?[\d.]+(e-?\d+)?px$/;
+  function quadOf(t) {
+    if (!(t instanceof HTMLElement) || !t.offsetParent) return null;
+    const cs = getComputedStyle(t);
+    if (!cs.transform.startsWith("matrix3d")) return null;
+    for (let a = t.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+      const as = getComputedStyle(a);
+      if (as.transform !== "none" || as.translate !== "none" || as.rotate !== "none" || as.scale !== "none" || as.perspective !== "none") return null;
+    }
+    let m;
+    try {
+      const o = cs.transformOrigin.split(" ").map(parseFloat);
+      const tr = cs.translate === "none" ? [] : cs.translate.split(" ");
+      if (!tr.every((v) => NUM_PX.test(v))) return null;
+      const [tx = 0, ty = 0, tz = 0] = tr.map(parseFloat);
+      const r = cs.rotate.trim();
+      const rot = r === "none" ? undefined : /\s/.test(r) ? "rotate3d(" + r.split(/\s+/).join(", ") + ")" : "rotate(" + r + ")";
+      const sc = cs.scale === "none" ? [] : cs.scale.split(" ").map(parseFloat);
+      m = new DOMMatrix()
+        .translate(o[0] || 0, o[1] || 0, o[2] || 0)
+        .translate(tx, ty, tz)
+        .multiply(new DOMMatrix(rot))
+        .scale(sc[0] ?? 1, sc[1] ?? sc[0] ?? 1, sc[2] ?? 1)
+        .multiply(new DOMMatrix(cs.transform))
+        .translate(-(o[0] || 0), -(o[1] || 0), -(o[2] || 0));
+    } catch (e) {
+      return null;
+    }
+    const p = t.offsetParent;
+    const pr = p.getBoundingClientRect();
+    const x0 = pr.left + p.clientLeft - p.scrollLeft + t.offsetLeft;
+    const y0 = pr.top + p.clientTop - p.scrollTop + t.offsetTop;
+    const w = t.offsetWidth;
+    const h = t.offsetHeight;
+    const pts = [[0, 0], [w, 0], [w, h], [0, h]].map(([x, y]) => m.transformPoint(new DOMPoint(x, y, 0, 1)));
+    // A corner behind the eye: no shape to draw.
+    if (pts.some((q) => q.w <= 0)) return { pts: [], back: true };
+    const xy = pts.map((q) => [x0 + q.x / q.w, y0 + q.y / q.w]);
+    let area = 0;
+    xy.forEach(([x, y], i) => { const [x2, y2] = xy[(i + 1) % 4]; area += x * y2 - x2 * y; });
+    return { pts: xy, back: area < 0 };
+  }
+  // Turned away with its back hidden (backface-visibility: hidden): nothing of it shows, so nothing outlines it.
+  function facingAway(t) {
+    const q = quadOf(t);
+    return !!q && q.back && getComputedStyle(t).backfaceVisibility === "hidden";
   }
 
   // The box around several layers, in window coordinates.
