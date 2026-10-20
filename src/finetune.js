@@ -158,6 +158,37 @@ html.ft-motion { --ft-accent: var(--ft-pink); --ft-accent-soft: var(--ft-pink-so
 .ft-actions { display: flex; }
 .ft-ui :where(button) { margin: 0; padding: 0; border: 0; background: none; color: inherit; outline: none; font: inherit; }
 .ft-ui[data-min] { background: var(--ft-i-bg); border-color: var(--ft-i-border); }
+/* Help and resources (Figma's ? button) in the bottom right corner, its menu above it with the hovered row in the
+   mode's colour (blue in Design, pink in Motion), and Keyboard shortcuts as a sheet along the bottom of the window,
+   as Figma's. A shortcut used this visit lights up in the mode's colour, as Figma marks the ones you know. */
+.ft-resources {
+  position: fixed; right: 16px; bottom: 16px; z-index: 2147483646; display: grid; place-items: center; width: 32px; height: 32px;
+  margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--ft-i-surface); color: var(--ft-i-text);
+  box-shadow: var(--ft-elev-200); cursor: default;
+}
+.ft-resources[hidden], .ft-shortcuts[hidden] { display: none; }
+.ft-resources-menu {
+  position: fixed; top: auto; left: auto; right: 16px; bottom: 56px; z-index: 2147483646; min-width: 160px;
+  font: 450 11px/16px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: 0.005em; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.ft-resources-menu .ft-menu-item { padding: 0 8px; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: default; }
+.ft-resources-menu .ft-menu-item:hover, .ft-resources-menu .ft-menu-item:focus-visible { background: var(--ft-accent); outline: none; }
+.ft-shortcuts {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483646; padding-bottom: 32px; background: var(--ft-i-surface);
+  color: var(--ft-i-text); border-top: 1px solid var(--ft-i-border); box-shadow: var(--ft-elev-400);
+  font: 450 13px/22px "Inter", system-ui, -apple-system, sans-serif; letter-spacing: -0.0025em; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.ft-shortcuts-tabs { position: relative; display: flex; justify-content: center; height: 48px; border-bottom: 1px solid var(--ft-i-border); }
+.ft-shortcuts-tab { display: grid; place-items: center; padding: 0 32px; margin-bottom: -1px; border: solid var(--ft-i-border); border-width: 0 1px; background: var(--ft-i-surface); }
+.ft-shortcuts-x { margin: 0; position: absolute; right: 16px; top: 12px; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 5px; background: none; color: inherit; cursor: default; }
+.ft-shortcuts-x:hover { background: var(--ft-i-hover); }
+.ft-shortcuts-list { display: grid; grid-template-columns: max-content max-content; column-gap: 120px; row-gap: 12px; width: max-content; margin: 32px auto 0; }
+.ft-shortcuts-row { display: contents; }
+.ft-shortcuts-name { display: flex; align-items: center; }
+.ft-shortcuts-caps { display: flex; gap: 4px; justify-content: flex-end; }
+.ft-shortcuts-cap { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; box-sizing: border-box; border: 1px solid var(--ft-i-border); border-radius: 5px; font-size: 11px; }
+.ft-shortcuts-row.is-used .ft-shortcuts-name { color: var(--ft-accent-text); }
+.ft-shortcuts-row.is-used .ft-shortcuts-cap { border-color: transparent; background: var(--ft-accent); color: var(--ft-on-dark); }
 /* Every floating box (the panel, the toolbar, this bar, popovers, menus, the toast) has the panel's 8px corners;
    a cell inside one sits 4px in, so its corners are 4px (the Design / Motion bar's sit 6px in, her call).
    Design and Motion, at the bottom of the window like Figma's toolbar: one bar of cells, each with its icon
@@ -901,8 +932,11 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 .ft-out[hidden] { display: none; }
 /* T dims the panels to 20% and lets the pointer through them, to see and pick what they cover: the page doesn't
    zoom out from under them as Figma's canvas would (her ask, 2026-10-17). */
-html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel) { opacity: 0.2; }
-html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel) * { pointer-events: none !important; }
+html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-panel) { opacity: 0.2; }
+html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-panel), html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-panel) * { pointer-events: none !important; }
+/* E hides the panels while editing goes on (her ask, 2026-10-19). Hidden rather than taken out, so the panel keeps its
+   layout for when it comes back. */
+html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resources-menu, .ft-shortcuts, .ft-panel, .ft-pop), html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resources-menu, .ft-shortcuts, .ft-panel, .ft-pop) * { visibility: hidden !important; }
 `;
   /* ============================ END PANEL LOOK ============================ */
 
@@ -1023,6 +1057,8 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     // outline as a 1px line at any size (non-scaling), so it draws like the kit's 1px icons beside it, and the fill
     // mark, which the rail shows on hover (.ft-logo-fill).
     logo: '<svg class="ft-ico" viewBox="0 0 100 100" fill="none" aria-hidden="true"><path class="ft-logo-fill" d="M 26.00 24.08 A 19.20 19.20 0 0 1 45.20 4.88 L 48.88 4.88 A 4.00 4.00 0 0 1 52.88 8.88 L 52.88 12.40 A 4.00 4.00 0 0 0 56.88 16.40 L 60.40 16.40 A 4.00 4.00 0 0 1 64.40 20.40 L 64.40 40.24 A 4.00 4.00 0 0 0 68.40 44.24 L 81.52 44.24 A 4.00 4.00 0 0 1 85.52 48.24 L 85.52 51.76 A 4.00 4.00 0 0 1 81.52 55.76 L 68.40 55.76 A 4.00 4.00 0 0 0 64.40 59.76 L 64.40 75.92 A 7.68 7.68 0 0 0 72.08 83.60 L 75.76 83.60 A 4.00 4.00 0 0 1 79.76 87.60 L 79.76 91.12 A 4.00 4.00 0 0 1 75.76 95.12 L 72.08 95.12 A 19.20 19.20 0 0 1 52.88 75.92 L 52.88 59.76 A 4.00 4.00 0 0 0 48.88 55.76 L 41.52 55.76 A 4.00 4.00 0 0 0 37.52 59.76 L 37.52 79.60 A 4.00 4.00 0 0 1 33.52 83.60 L 30.00 83.60 A 4.00 4.00 0 0 1 26.00 79.60 L 26.00 59.76 A 4.00 4.00 0 0 0 22.00 55.76 L 18.48 55.76 A 4.00 4.00 0 0 1 14.48 51.76 L 14.48 48.24 A 4.00 4.00 0 0 1 18.48 44.24 L 22.00 44.24 A 4.00 4.00 0 0 0 26.00 40.24 L 26.00 24.08 Z M 37.52 40.24 L 37.52 24.08 A 7.68 7.68 0 0 1 45.20 16.40 L 48.88 16.40 A 4.00 4.00 0 0 1 52.88 20.40 L 52.88 40.24 A 4.00 4.00 0 0 1 48.88 44.24 L 41.52 44.24 A 4.00 4.00 0 0 1 37.52 40.24 Z" fill="currentColor" fill-rule="evenodd"/><path class="ft-logo-line" d="M 26.00 24.08 A 19.20 19.20 0 0 1 45.20 4.88 L 48.88 4.88 A 4.00 4.00 0 0 1 52.88 8.88 L 52.88 12.40 A 4.00 4.00 0 0 1 48.88 16.40 L 45.20 16.40 A 7.68 7.68 0 0 0 37.52 24.08 L 37.52 40.24 A 4.00 4.00 0 0 0 41.52 44.24 L 48.88 44.24 A 4.00 4.00 0 0 0 52.88 40.24 L 52.88 28.08 A 4.00 4.00 0 0 1 56.88 24.08 L 60.40 24.08 A 4.00 4.00 0 0 1 64.40 28.08 L 64.40 40.24 A 4.00 4.00 0 0 0 68.40 44.24 L 81.52 44.24 A 4.00 4.00 0 0 1 85.52 48.24 L 85.52 51.76 A 4.00 4.00 0 0 1 81.52 55.76 L 68.40 55.76 A 4.00 4.00 0 0 0 64.40 59.76 L 64.40 75.92 A 7.68 7.68 0 0 0 72.08 83.60 L 75.76 83.60 A 4.00 4.00 0 0 1 79.76 87.60 L 79.76 91.12 A 4.00 4.00 0 0 1 75.76 95.12 L 72.08 95.12 A 19.20 19.20 0 0 1 52.88 75.92 L 52.88 59.76 A 4.00 4.00 0 0 0 48.88 55.76 L 41.52 55.76 A 4.00 4.00 0 0 0 37.52 59.76 L 37.52 79.60 A 4.00 4.00 0 0 1 33.52 83.60 L 30.00 83.60 A 4.00 4.00 0 0 1 26.00 79.60 L 26.00 59.76 A 4.00 4.00 0 0 0 22.00 55.76 L 18.48 55.76 A 4.00 4.00 0 0 1 14.48 51.76 L 14.48 48.24 A 4.00 4.00 0 0 1 18.48 44.24 L 22.00 44.24 A 4.00 4.00 0 0 0 26.00 40.24 L 26.00 24.08 Z" stroke="currentColor" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="miter" stroke-linecap="butt"/></svg>',
+    // icon.24.help (Help and resources), from the kit
+    help: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.5 13.5V14C11.5 14.2761 11.7239 14.5 12 14.5C12.2761 14.5 12.5 14.2761 12.5 14V13.5C12.5 12.9813 12.9629 12.5024 13.6777 12.1523C14.4706 11.7641 15 11.0383 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 10.2761 9.22386 10.5 9.5 10.5C9.77614 10.5 10 10.2761 10 10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10C14 10.6352 13.707 11.024 13.2373 11.2539C12.4642 11.6325 11.5 12.362 11.5 13.5ZM12 17C12.4142 17 12.75 16.6642 12.75 16.25C12.75 15.8358 12.4142 15.5 12 15.5C11.5858 15.5 11.25 15.8358 11.25 16.25C11.25 16.6642 11.5858 17 12 17Z" fill="currentColor"/></svg>',
     // rotation
     angle: '<svg class="ft-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 8.5C9 8.22386 8.77614 8 8.5 8C8.22386 8 8 8.22386 8 8.5V15.5C8 15.7761 8.22386 16 8.5 16H15.5C15.7761 16 16 15.7761 16 15.5C16 15.2239 15.7761 15 15.5 15H13C13 12.7909 11.2091 11 9 11V8.5ZM9 12V15H12C12 13.3431 10.6569 12 9 12Z" fill="currentColor"/></svg>',
     // rotate
@@ -1990,7 +2026,7 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
   // Undo and Redo stay). They're actions, not tools, so none stays pressed; Reset greys out with nothing to
   // reset. (Hide UI sits over the panel's top row.)
   const REPO_URL = "https://github.com/monica-makes/finetune";
-  function makeToolbar(hotkey) {
+  function makeToolbar(hotkey, helpOn) {
     const bar = el("div", "ft-toolbar");
     // The left rail: each tool's icon in its box; its name is its tooltip.
     const actions = [
@@ -2030,6 +2066,7 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     uiButton.setAttribute("data-ft-tip-key", KEYS.mod + "\\");
     uiBox.appendChild(uiButton);
     document.body.appendChild(uiBox);
+    if (helpOn) makeHelp(hotkey);
     return bar;
   }
 
@@ -2047,6 +2084,78 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     toast(words, null, 4000, true);
   }
 
+  // Help and resources, as Figma's ? button: a menu of Keyboard shortcuts (a sheet of the ways to show and hide
+  // finetune) and the User guide (docs/GUIDE.md on GitHub). A page with its own help turns it off with help: false.
+  function makeHelp(hotkey) {
+    const menu = el("div", "ft-menu ft-resources-menu");
+    menu.setAttribute("role", "menu");
+    menu.hidden = true;
+    const setMenu = (on) => {
+      menu.hidden = !on;
+      if (on) hideTip();
+    };
+    helpBox = button("ft-resources", null, () => setMenu(menu.hidden));
+    helpBox.innerHTML = ICON.help;
+    helpBox.setAttribute("aria-label", "Help and resources");
+    helpBox.setAttribute("data-ft-tip", "Help and resources");
+    helpBox.setAttribute("data-ft-tip-side", "top");
+    withTip(helpBox);
+    const sheet = el("div", "ft-shortcuts");
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-label", "Keyboard shortcuts");
+    sheet.hidden = true;
+    const item = (label, run) => {
+      const b = button("ft-menu-item", label, () => {
+        setMenu(false);
+        run();
+      });
+      b.setAttribute("role", "menuitem");
+      menu.appendChild(b);
+    };
+    item("Keyboard shortcuts", () => { sheet.hidden = false; });
+    item("User guide", () => window.open(REPO_URL + "/blob/main/docs/GUIDE.md", "_blank", "noopener"));
+    // The sheet's one tab, View: every way to show and hide finetune, with this computer's keys.
+    const tabs = el("div", "ft-shortcuts-tabs");
+    tabs.appendChild(el("div", "ft-shortcuts-tab", "View"));
+    const x = button("ft-shortcuts-x", null, () => { sheet.hidden = true; });
+    x.innerHTML = ICON.x;
+    x.setAttribute("aria-label", "Close");
+    tabs.appendChild(x);
+    const list = el("div", "ft-shortcuts-list");
+    const mod = MAC ? "⌘" : "Ctrl";
+    const bare = (k) => (e) => !e.metaKey && !e.ctrlKey && !e.altKey && String(e.key).toLowerCase() === k;
+    const rows = [
+      // finetune's own keys first, then Figma's
+      ["Show/Hide UI", [hotkey.toUpperCase()], bare(hotkey)],
+      ["Hide panels, keep editing", ["E"], bare("e")],
+      ["See through panels", ["T"], bare("t")],
+      ["Figma's shortcut to show/hide UI", [mod, "\\"], (e) => (e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "Backslash"],
+      ["Minimize UI", [MAC ? "⇧" : "Shift", mod, "\\"], (e) => (e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Backslash"],
+    ].map(([name, caps, is]) => {
+      const row = el("div", "ft-shortcuts-row");
+      row.appendChild(el("div", "ft-shortcuts-name", name));
+      const keys = el("div", "ft-shortcuts-caps");
+      caps.forEach((c) => keys.appendChild(el("span", "ft-shortcuts-cap", c)));
+      row.appendChild(keys);
+      list.appendChild(row);
+      return { row, is };
+    });
+    sheet.append(tabs, list);
+    [helpBox, menu, sheet].forEach((n) => n.setAttribute("data-finetune-ui", ""));
+    document.body.append(helpBox, menu, sheet);
+    closeHelp = () => {
+      menu.hidden = true;
+      sheet.hidden = true;
+    };
+    window.addEventListener("pointerdown", (e) => {
+      if (!menu.hidden && !menu.contains(e.target) && !helpBox.contains(e.target)) setMenu(false);
+    }, true);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && (!menu.hidden || !sheet.hidden)) closeHelp();
+      if (!typing(e.target)) rows.forEach((r) => { if (r.is(e)) r.row.classList.add("is-used"); });
+    }, true);
+  }
+
   // Hide UI, as Figma's Minimize UI: the panel, the toolbar, the grid and the selection go at once, leaving
   // only this button, in a small box where it sat, to bring them back. The hotkey (D), ⌘\ and ⇧⌘\ (Figma's
   // Show/Hide UI and Minimize UI; Ctrl on Windows) do the same. From fully hidden (open: false,
@@ -2054,6 +2163,9 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
   let minimized = false;
   let uiButton = null;
   let uiBox = null;
+  // Help and resources: its button, and what closes its menu and sheet.
+  let helpBox = null;
+  let closeHelp = () => {};
   // The toolbar's Reset; historyChanged greys it out.
   let resetBtn = null;
   function drawUiButton() {
@@ -2063,10 +2175,16 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     uiButton.setAttribute("aria-label", name);
     uiBox.toggleAttribute("data-min", minimized);
     uiBox.hidden = inspector.hidden && !minimized;
+    if (helpBox) {
+      helpBox.hidden = inspector.hidden || minimized;
+      if (helpBox.hidden) closeHelp();
+    }
   }
   function toggleUi() {
     if (!inspector) return;
     if (inspector.hidden && !minimized) return showPanel(true);
+    // With the panels hidden for editing (E), the hotkey and ⌘\ bring them back.
+    if (bare) return setBare(false);
     minimized = !minimized;
     inspector.hidden = toolbar.hidden = minimized;
     // The panels come back undimmed (T), so Show UI and the panel can always be clicked.
@@ -2100,6 +2218,27 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || e.repeat || typing(e.target)) return;
     if (String(e.key).toLowerCase() !== "t" || Object.keys(live).some((id) => live[id].key === "t")) return;
     document.documentElement.classList.toggle("ft-dim");
+  });
+  // E hides the panels and editing goes on (her ask, 2026-10-19: they sat over what she was working on): the panel,
+  // the toolbar, the Design / Motion bar and the tuners' panels go, while select, drag, resize, retype, every shortcut
+  // and the grid stay (PANEL LOOK, html.ft-bare). E again, the hotkey (D) or ⌘\ brings them back. From hidden or
+  // minimized, E shows the inspector with its panels already hidden. A Hide UI key of `e` keeps E for itself.
+  let bare = false;
+  function setBare(on) {
+    bare = on;
+    document.documentElement.classList.toggle("ft-bare", on);
+    if (on) {
+      document.documentElement.classList.remove("ft-dim");
+      const a = document.activeElement;
+      if (a && a.closest && a.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-panel, .ft-pop")) a.blur();
+    }
+    hideTip();
+  }
+  window.addEventListener("keydown", (e) => {
+    if (!inspector || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey || e.repeat || typing(e.target)) return;
+    if (String(e.key).toLowerCase() !== "e" || Object.keys(live).some((id) => live[id].key === "e")) return;
+    if (inspector.hidden) showPanel(true);
+    setBare(!bare);
   });
   window.addEventListener("keydown", (e) => {
     if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== "Backslash" || typing(e.target)) return;
@@ -4901,6 +5040,22 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     const windowSized = (r) => r.width >= document.documentElement.clientWidth - 1 && r.height >= window.innerHeight - 1;
     const holdsPage = (t) => windowSized(t.getBoundingClientRect()) && drawsNothing(t);
     const pickable = (t) => (t && t !== document.body && t !== document.documentElement && t !== pageEl && !isUi(t) && !holdsPage(t) ? t : null);
+    // A press on the panels over a layer they cover (on their empty space or words, not a control) says, once a visit,
+    // how to get at it: E hides the panels and editing goes on, T sees through them (her ask, 2026-10-19).
+    const PANEL_CONTROL = "button, a, input, select, textarea, label, summary, [contenteditable], [tabindex], [role=button], "
+      + "[role=checkbox], .ft-kind-link, .ft-head, .ft-scroll-thumb, .ft-slide, .ft-knob, .ft-sv, .ft-chip";
+    let coverTipShown = false;
+    document.addEventListener("pointerdown", (e) => {
+      const t = e.target;
+      if (coverTipShown || e.button !== 0 || !active() || !t || !t.closest) return;
+      if (!t.closest(".ft-inspector, .ft-toolbar, .ft-ui, .ft-panel") || t.closest(PANEL_CONTROL)) return;
+      if (!pickable(document.elementsFromPoint(e.clientX, e.clientY).find((u) => !isUi(u)))) return;
+      coverTipShown = true;
+      const key = (k) => el("span", "ft-toast-key", k);
+      const words = el("span");
+      words.append("Press ", key("E"), " to hide the panels and keep editing, or ", key("T"), " to see through them");
+      toast(words, null, 5000);
+    }, true);
 
     // Groups are the code's own containers, 1:1, so a page keeps the structure its code has. A click picks the
     // outermost layer under the pointer below the level she's in: the page, until she double-clicks into a
@@ -15487,7 +15642,7 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
       const first = !inspector;
       if (first) {
         inspector = makeInspector();
-        toolbar = makeToolbar(hotkey);
+        toolbar = makeToolbar(hotkey, opts.help !== false);
         selection = makeSelection();
         // open: false starts it hidden, for a page where something else (a button, the hotkey) opens it.
         if (opts.open === false) showPanel(false);
@@ -15534,6 +15689,7 @@ html.ft-dim :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-panel), html.ft-dim :is(
     inspector.hidden = show === undefined ? !inspector.hidden : !show;
     toolbar.hidden = inspector.hidden;
     minimized = false;
+    if (bare) setBare(false);
     if (inspector.hidden) document.documentElement.classList.remove("ft-dim");
     selection.sync();
     hideTip();

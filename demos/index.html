@@ -1,84 +1,420 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>finetune demo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --hero-size: 40.6px;
-      --hero-weight: 400;
-      --hero-leading: 1.12;
-      --hero-tracking: -0.02em;
-      --hero-ink: #F6F4EF;
-      --hero-italic: normal;
-    }
-    html, body { height: 100%; margin: 0; }
-    body {
-      display: grid;
-      place-items: center;
-      background: #111111;
-      color: var(--hero-ink);
-      font-family: "Inter", system-ui, -apple-system, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    .hero { width: min(90vw, 880px); }
-    .eyebrow {
-      margin: 0 0 16px;
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      opacity: 0.6;
-    }
-    h1 {
-      margin: 0;
-      font-size: var(--hero-size);
-      font-weight: var(--hero-weight);
-      line-height: var(--hero-leading);
-      letter-spacing: var(--hero-tracking);
-      font-style: var(--hero-italic);
-    }
-    .placeholder { display: block; width: 480px; max-width: 100%; height: auto; margin-top: 32px; }
-    .card { width: 320px; max-width: 100%; margin-top: 24px; padding: 20px 24px; border-radius: 12px; background: #262626; }
-    .card-label { margin: 0; font-size: 16px; line-height: 1.4; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1512">
+<title>finetune demo</title>
+<!--
+  finetune's demo page. One screen. The page is a 16 column CSS grid (24 margin, 24 gutter, so 69 px columns in a
+  1512 wide window), which finetune reads as the page's own layout grid. The pictures sit on a slowly turning drum
+  behind the text, 2 or 3 columns wide. Images are stand-ins.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Inter:ital,wght@0,400..700;1,400..700&family=Crimson+Pro:ital,wght@0,400..700;1,400..700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Figtree:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:Geist;font-style:normal;font-weight:400;font-display:block;src:url(fonts/Geist-Regular.woff2) format("woff2")}
+@font-face{font-family:Geist;font-style:normal;font-weight:500;font-display:block;src:url(fonts/Geist-Medium.woff2) format("woff2")}
+@font-face{font-family:Geist;font-style:normal;font-weight:600;font-display:block;src:url(fonts/Geist-SemiBold.woff2) format("woff2")}
+@font-face{font-family:Geist;font-style:normal;font-weight:700;font-display:block;src:url(fonts/Geist-Bold.woff2) format("woff2")}
+
+:root{
+  --bg:#ffffff;
+  --ink:#000000;
+  --muted:#bebebe;
+  --edge:24px;
+  --gap:24px;
+  /* the page's faces, all free (Google Fonts, Geist hosted here), so finetune's font picker can try them: serifs
+     EB Garamond, Libre Baskerville, Crimson Pro, Spectral, Literata; sans Geist, Inter, DM Sans, Instrument Sans,
+     Figtree. The page itself uses the first two tokens of each */
+  --serif:"EB Garamond",Garamond,"Times New Roman",serif;
+  --serif-2:"Libre Baskerville",Baskerville,"Times New Roman",serif;
+  --sans:"Geist","Helvetica Neue",Arial,sans-serif;
+  --sans-2:"Inter","Helvetica Neue",Arial,sans-serif;
+}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg)}
+html{color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:inherit;text-decoration:none}
+
+/* the page: one screen, 16 columns */
+.page{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));grid-template-rows:auto 1fr auto;column-gap:var(--gap);padding:0 var(--edge);height:100vh;height:100dvh;overflow:clip}
+
+/* text sits over the images. Each box is trimmed to cap height and baseline, so its gaps are the ones you see */
+.nav,.tags,.mark{position:relative;z-index:2;margin:0;text-box:trim-both cap alphabetic}
+.nav,.tags{font-size:32px;font-weight:400;line-height:34px}
+
+/* top: the menu as one sentence */
+.nav{grid-column:2 / -5;justify-self:start;margin-top:40px}
+
+/* middle: the welcome card, centred in the window over the images and the scrim by its wrapper (inset 0 + auto
+   margins, so no transform sits on the glass; the wrapper holds the clip's two halves, one each side of the card). 336px of words, 32px padding all round. Square corners. Vellum: white at 61% with grey paper grain (a fine tooth and a soft fibre mottle), over a 24px blur,
+   a faint 1px white rim (12%) and a gentle shadow */
+.intro-wrap{position:fixed;inset:0;z-index:4;width:fit-content;height:fit-content;margin:auto}
+.intro{position:relative;z-index:1;width:336px;display:flex;flex-direction:column;gap:10px;padding:32px;border:1px solid rgba(255,255,255,.12);border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .4 0 0 0 0 .4 0 0 0 .14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E") 0 0 / 220px 220px,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .05' numOctaves='4' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .4 0 0 0 0 .4 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E") 0 0 / 360px 360px,rgba(255,255,255,.61);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:0 8px 32px rgba(0,0,0,.08);font-family:"Inter",sans-serif}
+.intro-wrap[hidden]{display:none}
+/* the paper clip over its top edge at the right corner, a little off kilter: its outer (bigger) loop in front of the
+   card, its inner loop behind it (seen through the vellum). The two halves are one render, cut where the wire crosses the edge */
+.intro-clip{position:absolute;top:-30px;right:22px;rotate:11deg;filter:drop-shadow(1px 3px 3px rgba(20,24,30,.28));width:38px;height:auto;pointer-events:none}
+.intro-clip--back{z-index:0}
+.intro-clip--front{z-index:2}
+/* its text: 18px on 24px lines, each trimmed to cap height and baseline so the gaps are the ones you see (the title
+   to the line under it 14, that line to the list 19, the list items 16 apart); the title semibold, the rest regular.
+   The bullets start on the title's left edge */
+.intro p,.intro li{margin:0;font-size:18px;font-weight:400;line-height:24px;text-box:trim-both cap alphabetic}
+.intro .intro-title{font-weight:600;margin-bottom:4px}
+.intro ul{margin:9px 0 0;padding-left:17px}
+.intro li+li{margin-top:16px}
+/* behind the card: the page blurred and dimmed with 26% black; it fades out as the card folds away. Selectable in
+   finetune for now, so it can be tuned (put data-finetune-ui back on it to have finetune leave it alone) */
+.scrim{position:fixed;inset:0;z-index:3;background:rgba(0,0,0,.26);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.scrim[hidden]{display:none}
+/* the note as it folds away: three slices of a copy of the card, glass and all, so nothing changes when they take over. Each slice
+   is two-sided, the back plain paper; a crease shade darkens toward the folds as they close */
+.fold{position:fixed;z-index:5;pointer-events:none}
+.fold-panel{position:absolute;left:0;width:100%;transform-style:preserve-3d}
+.fold-face{position:absolute;inset:0;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.fold-copy{position:absolute;left:0;margin:0;visibility:visible;box-shadow:none}
+.fold-back{transform:rotateX(180deg);background:#f4f4f4}
+.fold-crease{position:absolute;inset:0;opacity:0}
+.fold-crease--top{background:linear-gradient(to top,rgba(0,0,0,.6),transparent 60%)}
+.fold-crease--mid{background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 35%,transparent 65%,rgba(0,0,0,.6))}
+.fold-crease--bot{background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent 60%)}
+
+/* once the card has gone: an info button in the bottom right corner, over everything (Figma's help button). UI3's
+   look in finetune's light or dark theme: its tokens, switched by html[data-ft-theme] (fallbacks are the light ones) */
+.help{position:fixed;right:16px;bottom:16px;z-index:2147483647;display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:var(--ft-i-surface,#fff);color:var(--ft-i-text,rgba(0,0,0,.9));box-shadow:var(--ft-elev-200);cursor:default}
+.help svg{display:block;width:16px;height:16px}
+/* its hover: a one-line note as a UI3 tooltip (bg-tooltip, 11/16 Inter, 4 8 padding, 5 corners, elevation 300), 6px
+   above the button, 8px in from the window's edge, its caret on the button's centre */
+.help-tip{position:fixed;right:8px;bottom:54px;z-index:2147483647;padding:4px 8px;border-radius:5px;background:var(--ft-dark,#1E1E1E);color:var(--ft-on-dark,#fff);font:450 11px/16px "Inter",sans-serif;letter-spacing:.005em;white-space:nowrap;box-shadow:var(--ft-elev-300);pointer-events:none}
+.help-tip::before{content:"";position:absolute;bottom:-4px;right:20px;border-style:solid;border-width:4px 4px 0;border-color:var(--ft-dark,#1E1E1E) transparent transparent}
+.help-tip p{margin:0}
+.help[hidden],.help-tip[hidden]{display:none}
+/* the info button's menu (Figma's help menu): finetune's dark menu, the hovered row in the mode's colour (blue in
+   Design, pink in Motion: finetune's --ft-accent) */
+.help-menu{position:fixed;right:16px;bottom:56px;z-index:2147483647;min-width:160px;padding:8px;border-radius:13px;background:var(--ft-dark,#1E1E1E);color:var(--ft-on-dark,#fff);font:450 11px/16px "Inter",sans-serif;letter-spacing:.005em;box-shadow:var(--ft-elev-400,0 2px 5px rgba(0,0,0,.15),0 10px 16px rgba(0,0,0,.12))}
+.help-menu button{display:flex;align-items:center;width:100%;height:24px;padding:0 8px;border:0;border-radius:5px;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-align:left;white-space:nowrap;cursor:default}
+.help-menu button:hover,.help-menu button:focus-visible{background:var(--ft-accent,#0D99FF);outline:none}
+/* Keyboard shortcuts: a sheet along the bottom of the window (Figma's), only finetune's View keys, the ways to show
+   and hide it. A key you've used this visit lights up in the mode's colour, as Figma marks the ones you know */
+.keys{position:fixed;left:0;right:0;bottom:0;z-index:2147483647;padding:0 0 32px;background:var(--ft-i-surface,#fff);color:var(--ft-i-text,rgba(0,0,0,.9));border-top:1px solid var(--ft-i-border,#E6E6E6);font:450 13px/22px "Inter",sans-serif;letter-spacing:-.0025em;box-shadow:var(--ft-elev-400,0 -4px 16px rgba(0,0,0,.1))}
+.keys-tabs{position:relative;display:flex;justify-content:center;height:48px;border-bottom:1px solid var(--ft-i-border,#E6E6E6)}
+.keys-tab{display:grid;place-items:center;padding:0 32px;border-left:1px solid var(--ft-i-border,#E6E6E6);border-right:1px solid var(--ft-i-border,#E6E6E6);margin-bottom:-1px;background:var(--ft-i-surface,#fff)}
+.keys-x{position:absolute;right:16px;top:12px;display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;border-radius:5px;background:none;color:inherit;cursor:default}
+.keys-x:hover{background:var(--ft-i-hover,rgba(0,0,0,.06))}
+.keys-x svg{display:block;width:24px;height:24px}
+.keys-list{display:grid;grid-template-columns:max-content max-content;column-gap:120px;row-gap:12px;width:max-content;margin:32px auto 0}
+.keys-row{display:contents}
+.keys-name{display:flex;align-items:center}
+.keys-caps{display:flex;gap:4px;justify-content:flex-end}
+.keys-cap{display:grid;place-items:center;min-width:32px;height:32px;padding:0 8px;box-sizing:border-box;border:1px solid var(--ft-i-border,#E6E6E6);border-radius:5px}
+.keys-row.is-used .keys-name{color:var(--ft-accent-text,#007BE5)}
+.keys-row.is-used .keys-cap{border-color:transparent;background:var(--ft-accent,#0D99FF);color:#fff}
+.help-menu[hidden],.keys[hidden]{display:none}
+
+/* bottom: the tags across the full width, the name under them; a margin (not padding) holds them off the bottom,
+   so the box hugs the two */
+.bottom{grid-column:2 / -1;grid-row:3;display:flex;flex-direction:column;align-items:flex-start;gap:24px;margin-bottom:52px}
+/* the tags invert too: #414141 on difference reads as the page's grey (#BEBEBE) on white, and inverts over a picture */
+.tags{color:#414141;mix-blend-mode:difference}
+/* the blend inverts a text selection too, so its highlight is given pre-inverted: #4B2A01 lands as the usual light blue
+   (#B4D5FE) on white */
+.tags::selection,.mark::selection{background:#4b2a01}
+/* the name inverts whatever is under it (white on difference: black on the page, the picture's negative over one) */
+.mark{font-family:var(--sans);font-size:16px;font-weight:700;letter-spacing:.06em;line-height:20px;color:#fff;mix-blend-mode:difference}
+
+/* the pictures: on a drum around the window's vertical axis, 70% of the window wide in radius, seen with deep
+   perspective, turning once every 500 s. Each picture turns itself (no wrapper, so finetune selects pictures, not
+   the drum): all run one drum-turn animation, their shared vanishing point the window's centre. --a is a picture's angle round the drum (0 = facing you; at the front an
+   angle is its old column place: arc = distance from the middle), --cols how many columns wide, --y its top in
+   percent of the window's height. Cards facing away are hidden */
+:root{--n:16;--col:calc((100vw - var(--edge) * 2 - var(--gap) * (var(--n) - 1)) / var(--n));--drum:70vw}
+@property --turn{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes drum-turn{to{--turn:-360deg}}
+.tile{--w:calc(var(--cols) * var(--col) + (var(--cols) - 1) * var(--gap));position:absolute;z-index:1;left:50%;top:calc(var(--y) * 1%);display:block;width:var(--w);height:auto;margin-left:calc(var(--w) / -2);transform-origin:50% calc(50vh - var(--y) * 1vh) 0;transform:translateY(var(--bob)) perspective(280vw) translateZ(calc(-1 * var(--drum))) rotateY(calc(var(--a) + var(--turn))) translateZ(var(--drum));-webkit-backface-visibility:hidden;backface-visibility:hidden;animation:drum-turn 500s linear infinite,wave 7s ease-in-out infinite}
+/* and they ride a wave as they come round: each rises and falls a little, a step behind the one
+   before, three swells round the drum (each picture's start in the swell is set from its angle, in the script). The bob is its own variable, so
+   translate stays free for finetune's moves */
+@property --bob{syntax:"<length>";inherits:false;initial-value:0px}
+@keyframes wave{0%,100%{--bob:-14px}50%{--bob:14px}}
+/* narrower windows: fewer columns, so a column never gets thin (8 under 1024 wide, 4 under 600), tighter margins and
+   gutters, and the big serif comes down a step. The pictures keep their column counts, so they stay a usable size */
+@media (max-width:1023px){:root{--n:8;--edge:16px;--gap:16px}.nav,.tags{font-size:24px;line-height:26px}.nav{grid-column:2 / -1;margin-top:28px}.bottom{margin-bottom:36px;gap:16px}}
+@media (max-width:599px){:root{--n:4}.nav,.tags{font-size:20px;line-height:22px}.nav{grid-column:1 / -1}.bottom{grid-column:1 / -1}}
+</style>
 </head>
 <body>
-  <main class="hero">
-    <p class="eyebrow">Meta · Redesign</p>
-    <h1>Sliders for the last 10% of a design.</h1>
-    <!-- Placeholder image, inline so the page still opens straight from Finder. -->
-    <img class="placeholder" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%201000%22%3E%3Crect%20width%3D%221600%22%20height%3D%221000%22%20fill%3D%22%23262626%22%2F%3E%3Cpath%20transform%3D%22translate(672%20372)%22%20fill%3D%22%234D4D4D%22%20d%3D%22M216%2C40H40A16%2C16%2C0%2C0%2C0%2C24%2C56V200a16%2C16%2C0%2C0%2C0%2C16%2C16H216a16%2C16%2C0%2C0%2C0%2C16-16V56A16%2C16%2C0%2C0%2C0%2C216%2C40Zm0%2C16V158.75l-26.07-26.06a16%2C16%2C0%2C0%2C0-22.63%2C0l-20%2C20-44-44a16%2C16%2C0%2C0%2C0-22.62%2C0L40%2C149.37V56ZM40%2C172l52-52%2C80%2C80H40Zm176%2C28H194.63l-36-36%2C20-20L216%2C181.38V200ZM144%2C100a12%2C12%2C0%2C1%2C1%2C12%2C12A12%2C12%2C0%2C0%2C1%2C144%2C100Z%22%2F%3E%3C%2Fsvg%3E" width="1600" height="1000" alt="Placeholder image">
-    <div class="card"><p class="card-label">A rectangle with text in it.</p></div>
-  </main>
+<main class="page">
+  <nav class="nav"><a href="#">Learn</a>, <a href="#">Explore</a>, <a href="#">Discover</a>.</nav>
 
-  <script src="../src/finetune.js"></script>
-  <script>
-  finetune({
-    id: "hero",                 // panel title and the localStorage key
-    key: "d",                   // hotkey that shows and hides the panel
-    target: ":root",            // where the CSS variables are written; any selector
-    controls: {
-      "--hero-size":     { type: "range",  value: 40.6, min: 24, max: 96, step: 0.1, unit: "px", label: "size" },
-      "--hero-weight":   { type: "select", value: 400, options: [300, 400, 500, 600], label: "weight" },
-      "--hero-leading":  { type: "range",  value: 1.12, min: 0.9, max: 1.6, step: 0.01, label: "leading" },
-      "--hero-tracking": { type: "range",  value: -0.02, min: -0.05, max: 0.05, step: 0.001, unit: "em", label: "tracking" },
-      "--hero-ink":      { type: "color",  value: "#F6F4EF", chips: ["#F6F4EF", "#1C1914", "#C08562", "#C3D1CF"], label: "ink" },
-      "--hero-italic":   { type: "toggle", value: false, on: "italic", off: "normal", label: "italic" },
-      "eyebrow":         { type: "text",   value: "Meta · Redesign", label: "eyebrow" },   // no "--": onChange only
-      "speed":           { type: "range",  value: 1, min: 0.25, max: 3, step: 0.05, label: "speed" },
-    },
-    presets: {
-      committed: { "--hero-size": 40.6, "--hero-weight": 400, "--hero-leading": 1.12, "--hero-tracking": -0.02 },
-    },
-    onChange(values) {
-      document.querySelector(".eyebrow").textContent = values.eyebrow;
-    },
+  <div class="scrim"></div>
+  <div class="intro-wrap">
+  <img class="intro-clip intro-clip--back" src="img/paperclip-inner.png" width="492" height="1380" alt="">
+  <div class="intro">
+    <p class="intro-title">Welcome to Finetune!</p>
+    <p>This is a live demo. To get started:</p>
+    <ul>
+      <li>Click anything on the page and<br>tune it in the right panel.</li>
+      <li>Switch to Motion at the bottom to adjust animations.</li>
+      <li>Save or copy back to code with the controls on the left.</li>
+    </ul>
+  </div>
+  <img class="intro-clip intro-clip--front" src="img/paperclip-outer.png" width="492" height="1380" alt="">
+  </div>
+
+  <!-- the pictures, on a drum that turns slowly (finetune's Motion tab tunes its speed). The first nine are the
+       starting view, each where it sat on the columns; the rest go round the back, similar pictures kept apart -->
+  <img class="tile" src="img/03-fig.png" width="736" height="920" alt="" style="--a:-40.7deg;--cols:2;--y:3">
+  <img class="tile" src="img/04-chess.png" width="850" height="619" alt="" style="--a:-12.8deg;--cols:3;--y:4">
+  <img class="tile" src="img/06.webp" width="854" height="634" alt="" style="--a:23.8deg;--cols:3;--y:-9">
+  <img class="tile" src="img/02-pond-dark.webp" width="720" height="901" alt="" style="--a:10.2deg;--cols:2;--y:37">
+  <img class="tile" src="img/05-lily.webp" width="800" height="1200" alt="" style="--a:40.7deg;--cols:2;--y:42">
+  <img class="tile" src="img/03-moon.png" width="512" height="640" alt="" style="--a:-33.3deg;--cols:2;--y:46">
+  <img class="tile" src="img/03-room.webp" width="735" height="910" alt="" style="--a:-5.0deg;--cols:2;--y:62">
+  <img class="tile" src="img/01-penguin.png" width="736" height="981" alt="" style="--a:15.4deg;--cols:2;--y:86">
+  <img class="tile" src="img/forest.webp" width="1500" height="2000" alt="" style="--a:40.7deg;--cols:2;--y:95">
+  <img class="tile" src="img/water-glass.webp" width="775" height="969" alt="" style="--a:-169.7deg;--cols:2;--y:33">
+  <img class="tile" src="img/03-room.webp" width="735" height="910" alt="" style="--a:-164.5deg;--cols:2;--y:82">
+  <img class="tile" src="img/corridor.png" width="500" height="375" alt="" style="--a:-156.7deg;--cols:3;--y:-10">
+  <img class="tile" src="img/lilies-painting.webp" width="768" height="1280" alt="" style="--a:-143.9deg;--cols:2;--y:38">
+  <img class="tile" src="img/03-fig.png" width="736" height="920" alt="" style="--a:-143.9deg;--cols:2;--y:91">
+  <img class="tile" src="img/forest.webp" width="1500" height="2000" alt="" style="--a:-132.2deg;--cols:2;--y:44">
+  <img class="tile" src="img/water-ripples.webp" width="907" height="1500" alt="" style="--a:-132.2deg;--cols:2;--y:96">
+  <img class="tile" src="img/06.webp" width="854" height="634" alt="" style="--a:-119.2deg;--cols:3;--y:-7">
+  <img class="tile" src="img/loft.webp" width="1611" height="2000" alt="" style="--a:-111.5deg;--cols:2;--y:88">
+  <img class="tile" src="img/05-lily.webp" width="800" height="1200" alt="" style="--a:-106.4deg;--cols:2;--y:39">
+  <img class="tile" src="img/cat-logo.png" width="768" height="768" alt="" style="--a:-90.9deg;--cols:2;--y:64">
+  <img class="tile" src="img/books-poster.webp" width="1440" height="1905" alt="" style="--a:-83.1deg;--cols:3;--y:6">
+  <img class="tile" src="img/water-glass.webp" width="775" height="969" alt="" style="--a:-65.1deg;--cols:2;--y:48">
+  <img class="tile" src="img/art-books.webp" width="1080" height="1440" alt="" style="--a:-59.9deg;--cols:2;--y:5">
+  <img class="tile" src="img/loft.webp" width="1611" height="2000" alt="" style="--a:59.9deg;--cols:2;--y:96">
+  <img class="tile" src="img/lilies-painting.webp" width="768" height="1280" alt="" style="--a:59.9deg;--cols:2;--y:47">
+  <img class="tile" src="img/corridor.png" width="500" height="375" alt="" style="--a:72.8deg;--cols:3;--y:-4">
+  <img class="tile" src="img/03-fig.png" width="736" height="920" alt="" style="--a:80.5deg;--cols:2;--y:91">
+  <img class="tile" src="img/water-ripples.webp" width="907" height="1500" alt="" style="--a:85.7deg;--cols:2;--y:42">
+  <img class="tile" src="img/03-moon.png" width="512" height="640" alt="" style="--a:101.2deg;--cols:2;--y:67">
+  <img class="tile" src="img/04-chess.png" width="850" height="619" alt="" style="--a:108.9deg;--cols:3;--y:9">
+  <img class="tile" src="img/02-pond-dark.webp" width="720" height="901" alt="" style="--a:127.0deg;--cols:2;--y:51">
+  <img class="tile" src="img/art-books.webp" width="1080" height="1440" alt="" style="--a:132.2deg;--cols:2;--y:8">
+  <img class="tile" src="img/cat-logo.png" width="768" height="768" alt="" style="--a:143.9deg;--cols:2;--y:-1">
+  <img class="tile" src="img/05-lily.webp" width="800" height="1200" alt="" style="--a:149.0deg;--cols:2;--y:42">
+  <img class="tile" src="img/pond-lotus.webp" width="1000" height="665" alt="" style="--a:167.0deg;--cols:3;--y:0">
+  <img class="tile" src="img/01-penguin.png" width="736" height="981" alt="" style="--a:174.8deg;--cols:2;--y:58">
+
+  <div class="bottom">
+    <p class="tags">Tags: Novels, Paperbacks, Posters, Chess, Poker, Myths, Ponds, Water Lilies, Calla Lilies, Figs, Moons, Fields, Forests, Glass Rooms, Windows, Reading, Walking, Waiting, Wondering, Margins, Notes, Maps, Field Guides, Night Skies, Small Hours, Slow Mornings, Long Evenings, Old Films, Open Questions.</p>
+    <a class="mark" href="#">STAY CURIOUS.</a>
+  </div>
+</main>
+
+<!-- the info button and its tooltip: moved to the end of the body when the card goes, so they sit over finetune too -->
+<button class="help" type="button" aria-label="Help and resources" data-finetune-ui hidden>
+  <!-- UI3 kit icon.16.info (node 1:540444), at 1:1 -->
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M8 3C10.7614 3 13 5.23858 13 8C13 10.7614 10.7614 13 8 13C5.23858 13 3 10.7614 3 8C3 5.23858 5.23858 3 8 3ZM2 8C2 11.3137 4.68629 14 8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8ZM7.48297 10.5355C7.48297 10.8195 7.71318 11.0497 7.99717 11.0497C8.28116 11.0497 8.51137 10.8195 8.51137 10.5355V7.20027C8.51137 6.91629 8.28116 6.68607 7.99717 6.68607C7.71318 6.68607 7.48297 6.91629 7.48297 7.20027V10.5355ZM7.57956 5.90482C7.69698 6.01277 7.83713 6.06675 8.00001 6.06675C8.16478 6.06675 8.30493 6.01277 8.42047 5.90482C8.53789 5.79497 8.5966 5.66334 8.5966 5.50993C8.5966 5.35463 8.53789 5.223 8.42047 5.11505C8.30493 5.0052 8.16478 4.95027 8.00001 4.95027C7.83713 4.95027 7.69698 5.0052 7.57956 5.11505C7.46213 5.223 7.40342 5.35463 7.40342 5.50993C7.40342 5.66334 7.46213 5.79497 7.57956 5.90482Z" fill="currentColor"/></svg>
+</button>
+<div class="help-tip" role="tooltip" data-finetune-ui hidden>
+  <p>This is a live demo of Finetune. Click the info icon for help and resources.</p>
+</div>
+<div class="help-menu" role="menu" data-finetune-ui hidden>
+  <button type="button" role="menuitem" data-help="keys">Keyboard shortcuts</button>
+  <button type="button" role="menuitem" data-help="guide">User guide</button>
+</div>
+<div class="keys" role="dialog" aria-label="Keyboard shortcuts" data-finetune-ui hidden>
+  <div class="keys-tabs">
+    <div class="keys-tab">View</div>
+    <!-- UI3 kit icon close, 24 frame -->
+    <button class="keys-x" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.35 7.65a.5.5 0 0 0-.7.7L11.29 12l-3.64 3.65a.5.5 0 0 0 .7.7L12 12.71l3.65 3.64a.5.5 0 0 0 .7-.7L12.71 12l3.64-3.65a.5.5 0 0 0-.7-.7L12 11.29 8.35 7.65Z" fill="currentColor"/></svg></button>
+  </div>
+  <div class="keys-list"></div>
+</div>
+
+<script src="../src/finetune.js"></script>
+<script>
+  // help: false: the demo has its own info button (the live-demo note), with the same menu
+  finetune({ id: "demo", help: false });
+
+  // where each picture is in the wave: three swells round the drum, so its start follows its angle
+  document.querySelectorAll(".tile").forEach((t) => {
+    const a = parseFloat(t.style.getPropertyValue("--a"));
+    t.style.animationDelay = "0s, " + (-(((a % 120) + 120) % 120) / 120 * 7).toFixed(2) + "s";
   });
-  </script>
+  // every picture on one clock (the page's own, from load): a copy finetune makes (⌘D) would otherwise start its drum
+  // turn from zero and show up somewhere else on the drum, out of step with its original
+  const onClock = (t) => t.getAnimations().forEach((x) => { x.startTime = 0; });
+  document.querySelectorAll(".tile").forEach(onClock);
+  new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => {
+    if (n.classList && n.classList.contains("tile")) requestAnimationFrame(() => onClock(n));
+  }))).observe(document.querySelector(".page"), { childList: true });
+
+  // The welcome card goes on the first click anywhere, or after 20 seconds: its clip lifts off, it folds into
+  // thirds and flies into the info button at the bottom right. Hovering the button shows the card's words as a tooltip.
+  (() => {
+    const wrap = document.querySelector(".intro-wrap");
+    const card = document.querySelector(".intro");
+    const clips = wrap.querySelectorAll(".intro-clip");
+    const scrim = document.querySelector(".scrim");
+    const help = document.querySelector(".help");
+    const tip = document.querySelector(".help-tip");
+    const GUIDE = "https://github.com/monica-makes/finetune/blob/main/docs/GUIDE.md";
+    // true keeps the card up (to tune it): nothing sends it away.
+    const STAYS = false;
+
+    // The close, on the curves of a tri-fold letter close (sampled 60 times a second over 1 s, linear between
+    // samples, so the springs are in the numbers): the bottom third folds up, the top third folds down over it, the
+    // folded note lifts a touch and flies toward the info button, shrinking; at the hand-off the button takes over at
+    // the note's size and settles home with a small bounce. Values: 0 to 1 of each move (fold: of 180 degrees; fly:
+    // of the way to the hand-off; size: of the way to the hand-off size; chip: of the way home, over 1 = the bounce).
+    const CURVES = {"start":26,"dur":1000,"foldTop":[-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,0.0004,0.0032,0.0092,0.0195,0.035,0.0568,0.0858,0.1227,0.1678,0.2207,0.2805,0.3453,0.4131,0.4815,0.5481,0.6111,0.6692,0.7214,0.7676,0.8078,0.8423,0.8716,0.8962,0.9168,0.9338,0.9477,0.9591,0.9683,0.9757,0.9816,0.9863,0.9899,0.9927,0.9949,0.9964,0.9976,0.9985,0.999,0.9994,0.9997,0.9999,0.9999,1.0,1.0,1.0,1.0],"foldBot":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0006,0.002,0.0047,0.0092,0.0161,0.0261,0.0401,0.0592,0.0843,0.1168,0.1576,0.2077,0.2673,0.3359,0.412,0.4931,0.5757,0.6562,0.7311,0.7977,0.8544,0.9006,0.9366,0.9633,0.9817,0.9932,0.9988,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"flyX":[0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0001,-0.0001,-0.0002,-0.0002,-0.0003,-0.0005,-0.0007,-0.001,-0.0014,-0.002,-0.0029,-0.004,-0.0054,-0.0072,-0.0091,-0.0101,-0.0085,-0.0008,0.0186,0.0568,0.1215,0.2177,0.3452,0.4959,0.6546,0.8017,0.9171,0.9854,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"flyY":[0,0.0,0.0,0.0,-0.0,-0.0,-0.0,-0.0,-0.0001,-0.0001,-0.0001,-0.0002,-0.0003,-0.0005,-0.0007,-0.001,-0.0014,-0.002,-0.0029,-0.004,-0.0054,-0.0072,-0.0091,-0.0101,-0.0085,-0.0008,0.0186,0.0568,0.1215,0.2177,0.3452,0.4959,0.6546,0.8017,0.9172,0.9854,1.0,0.9997,0.9981,0.9942,0.9867,0.9747,0.9575,0.9356,0.9108,0.8856,0.8622,0.842,0.8254,0.8122,0.8021,0.7947,0.7894,0.7857,0.7833,0.7819,0.781,0.7806,0.7805,0.7804,0.7804],"flyS":[0,-0.0009,-0.0009,-0.0009,-0.0009,-0.0009,-0.0011,-0.0011,-0.0011,-0.0011,-0.0011,-0.0013,-0.0014,-0.0016,-0.0017,-0.0021,-0.0025,-0.003,-0.0038,-0.0051,-0.0065,-0.0082,-0.0101,-0.0111,-0.0095,-0.0017,0.0176,0.0559,0.1206,0.2169,0.3445,0.4954,0.6543,0.8014,0.9171,0.9853,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"flyO":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"crease":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0002,0.0018,0.0052,0.011,0.0198,0.032,0.0479,0.0677,0.0906,0.115,0.1389,0.1592,0.1733,0.1797,0.1779,0.1691,0.1552,0.1382,0.12,0.1022,0.0856,0.0707,0.0576,0.0465,0.0372,0.0294,0.0231,0.0179,0.0137,0.0104,0.0078,0.0057,0.0041,0.0029,0.002,0.0013,0.0009,0.0005,0.0003,0.0002,0.0001,0.0,0.0,0.0,0.0,0.0],"chip":{"start":140,"dur":966.6999999999998,"o":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1988,0.4482,0.6635,0.8479,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"p":[0.0,-0.0,-0.0,-0.0,-0.0,-0.0,-0.0001,-0.0001,-0.0002,-0.0002,-0.0004,-0.0005,-0.0008,-0.0011,-0.0016,-0.0022,-0.0031,-0.0043,-0.0058,-0.0078,-0.01,-0.0117,-0.0113,-0.0057,0.0104,0.0445,0.1052,0.1999,0.3313,0.4947,0.6767,0.8572,1.0133,1.1245,1.1763,1.1791,1.1785,1.1766,1.1726,1.1654,1.1544,1.1394,1.1209,1.1007,1.0807,1.0626,1.047,1.0342,1.0242,1.0165,1.0108,1.0068,1.004,1.0022,1.0011,1.0005,1.0001,1.0,1.0,1.0],"px":[0.0,0.0,-0.0,-0.0,-0.0,-0.0,-0.0001,-0.0001,-0.0001,-0.0002,-0.0003,-0.0005,-0.0007,-0.0009,-0.0013,-0.0019,-0.0026,-0.0036,-0.005,-0.0066,-0.0085,-0.0099,-0.0096,-0.0048,0.0088,0.0377,0.0892,0.1695,0.281,0.4196,0.574,0.7271,0.8595,0.9538,0.9977,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001,1.0001],"s":[1.0,1.0,1.0,1.0,1.0,1.0,1.0001,1.0001,1.0001,1.0002,1.0003,1.0005,1.0007,1.0009,1.0013,1.0019,1.0026,1.0036,1.005,1.0066,1.0085,1.0099,1.0096,1.0048,0.9912,0.9623,0.9108,0.8304,0.7189,0.5802,0.4258,0.2727,0.1402,0.0459,0.002,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004,-0.0004]},"scrim":{"start":114,"dur":200,"easing":"cubic-bezier(0.23, 1, 0.32, 1)"}};
+    const ease = CURVES.scrim.easing;
+    const at = (from) => from - CURVES.start;   // each animation's start, from the fold's
+    const keys = (arr, fn) => arr.map(fn);
+
+    let gone = false;
+    const dismiss = () => {
+      if (gone) return;
+      gone = true;
+      clearTimeout(timer);
+      removeEventListener("pointerdown", dismiss, true);
+      const r = card.getBoundingClientRect();
+      const t = r.height / 3;
+
+      // the scrim clears on the letter close's scrim curve
+      // (one fade of the whole scrim: easing its blur and its tint apart flickered the page's brightness)
+      scrim.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, delay: 88, easing: ease, fill: "forwards" });
+
+      // the clip lifts most of the way off the card's top edge while the note folds, then fades as the note flies
+      const c0 = clips[0].getBoundingClientRect();
+      // 60% of the way clear of the edge, on even px
+      const lift = Math.round((c0.bottom - r.top + 12) * 0.6 / 2) * 2;
+      clips.forEach((c) => {
+        c.animate([{ translate: "0 0" }, { translate: `0 ${-lift}px` }], { duration: 360, easing: ease, fill: "forwards" });
+        c.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, delay: 360, fill: "forwards" });
+      });
+
+      // the note: three slices of a paper copy of the card, so the fold never has to bend the blur
+      const fold = document.createElement("div");
+      fold.className = "fold";
+      Object.assign(fold.style, { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+      const paper = getComputedStyle(card);
+      const slice = (k) => {
+        const panel = document.createElement("div");
+        panel.className = "fold-panel";
+        Object.assign(panel.style, { top: k * t + "px", height: t + "px", transformOrigin: k === 0 ? "50% 100%" : "50% 0" });
+        const front = document.createElement("div");
+        front.className = "fold-face";
+        const copy = card.cloneNode(true);
+        copy.classList.add("fold-copy");
+        copy.style.top = -k * t + "px";
+        front.append(copy);
+        const crease = document.createElement("div");
+        crease.className = "fold-crease fold-crease--" + ["top", "mid", "bot"][k];
+        front.append(crease);
+        panel.append(front);
+        if (k !== 1) {
+          const back = document.createElement("div");
+          back.className = "fold-face fold-back";
+          // the back is the same paper: the card's grain over plain paper
+          Object.assign(back.style, { backgroundImage: paper.backgroundImage, backgroundSize: paper.backgroundSize });
+          panel.append(back);
+        }
+        return { panel, crease };
+      };
+      const [top, mid, bot] = [0, 1, 2].map(slice);
+      fold.append(mid.panel, bot.panel, top.panel);
+      // the card itself (glass and paper texture) stays until the first slice starts to move, then the slices take over
+      fold.style.visibility = "hidden";
+      document.body.append(fold);
+      const moves = CURVES.foldBot.findIndex((v) => v > 0.003);
+      setTimeout(() => { fold.style.visibility = ""; card.style.visibility = "hidden"; }, (moves * CURVES.dur) / (CURVES.foldBot.length - 1));
+
+      const B = { x: innerWidth - 32, y: innerHeight - 32 };            // the info button's centre
+      const C = { x: r.left + r.width / 2, y: r.top + r.height / 2 };   // the note's
+      const H = B;                                                        // the note flies all the way to the button
+      const S = 0.368;                                                   // the note's size at the hand-off
+      const opt = { duration: CURVES.dur, easing: "linear", fill: "forwards" };
+      top.panel.animate(keys(CURVES.foldTop, (v) => ({ transform: `perspective(1720px) translateZ(2px) rotateX(${-180 * v}deg)` })), opt);
+      bot.panel.animate(keys(CURVES.foldBot, (v) => ({ transform: `perspective(1720px) translateZ(1px) rotateX(${180 * v}deg)` })), opt);
+      // opacity goes on the faces, never on a slice: an opacity on a slice flattens it and shows its back mirrored
+      [top, mid, bot].forEach((s) => {
+        s.panel.querySelectorAll(".fold-face").forEach((f) => f.animate(keys(CURVES.flyO, (v) => ({ opacity: v })), opt));
+        s.crease.animate(keys(CURVES.crease, (v) => ({ opacity: v })), opt);
+      });
+      fold.animate(CURVES.flyX.map((x, i) => ({
+        transform: `translate(${(H.x - C.x) * x}px, ${(H.y - C.y) * CURVES.flyY[i]}px) scale(${1 + (S - 1) * CURVES.flyS[i]})`,
+      })), opt);
+
+      // the info button takes over where the note lands: it scales up to its size in place on a spring (a little past,
+      // then back), fading in on the hand-off's curve
+      document.body.append(help, tip);
+      help.hidden = false;
+      const ch = CURVES.chip;
+      const spring = (k) => { const z = 0.45, w = 18, t = k * ch.dur / 1000, wd = w * Math.sqrt(1 - z * z);
+        return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t)); };
+      const from = ch.o.findIndex((o) => o > 0);                          // the hand-off sample
+      help.animate(ch.o.map((o, i) => ({
+        opacity: o,
+        transform: `scale(${i < from ? 0 : spring((i - from) / (ch.o.length - 1))})`,
+      })), { duration: ch.dur, delay: at(ch.start), easing: "linear", fill: "backwards" });
+
+      setTimeout(() => {
+        fold.remove();
+        wrap.hidden = true;
+        scrim.hidden = true;
+      }, CURVES.dur + 60);
+    };
+    const timer = STAYS ? 0 : setTimeout(dismiss, 20000);
+    if (!STAYS) {
+      addEventListener("pointerdown", dismiss, true);
+    }
+
+    // The tooltip, timed like finetune's (and Figma's): 300 ms after the pointer arrives, gone when it leaves or clicks.
+    let tipTimer = 0;
+    const hideTip = () => { clearTimeout(tipTimer); tip.hidden = true; };
+    help.addEventListener("pointerenter", () => { clearTimeout(tipTimer); tipTimer = setTimeout(() => { tip.hidden = false; }, 300); });
+    help.addEventListener("pointerleave", hideTip);
+    help.addEventListener("pointerdown", hideTip);
+    // the button opens a menu: Keyboard shortcuts, User guide
+    const menu = document.querySelector(".help-menu");
+    const sheet = document.querySelector(".keys");
+    const showMenu = (on) => { menu.hidden = !on; if (on) hideTip(); };
+    help.addEventListener("click", () => showMenu(menu.hidden));
+    addEventListener("pointerdown", (e) => { if (!menu.hidden && !menu.contains(e.target) && !help.contains(e.target)) showMenu(false); }, true);
+    menu.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-help]");
+      if (!b) return;
+      showMenu(false);
+      if (b.dataset.help === "guide") window.open(GUIDE, "_blank", "noopener");
+      else sheet.hidden = false;
+    });
+    sheet.querySelector(".keys-x").addEventListener("click", () => { sheet.hidden = true; });
+    addEventListener("keydown", (e) => { if (e.key === "Escape") { showMenu(false); sheet.hidden = true; } });
+
+    // the sheet's keys: finetune's ways to show and hide itself, with ⌘ or Ctrl for this computer
+    const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
+    const mod = MAC ? "⌘" : "Ctrl";
+    const KEYS = [
+      // finetune's own keys first, then Figma's
+      { name: "Show/Hide UI", caps: ["D"], is: (e) => !e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === "d" },
+      { name: "Hide panels, keep editing", caps: ["E"], is: (e) => !e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === "e" },
+      { name: "See through panels", caps: ["T"], is: (e) => !e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === "t" },
+      { name: "Figma's shortcut to show/hide UI", caps: [mod, "\\"], is: (e) => (e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === "Backslash" },
+      { name: "Minimize UI", caps: ["⇧", mod, "\\"], is: (e) => (e.metaKey || e.ctrlKey) && e.shiftKey && e.code === "Backslash" },
+    ];
+    const list = sheet.querySelector(".keys-list");
+    KEYS.forEach((k) => {
+      k.row = document.createElement("div");
+      k.row.className = "keys-row";
+      k.row.innerHTML = '<div class="keys-name"></div><div class="keys-caps"></div>';
+      k.row.firstChild.textContent = k.name;
+      k.caps.forEach((c) => { const s = document.createElement("span"); s.className = "keys-cap"; s.textContent = c; k.row.lastChild.append(s); });
+      list.append(k.row);
+    });
+    const typing = (t) => t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    addEventListener("keydown", (e) => {
+      if (typing(e.target)) return;
+      KEYS.forEach((k) => { if (k.is(e)) k.row.classList.add("is-used"); });
+    }, true);
+  })();
+</script>
 </body>
 </html>
