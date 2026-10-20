@@ -2073,7 +2073,10 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   // The first time finetune shows in this browser, a note in the middle of the window says the hotkey turns the
   // overlays off and on (her ask, 2026-10-14; the key in the tooltips' shortcut colour); kept in localStorage so it
   // shows once.
+  // A page can hold it back (hotkeyNote: false) and show it when it's ready with finetune.hotkeyNote(), say once its
+  // own welcome has gone; it still shows once per browser.
   const HOTKEY_NOTE_KEY = "finetune:tip:hotkey";
+  let noteHotkey = "d";
   function hotkeyNote(hotkey) {
     try {
       if (localStorage.getItem(HOTKEY_NOTE_KEY) === "shown") return;
@@ -15645,8 +15648,9 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         toolbar = makeToolbar(hotkey, opts.help !== false);
         selection = makeSelection();
         // open: false starts it hidden, for a page where something else (a button, the hotkey) opens it.
+        noteHotkey = hotkey;
         if (opts.open === false) showPanel(false);
-        else hotkeyNote(hotkey);
+        else if (opts.hotkeyNote !== false) hotkeyNote(hotkey);
       }
       // The controls panel: on the page when the call has controls (the inspector alone otherwise), shown and
       // hidden with the inspector (the hotkey, open: false).
@@ -15705,5 +15709,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   };
   // finetune.reset() for a page's own Reset button: the same as the panel's.
   finetune.reset = resetEdits;
+  // finetune.hotkeyNote() for a page that held the first-visit note back (hotkeyNote: false).
+  finetune.hotkeyNote = () => hotkeyNote(noteHotkey);
   window.finetune = finetune;
 })();
