@@ -3110,9 +3110,12 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     finishTyping();
     const n = editCount();
     if (!n) return toast("No changes to copy");
-    // The list asks for the bake itself, so pasting it is all it takes.
-    copyText("Bake these finetune changes into the code with the finetune skill:\n" + changesText()).then((ok) => {
-      toast(ok ? "Copied " + n + (n === 1 ? " change" : " changes") + ". Paste into Claude Code to bake." : "Couldn't reach the clipboard");
+    // The list asks for the bake itself, so pasting it is all it takes. A page can ask for something else first
+    // (finetune.copyPrompt, a string; the demo asks for a new site built from it, not a bake into the visitor's code).
+    const own = typeof finetune.copyPrompt === "string" && finetune.copyPrompt.trim();
+    const ask = own ? finetune.copyPrompt.trim() : "Bake these finetune changes into the code with the finetune skill:";
+    copyText(ask + "\n" + changesText()).then((ok) => {
+      toast(ok ? "Copied " + n + (n === 1 ? " change" : " changes") + (own ? ". Paste into Claude Code." : ". Paste into Claude Code to bake.") : "Couldn't reach the clipboard");
     });
   }
 
@@ -15937,6 +15940,8 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   };
   // finetune.reset() for a page's own Reset button: the same as the panel's.
   finetune.reset = resetEdits;
+  // finetune.copyPrompt = "…" for a page whose Copy changes should ask for something other than the bake.
+  finetune.copyPrompt = finetune.copyPrompt || "";
   // finetune.hotkeyNote() for a page that held the first-visit note back (hotkeyNote: false).
   finetune.hotkeyNote = () => hotkeyNote(noteHotkey);
   window.finetune = finetune;
