@@ -2689,16 +2689,30 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     } else Object.assign(g, { align: "stretch", offset: isNum(l.margin) ? l.margin : isNum(l.offset) ? l.offset : 0 });
     return g;
   }
+  // Breakpoints, as a site's grid changes at its @media widths (Figma's layout grid per breakpoint frame): a guide can
+  // carry other numbers for narrower windows, each { max, count, align, width, offset, gutter }, narrowest first. A
+  // band holds at window widths up to its max; the guide's own numbers hold above the widest. The width is the one
+  // media queries see (innerWidth), so a band lines up with the page's own @media.
+  const BAND_NUMS = ["count", "align", "width", "offset", "gutter"];
+  const validNums = (g) => ["count", "width", "offset", "gutter"].every((k) => isNum(g[k]) && g[k] >= 0)
+    && g.count >= 1 && GUIDE_ALIGN.some(([a]) => a === g.align);
+  const bandAt = (g) => (g.breakpoints || []).find((b) => window.innerWidth <= b.max) || g;
   function validGuide(g) {
     return !!g && g.type === "columns" && typeof g.visible === "boolean"
-      && !!g.color && /^[0-9A-F]{6}$/.test(g.color.hex) && isNum(g.color.opacity)
-      && ["count", "width", "offset", "gutter"].every((k) => isNum(g[k]) && g[k] >= 0)
-      && g.count >= 1 && GUIDE_ALIGN.some(([a]) => a === g.align);
+      && !!g.color && /^[0-9A-F]{6}$/.test(g.color.hex) && isNum(g.color.opacity) && validNums(g)
+      && (g.breakpoints === undefined || (Array.isArray(g.breakpoints)
+        && g.breakpoints.every((b, i, all) => !!b && isNum(b.max) && b.max >= 1 && validNums(b) && (!i || b.max > all[i - 1].max))));
   }
-  const copyGuides = (list) => list.map((g) => Object.assign({}, g, { color: Object.assign({}, g.color) }));
-  // A style's name, from its numbers: "12 col · 20 gutter · 50 margin".
+  const copyGuides = (list) => list.map((g) => {
+    const c = Object.assign({}, g, { color: Object.assign({}, g.color) });
+    if (g.breakpoints) c.breakpoints = g.breakpoints.map((b) => Object.assign({}, b));
+    return c;
+  });
+  // A style's name, from its numbers: "12 col · 20 gutter · 50 margin", and how many breakpoints it has, so two styles
+  // on the same wide numbers stay two.
   const styleName = (g) => g.count + " col · " + g.gutter + " gutter · " + (g.align === "stretch" ? g.offset + " margin"
-    : g.width + " wide · " + (g.align === "center" ? "centered" : g.align + " " + g.offset));
+    : g.width + " wide · " + (g.align === "center" ? "centered" : g.align + " " + g.offset))
+    + (g.breakpoints && g.breakpoints.length ? " · " + g.breakpoints.length + (g.breakpoints.length === 1 ? " breakpoint" : " breakpoints") : "");
 
   // The page the edits (and this page's styles) belong to. A single-page app that moves to another page and calls
   // finetune() there switches it (see switchPage), so a Save never lands under the last page's key.
@@ -2739,7 +2753,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     }
     return null;
   }
-  const guideName = (g) => "Columns (" + g.count + ")";
+  const guideName = (g) => "Columns (" + bandAt(g).count + ")";
 
   // Every edit made in the panel, kept in memory until Save puts it in localStorage (per page) so a
   // reload brings it back, and copied out as a list for the bake skill to write into the code.
@@ -2751,8 +2765,12 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   // shadows are box-shadow, Layer blur is filter, Background blur is backdrop-filter. Blurs are Figma's
   // numbers, twice the CSS blur radius.
   const STROKE_AT = [["inside", "Inside"], ["center", "Center"], ["outside", "Outside"]];
-  const EFFECT_TYPES = [["inner", "Inner shadow"], ["drop", "Drop shadow"], ["layer", "Layer blur"], ["background", "Background blur"]];
+  const EFFECT_TYPES = [["inner", "Inner shadow"], ["drop", "Drop shadow"], ["layer", "Layer blur"], ["background", "Background blur"], ["noise", "Noise"]];
   const isShadow = (fx) => fx.type === "drop" || fx.type === "inner";
+  // Figma's Noise (her ask, 2026-10-20: grain): Mono is one colour, Duo two, Multi every colour at one opacity.
+  // Noise size is the grain's size in px, Density how much of the layer it covers (%).
+  const NOISE_TYPES = [["mono", "Mono"], ["duo", "Duo"], ["multi", "Multi"]];
+  const noiseDefaults = () => ({ noiseType: "mono", size: 0.5, density: 50, second: { hex: "FFFFFF", opacity: 25, visible: true } });
   // Figma's new effect: a drop shadow, 0 4, blur 4, black at 25%.
   const newEffect = () => ({ type: "drop", visible: true, x: 0, y: 4, blur: 4, spread: 0, hex: "000000", opacity: 25 });
   const editsKey = () => "finetune:edits:" + editsPath;
@@ -2975,7 +2993,13 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       if (Array.isArray(e.effects)) {
         entry.effects = e.effects.filter((fx) => paint(fx) && EFFECT_TYPES.some(([t]) => t === fx.type)
           && ["x", "y", "blur", "spread"].every((k) => isNum(fx[k])))
-          .map((fx) => ({ type: fx.type, visible: fx.visible, x: fx.x, y: fx.y, blur: fx.blur, spread: fx.spread, hex: fx.hex, opacity: fx.opacity }));
+          .filter((fx) => fx.type !== "noise" || (NOISE_TYPES.some(([n]) => n === fx.noiseType) && isNum(fx.size) && fx.size > 0
+            && isNum(fx.density) && paint(fx.second)))
+          .map((fx) => {
+            const out = { type: fx.type, visible: fx.visible, x: fx.x, y: fx.y, blur: fx.blur, spread: fx.spread, hex: fx.hex, opacity: fx.opacity };
+            if (fx.type === "noise") Object.assign(out, { noiseType: fx.noiseType, size: fx.size, density: fx.density, second: { hex: fx.second.hex, opacity: fx.second.opacity, visible: true } });
+            return out;
+          });
       }
       return entry;
     }
@@ -3013,7 +3037,8 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   // code's grid on the next load.
   let pageDefault = null;
   const GUIDE_NUMS = ["type", "align", "count", "width", "offset", "gutter"];
-  const sameNums = (a, b) => !!a && !!b && GUIDE_NUMS.every((k) => a[k] === b[k]);
+  const sameNums = (a, b) => !!a && !!b && GUIDE_NUMS.every((k) => a[k] === b[k])
+    && JSON.stringify(a.breakpoints || []) === JSON.stringify(b.breakpoints || []);
   const untouchedGrid = (g) => sameNums(g, pageDefault) && !g.visible
     && ["hex", "opacity", "visible"].every((k) => g.color[k] === pageDefault.color[k]);
   // With an active grid set, that's the page's default instead: a layout as she set it (its numbers, colour and eye)
@@ -3997,6 +4022,50 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     // The prefixed one first, the standard one last: a build that merges the pair keeps the last.
     setStyle(t, "-webkit-backdrop-filter", css);
     setStyle(t, "backdrop-filter", css);
+    writeNoise(t, on.filter((fx) => fx.type === "noise"));
+  }
+
+  // Noise as a tile of SVG turbulence: the grain's alpha is the noise stretched and cut at a threshold, so Density is
+  // how many grains show; Mono floods it with one colour, Duo takes a second channel for the second colour, Multi
+  // keeps the noise's own colours. The tile stitches, so it repeats with no seam.
+  function noiseUrl(fx) {
+    const steps = 20;
+    const on = Math.round(steps * Math.min(100, Math.max(0, fx.density)) / 100);
+    const table = Array.from({ length: steps }, (_, i) => (i < steps - on ? 0 : 1)).join(" ");
+    const mask = (row, out) => "<feColorMatrix in='t' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " + row + "'/>"
+      + "<feComponentTransfer result='" + out + "'><feFuncA type='discrete' tableValues='" + table + "'/></feComponentTransfer>";
+    const paint = (c, m, out) => "<feFlood flood-color='#" + c.hex + "' flood-opacity='" + c.opacity / 100 + "'/><feComposite in2='" + m + "' operator='in' result='" + out + "'/>";
+    let f = "<feTurbulence type='fractalNoise' baseFrequency='" + +(0.5 / fx.size).toFixed(3) + "' numOctaves='3' stitchTiles='stitch' result='t'/>";
+    if (fx.noiseType === "multi") {
+      f += mask("0 0 0 3 -1", "a") + "<feColorMatrix in='t' values='3 0 0 0 -1 0 3 0 0 -1 0 0 3 0 -1 0 0 0 0 " + fx.opacity / 100 + "'/>"
+        + "<feComposite in2='a' operator='in'/>";
+    } else {
+      f += mask("3 0 0 0 -1", "a") + paint(fx, "a", "p");
+      if (fx.noiseType === "duo") f += mask("0 3 0 0 -1", "b") + paint(fx.second, "b", "q") + "<feMerge><feMergeNode in='p'/><feMergeNode in='q'/></feMerge>";
+    }
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='256' height='256'><filter id='n' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'>"
+      + f + "</filter><rect width='100%' height='100%' filter='url(#n)'/></svg>";
+    return 'url("data:image/svg+xml,' + svg.replace(/[#%<>"]/g, encodeURIComponent) + '")';
+  }
+  // Noise sits over the fill and under what's inside, as Figma draws it on a layer's fill: the top layers of
+  // background-image, above the page's own. Its repeat, size and position go first in their lists, the page's
+  // following one per image of its own, so the page's no-repeat or cover doesn't reach the grain.
+  function writeNoise(t, list) {
+    const e = entryOf(t);
+    const LISTS = [["background-image", "none"], ["background-repeat", "repeat"], ["background-size", "auto"], ["background-position", "0% 0%"]];
+    if (!list.length) {
+      if (e && e.styles && "background-image" in e.styles) LISTS.forEach(([p]) => setStyle(t, p, ""));
+      return;
+    }
+    const mine = list.map(noiseUrl);
+    const own = ownValue(t, "background-image");
+    const ownImages = own === "none" ? [] : splitTop(own);
+    setStyle(t, "background-image", mine.concat(ownImages).join(", "));
+    LISTS.slice(1).forEach(([p, def]) => {
+      const ownList = splitTop(ownValue(t, p));
+      if (!ownImages.length && ownList.every((v) => v === def)) return setStyle(t, p, "");
+      setStyle(t, p, mine.map(() => def).concat(ownImages.map((_, i) => ownList[i % ownList.length])).join(", "));
+    });
   }
 
   // Every style the panel changes goes through here, so it shows live and is remembered.
@@ -8090,9 +8159,13 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   // the page's grid). Count and gutter are the grid's own; equal margins read as Stretch, otherwise Left with an
   // offset. A page with neither still has a grid when its sections sit in one centred content column and a grid
   // inside runs edge to edge of it (containerGrid).
+  // Where the code does draw the declared grid (a CSS grid with its column count), that grid's live numbers win: its
+  // margin and gutter change at the page's breakpoints, and the declared ones are one width's. Read again on every
+  // resize (followPage), so the guide is the grid the page uses at this width.
   function pageGrid() {
-    if (declaredGrid) return fromCode(Object.assign(newGuide(), declaredGrid), "layout");
-    return fullGrid() || containerGrid();
+    const live = fullGrid() || containerGrid();
+    if (!declaredGrid || (live && live.count === declaredGrid.count)) return live;
+    return fromCode(Object.assign(newGuide(), declaredGrid), "layout");
   }
   // Whether a grid's column count comes from its own width (repeat(auto-fit or auto-fill, ...)) rather than the
   // window's: no rule or variant holds a count for it, so Copy says so and the bake writes px. The computed tracks
@@ -8245,6 +8318,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
 
   // A guide's column edges across the window, as drawn.
   function guideEdges(g) {
+    g = bandAt(g);
     const span = document.documentElement.clientWidth;
     const n = g.count;
     const stretch = g.align === "stretch";
@@ -8310,7 +8384,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   const shownGuide = () => edits.guides.find((g) => g.visible) || null;
   function columnRect(i) {
     const g = shownGuide();
-    if (!g || i >= g.count) return null;
+    if (!g || i >= bandAt(g).count) return null;
     const { starts, ends } = guideEdges(g);
     return { left: starts[i], right: ends[i], width: ends[i] - starts[i], top: 0, bottom: window.innerHeight, height: window.innerHeight };
   }
@@ -8337,12 +8411,14 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
   function noteColumns(cols, list, how) {
     const g = shownGuide();
     if (!g) return;
+    // The numbers at this width: a guide's breakpoint band, if one holds here.
+    const b = bandAt(g);
     const base = {
-      first: Math.min(...cols) + 1, last: Math.max(...cols) + 1, count: g.count, how, gutter: g.gutter, align: g.align,
+      first: Math.min(...cols) + 1, last: Math.max(...cols) + 1, count: b.count, how, gutter: b.gutter, align: b.align,
       source: (pageDefault && sameNums(g, pageDefault) && pageDefault.source) || "guide", vw: window.innerWidth,
     };
-    if (g.align === "stretch") base.margin = g.offset;
-    else Object.assign(base, { offset: g.offset, colWidth: g.width });
+    if (b.align === "stretch") base.margin = b.offset;
+    else Object.assign(base, { offset: b.offset, colWidth: b.width });
     // Only a layer that sits on the columns by itself is noted: one in a ⌘G group moved or scaled as one unit fills
     // just its part of the span, and a grid-column for the whole span would stretch it over its neighbours.
     const box = columnsRect(cols);
@@ -10305,9 +10381,10 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     });
   }
 
-  function guideLayer(g) {
+  function guideLayer(guide) {
     const d = el("div");
-    const c = rgba(g.color);
+    const c = rgba(guide.color);
+    const g = bandAt(guide);
     const start = g.align === "left";
     const end = g.align === "right";
     d.style.display = "flex";
@@ -10426,7 +10503,8 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     };
   }
 
-  // Figma's effect settings, one per inspector: X and Y, Blur, Spread and Color for a shadow, Blur for a blur.
+  // Figma's effect settings, one per inspector: X and Y, Blur, Spread and Color for a shadow, Blur for a blur, and
+  // Type, Noise size, Density and its colour (or two, or an opacity) for Noise.
   function makeEffectPop(root, menu, picker) {
     let fx = null;
     let anchor = null;
@@ -10456,6 +10534,18 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     function build() {
       title.textContent = EFFECT_TYPES.find(([t]) => t === fx.type)[1];
       const label = (text) => el("span", "ft-field-label", text);
+      if (fx.type === "noise") {
+        const kind = dropdown((btn) => menu.toggle(btn, NOISE_TYPES.map(([value, text]) => ({ label: text, value })), fx.noiseType, (v) => {
+          fx.noiseType = v;
+          onChange();
+          build();
+        }));
+        kind.label.textContent = NOISE_TYPES.find(([n]) => n === fx.noiseType)[1];
+        const colors = fx.noiseType === "multi" ? [label("Opacity"), num("opacity", null, 0)]
+          : [label("Color"), fillRow(fx, () => onChange(), null, picker, { noEye: true })]
+            .concat(fx.noiseType === "duo" ? [label(""), fillRow(fx.second, () => onChange(), null, picker, { noEye: true })] : []);
+        return body.replaceChildren(label("Type"), kind.btn, label("Noise size"), num("size", null, 0.1), label("Density"), num("density", null, 0), ...colors);
+      }
       if (!isShadow(fx)) return body.replaceChildren(label("Blur"), num("blur", null, 0));
       const xy = el("div", "ft-type-pair");
       xy.append(num("x", "X"), num("y", "Y"));
@@ -11736,27 +11826,82 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       return seg;
     }
 
+    // The window widths a breakpoint band covers, for its menu: "Up to 768", "769–1149", "1150 and up".
+    function bandRange(g, b) {
+      const list = g.breakpoints || [];
+      if (b === g) return list.length ? list[list.length - 1].max + 1 + " and up" : "All widths";
+      const i = list.indexOf(b);
+      return i ? list[i - 1].max + 1 + "–" + b.max : "Up to " + b.max;
+    }
     // A columns guide's layout fields, as in Figma: Count, Type, Width (Auto when stretched), Margin
     // (stretched) or Offset (packed to a side), Gutter. A new Type rebuilds them.
+    // They set the numbers of the breakpoint band the window is in now, so what she types is what the overlay shows;
+    // a resize into another band rebuilds them for it (drawGuides). Breakpoint adds a band at this width (on the
+    // numbers showing) or removes this one; Max width is where this band ends.
     function guideFields(box, g, onChange) {
-      const align = dropdown((btn) => menu.toggle(btn, GUIDE_ALIGN.map(([value, label]) => ({ label, value })), g.align, (v) => {
-        setGuideAlign(g, v);
+      const b = bandAt(g);
+      box.ftBand = b;
+      const rebuild = () => {
         onChange();
         guideFields(box, g, onChange);
+      };
+      const list = g.breakpoints || [];
+      const W = window.innerWidth;
+      const bands = list.concat(g);
+      const bp = dropdown((btn) => menu.toggle(btn, bands.map((band, i) => ({ label: bandRange(g, band), value: i }))
+        .concat(list.some((band) => band.max === W) ? [] : [{ divider: true }, { label: "Add breakpoint at " + W, value: "add" }])
+        .concat(b === g ? [] : [{ label: "Remove breakpoint", value: "remove" }]), bands.indexOf(b), (v) => {
+        if (v === "add") {
+          const band = { max: W };
+          BAND_NUMS.forEach((k) => { band[k] = b[k]; });
+          g.breakpoints = list.concat(band).sort((x, y) => x.max - y.max);
+        } else if (v === "remove") {
+          g.breakpoints = list.filter((band) => band !== b);
+          if (!g.breakpoints.length) delete g.breakpoints;
+        } else {
+          // The fields set the band the window is in, so another one is set at its widths.
+          const to = bands[v];
+          const i = list.indexOf(to);
+          if (to !== b) toast("Resize the window " + (to === g ? "to " + (list[list.length - 1].max + 1) + " or wider"
+            : !i ? "to " + to.max + " or narrower" : "to between " + (list[i - 1].max + 1) + " and " + to.max) + " to set its columns");
+          return;
+        }
+        rebuild();
       }));
-      align.label.textContent = (GUIDE_ALIGN.find(([a]) => a === g.align) || [])[1];
-      let width = guideNum(g, "width", 1, false, onChange);
-      if (g.align === "stretch") {
+      bp.label.textContent = bandRange(g, b);
+      const max = numField(null);
+      if (b === g) {
+        max.input.value = "None";
+        max.input.disabled = true;
+      } else {
+        // Kept between its neighbours' ends, so the bands stay in order.
+        max.set(b.max, true);
+        editable(max.input, (force) => max.set(b.max, force), (v) => {
+          const i = list.indexOf(b);
+          const n = Math.round(parseFloat(v));
+          if (!isNum(n)) return;
+          b.max = Math.max(i ? list[i - 1].max + 1 : 1, Math.min(i < list.length - 1 ? list[i + 1].max - 1 : Infinity, n));
+          rebuild();
+        });
+      }
+      const align = dropdown((btn) => menu.toggle(btn, GUIDE_ALIGN.map(([value, label]) => ({ label, value })), b.align, (v) => {
+        setGuideAlign(b, v);
+        rebuild();
+      }));
+      align.label.textContent = (GUIDE_ALIGN.find(([a]) => a === b.align) || [])[1];
+      let width = guideNum(b, "width", 1, false, onChange);
+      if (b.align === "stretch") {
         const auto = numField(null);
         auto.input.value = "Auto";
         auto.input.disabled = true;
         width = auto.wrap;
       }
-      // Rows: Count in one column, alone on its row; Type | Width; Margin (or Offset) | Gutter.
-      const items = [labeled("Count", guideNum(g, "count", 1, true, onChange)), el("div"), labeled("Type", align.btn), labeled("Width", width)];
-      if (g.align === "stretch") items.push(labeled("Margin", guideNum(g, "offset", 0, false, onChange)));
-      else if (g.align !== "center") items.push(labeled("Offset", guideNum(g, "offset", 0, false, onChange)));
-      items.push(labeled("Gutter", guideNum(g, "gutter", 0, false, onChange)));
+      // Rows: Breakpoint | Max width; Count in one column, alone on its row; Type | Width; Margin (or Offset) | Gutter.
+      const items = [labeled("Breakpoint", bp.btn), labeled("Max width", max.wrap),
+        labeled("Count", guideNum(b, "count", 1, true, onChange)), el("div"), labeled("Type", align.btn), labeled("Width", width)];
+      if (b.align === "stretch") items.push(labeled("Margin", guideNum(b, "offset", 0, false, onChange)));
+      else if (b.align !== "center") items.push(labeled("Offset", guideNum(b, "offset", 0, false, onChange)));
+      items.push(labeled("Gutter", guideNum(b, "gutter", 0, false, onChange)));
       box.replaceChildren(...items);
     }
 
@@ -11780,12 +11925,13 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       const alignBox = el("div", "ft-guide-align");
       alignBox.append(el("div", "ft-field-label", "Align items to nearest column"), alignSeg(g));
       const fields = el("div", "ft-type ft-guide-set");
-      guideFields(fields, g, () => {
+      const refields = () => guideFields(fields, g, () => {
         drawGuides();
         offerSoon(g);
       });
+      refields();
       group.append(rowEl, fields, alignBox);
-      return { g, group, rowEl, label, eye, swatch };
+      return { g, group, rowEl, label, eye, swatch, fields, refields };
     }
 
     // Figma's Show layout grids: ⌃G on a Mac, Ctrl+Shift+4 elsewhere. Turned on with nothing selected, the panel shows
@@ -11825,6 +11971,8 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       saveBtn.disabled = !guides.length;
       guideRows.forEach((r) => {
         const { g, rowEl, label, eye, swatch } = r;
+        // The window moved into another breakpoint band, or a band was added or removed: the fields follow.
+        if (r.fields.ftBand !== bandAt(g)) r.refields();
         label.textContent = guideName(g);
         swatch.style.setProperty("--ft-c", "#" + g.color.hex);
         swatch.style.setProperty("--ft-ca", rgba(g.color));
@@ -11896,7 +12044,8 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         change = true;
       }
       if (now) anchor = now;
-      if (!change) return;
+      // A guide with breakpoints shows another band's columns once the width crosses into it.
+      if (!change && guideRows.every((r) => r.fields.ftBand === bandAt(r.g))) return;
       history.quiet++;
       drawGuides();
       history.quiet--;
@@ -13056,9 +13205,11 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         const svgFx = target instanceof SVGElement;
         const gear = iconButton(ICON.sun, "Effect settings", () => effectPop.toggle(fx, r, gear, put, svgFx));
         // An image, a video or a canvas paints its pixels over an inset box-shadow, so Inner shadow would draw nothing.
+        // Noise is a background layer, so it's for boxes and text: pixels and SVG paint over it.
         const types = svgFx ? EFFECT_TYPES.filter(([t]) => t === "drop" || t === "layer")
-          : /^(IMG|VIDEO|CANVAS)$/.test(target.tagName) ? EFFECT_TYPES.filter(([t]) => t !== "inner") : EFFECT_TYPES;
+          : /^(IMG|VIDEO|CANVAS)$/.test(target.tagName) ? EFFECT_TYPES.filter(([t]) => t !== "inner" && t !== "noise") : EFFECT_TYPES;
         const type = dropdown((btn) => menu.toggle(btn, types.map(([value, label]) => ({ label, value })), fx.type, (v) => {
+          if (v === "noise" && !fx.noiseType) Object.assign(fx, noiseDefaults());
           fx.type = v;
           put();
           build();
@@ -14286,7 +14437,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       const name = nums.length === 1 ? "Column " + nums[0]
         : "Columns " + (columnSpan(cols) === nums.length ? nums[0] + "–" + nums[nums.length - 1] : nums.join(", "));
       const row = el("div", "ft-kind");
-      row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", g ? "of " + g.count : ""));
+      row.append(el("span", "ft-kind-name", name), el("span", "ft-kind-el", g ? "of " + bandAt(g).count : ""));
       if (n) row.appendChild(el("span", "ft-kind-name ft-kind-count", n + (n === 1 ? " layer" : " layers")));
       // A click on the line opens the Page settings, where the layout these columns come from lives.
       row.classList.add("ft-kind-link");
