@@ -117,7 +117,7 @@ Anything that reads `var(--hero-size)` updates as you drag.
 | `range` | `value + unit` | `min`, `max`, `step`, `unit`. A slider plus a number you can type. |
 | `select` | the chosen option | `options` as plain values or `{ label, value }`, `cols` (the most columns; fewer when a label won't fit on one line). A button grid, never a dropdown. |
 | `toggle` | `on` or `off` | `on` and `off` (default `1` and `0`). |
-| `color` | a hex | `chips`. Chips plus a hex field. |
+| `color` | a hex | `chips`. Chips, plus a swatch that opens the inspector's color picker, beside a hex field. |
 | `text` | the text | For copy. Use a key without `--` and apply it in `onChange`. |
 
 Every control takes `value` and `label`. All options and their defaults: [skills/finetune/references/tuner-api.md](skills/finetune/references/tuner-api.md).

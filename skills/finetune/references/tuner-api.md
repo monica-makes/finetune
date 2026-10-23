@@ -72,7 +72,7 @@ Writes `on` when true and `off` when false.
 
 ### color
 
-Chips plus a hex field.
+Chips, plus a swatch beside a hex field: the swatch opens the inspector's color picker (Figma's), right of the panel when it sits by the window's left edge. Its opacity writes the hex's alpha pair (`#rrggbbaa`); at 100 a plain `#rrggbb`.
 
 | option | default |
 | --- | --- |

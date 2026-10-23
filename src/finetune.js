@@ -1962,10 +1962,12 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       hsv = fromHex(l.hex);
       pop.hidden = false;
       draw(true);
-      // Just left of the panel, level with the row, kept on screen.
+      // Just left of the panel, level with the row, kept on screen; right of it when the panel is too near the
+      // window's left edge for the picker to fit there (a tuner panel, which sits on the left).
       const r = row.getBoundingClientRect();
       const panel = root.getBoundingClientRect();
-      pop.style.left = Math.max(8, panel.left - 8 - pop.offsetWidth) + "px";
+      const left = panel.left - 8 - pop.offsetWidth;
+      pop.style.left = (left >= 8 ? left : Math.max(8, Math.min(panel.right + 8, window.innerWidth - pop.offsetWidth - 8))) + "px";
       pop.style.top = Math.max(8, Math.min(r.top - 8, window.innerHeight - pop.offsetHeight - 8)) + "px";
     }
 
@@ -15630,6 +15632,9 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     }
 
     const sync = {}; // key -> redraws that control from values[key]
+    // The panel's color picker, made the first time a color control's swatch is clicked.
+    let picker = null;
+    const pickerFor = () => picker || (picker = makePicker(panel));
 
     function set(k, v) {
       values[k] = v;
@@ -15738,6 +15743,16 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         line.append(box, state);
         r.appendChild(line);
       } else if (c.type === "color") {
+        // The swatch opens the inspector's color picker (Figma's), one per panel, for this control. Its opacity
+        // writes the hex's alpha pair; at 100 it writes a plain #rrggbb.
+        const layer = { hex: "000000", opacity: 100 };
+        const swatch = button("ft-swatch", null, () => pickerFor().toggle(layer, r, swatch, (hex, opacity) => {
+          layer.hex = hex;
+          layer.opacity = opacity;
+          set(k, "#" + hex + (opacity < 100 ? Math.round(opacity * 2.55).toString(16).padStart(2, "0").toUpperCase() : ""));
+        }));
+        swatch.setAttribute("aria-label", "Color picker");
+        swatch.addEventListener("pointerdown", (e) => e.preventDefault());
         const chips = el("div", "ft-chips");
         const dots = c.chips.map((hex) => {
           const b = chips.appendChild(button("ft-chip", null, () => set(k, hex)));
@@ -15759,9 +15774,19 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
           const now = String(values[k]).toLowerCase();
           dots.forEach((b, i) => b.setAttribute("aria-pressed", String(c.chips[i].toLowerCase() === now)));
           if (document.activeElement !== field) field.value = values[k];
+          // #rgb, #rgba, #rrggbb or #rrggbbaa, as the picker's hex and opacity
+          let h = now.slice(1);
+          if (h.length < 6) h = h.replace(/./g, "$&$&");
+          layer.hex = h.slice(0, 6).toUpperCase();
+          layer.opacity = h.length > 6 ? Math.round(parseInt(h.slice(6, 8), 16) / 2.55) : 100;
+          swatch.style.setProperty("--ft-c", "#" + layer.hex);
+          swatch.style.setProperty("--ft-ca", rgba(layer));
+          if (picker) picker.sync();
         };
         if (dots.length) r.appendChild(chips);
-        r.appendChild(field);
+        const line = el("div", "ft-line");
+        line.append(swatch, field);
+        r.appendChild(line);
       } else {
         const field = el("input", "ft-field");
         field.type = "text";

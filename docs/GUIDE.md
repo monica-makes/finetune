@@ -613,7 +613,7 @@ finetune({
 | `range` | A slider plus a number you can type. Takes `min`, `max`, `step`, `unit`. |
 | `select` | A button grid of `options`. |
 | `toggle` | Writes `on` or `off` (default `1` and `0`). |
-| `color` | Chips plus a hex field. |
+| `color` | Chips, plus a swatch that opens the inspector's color picker, beside a hex field. |
 | `text` | For copy, applied in `onChange`. |
 
 - **Copy JSON** copies the values object. **Copy CSS** copies a `:root { … }` block.
