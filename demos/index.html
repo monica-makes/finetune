@@ -264,11 +264,9 @@ a{color:inherit;text-decoration:none}
     const GUIDE = "https://github.com/monica-makes/finetune/blob/main/docs/GUIDE.md";
     // true keeps the card up (to tune it): nothing sends it away.
     const STAYS = false;
-    // The card is a first visit's: once it has gone, a reload goes straight to the page. finetune's Reset (back to the
-    // page as first seen) brings it back.
     const SEEN = "finetune-demo:welcome";
-    let seen = false;
-    try { seen = localStorage.getItem(SEEN) === "seen"; } catch (e) {}
+    // (her ask, 10-27) the card shows on every load: skipping it on a return visit read as the note vanishing on load
+    const seen = false;
     addEventListener("finetune:reset", () => { try { localStorage.removeItem(SEEN); } catch (e) {} });
 
     // The roll-in (see .is-rolling): held at its start, under the card, until the page shows.
