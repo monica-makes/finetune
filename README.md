@@ -1,5 +1,9 @@
 # finetune
 
+<a href="assets/finetune-reel.mp4"><img src="assets/finetune-reel.gif" alt="finetune reel: select a layer on a live page, edit it in Figma's Design panel, Copy the changes, and Claude Code bakes them into the code" width="100%" height="auto"/></a>
+
+<p align="center"><a href="assets/finetune-reel.mp4"><strong>▶ Watch the full 32-second reel</strong></a></p>
+
 **[Live demo](https://www.monicalin.xyz/projects/finetune-demo)**
 
 Whether you're fine-tuning a Figma design or a website made by AI, the last tweaks are easiest by eye. finetune puts Figma's Design panel on your live page, so you can make those tweaks in the browser after handoff. Every edit bakes back into the code.

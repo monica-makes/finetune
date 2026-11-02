@@ -51,6 +51,7 @@
   --ft-purple: #9747FF;                    /* bg/component, fullscreen/component/bg */
   --ft-purple-soft: #F1E5FF;               /* bg/component/tertiary */
   --ft-purple-text: #8638E5;               /* text/component */
+  --ft-red: #F24822;                       /* bg-danger (red-500): Figma's measure lines */
   --ft-dark: #1E1E1E;                      /* bg-menu, bg-tooltip: dark in both themes */
   --ft-dark-line: #383838;                 /* border-menu */
   --ft-dark-hover: rgba(255, 255, 255, 0.1); /* white/200 */
@@ -96,6 +97,7 @@ html[data-ft-theme="dark"] {
   --ft-purple: #8A38F5;
   --ft-purple-soft: #473956;
   --ft-purple-text: #D1A8FF;
+  --ft-red: #E03E1A;
   --ft-elev-200: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0.5px rgba(255, 255, 255, 0.3), 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
   --ft-elev-300: 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 0 0.5px rgba(255, 255, 255, 0.3), 0 5px 12px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
   --ft-elev-400: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 0 0.5px rgba(255, 255, 255, 0.35), 0 10px 16px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
@@ -781,6 +783,25 @@ html.ft-motion .ft-quad polygon { stroke: var(--ft-pink); }
 .ft-hover-box.is-away, .ft-sel-box.is-away { visibility: hidden; }
 /* A column of the layout guide she's picked: outlined as a selection is, without corners or a label. */
 .ft-col-box { border-color: var(--ft-blue); }
+/* Figma's measure (⌥ over a layer with layers selected): the layer outlined in red, red lines across the gaps and a
+   red label with each one's px. It hides with the hover outline it follows. */
+.ft-hover-box.is-measure:not(.is-quad) { border-color: var(--ft-red); }
+.ft-hover-box.is-measure .ft-quad polygon { stroke: var(--ft-red); }
+.ft-measure { position: fixed; inset: 0; z-index: 2147483645; pointer-events: none; }
+.ft-measure[hidden], .ft-hover-box[hidden] ~ .ft-measure { display: none; }
+.ft-hover-box.is-away ~ .ft-measure { visibility: hidden; }
+.ft-measure-line { position: absolute; box-sizing: border-box; border: 0 solid var(--ft-red); }
+.ft-measure-line.is-x { height: 0; border-top-width: 1px; }
+.ft-measure-line.is-y { width: 0; border-left-width: 1px; }
+.ft-measure-line.is-dashed { border-style: dashed; }
+/* Beside its line: under one across, right of one down. Spaced as the size label is. */
+.ft-measure-label {
+  position: absolute; padding: 0 6px; border-radius: 2px; background: var(--ft-red); color: var(--ft-on-dark);
+  white-space: nowrap; font: 500 11px/16px "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.ft-measure-label.is-x { transform: translate(-50%, 4px); }
+.ft-measure-label.is-y { transform: translate(4px, -50%); }
 /* Figma's help card (its "Creating a connection"): a title band, then its icon beside a line or two of how-to. */
 .ft-help-body { display: flex; align-items: flex-start; gap: 8px; }
 .ft-help-icon { flex: none; width: 24px; height: 24px; color: var(--ft-i-text); }
@@ -913,6 +934,12 @@ html.ft-moving [data-ft-editing], html.ft-moving [data-ft-editing] * { cursor: t
 .ft-body { padding: 4px 12px; }
 .ft-row { padding: 6px 0; }
 .ft-label { margin-bottom: 4px; color: var(--ft-i-text-2); }
+/* A control's own Reset, at the end of its label, there only while its value is off the default. It takes no height,
+   so rows don't move as it comes and goes */
+.ft-label { position: relative; padding-right: 22px; }
+.ft-row-reset { position: absolute; right: -4px; top: 50%; translate: 0 -50%; width: 20px; height: 20px; color: var(--ft-i-text-2); }
+.ft-row-reset svg { width: 20px; height: 20px; }
+.ft-row-reset[hidden] { display: none; }
 .ft-line { display: flex; gap: 8px; align-items: center; }
 .ft-line input[type="range"] { flex: 1; min-width: 0; }
 .ft-num { width: 72px; }
@@ -5104,7 +5131,12 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     hoverBox.hidden = true;
     selBox.hidden = true;
     marquee.hidden = true;
-    document.body.append(hoverBox, selBox, marquee);
+    // After the hover outline, so it hides whenever that does (.ft-hover-box[hidden] ~ .ft-measure), and after the
+    // selection, so its size label doesn't cover a gap under it.
+    const measureBox = el("div", "ft-measure");
+    measureBox.setAttribute("data-finetune-ui", "");
+    measureBox.hidden = true;
+    document.body.append(hoverBox, selBox, measureBox, marquee);
     // One layer, or two or more: a group, or what shift-clicks gathered.
     let selected = null;
     let many = [];
@@ -6367,6 +6399,9 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     function preview(t) {
       previewed = t || null;
       hoverBox.hidden = !previewed;
+      measuring = false;
+      hoverBox.classList.remove("is-measure");
+      drawMeasure();
       if (!previewed) return;
       frameRect(hoverBox, unionRect([previewed]), [previewed]);
       hoverBox.classList.toggle("is-comp", !motion() && !!componentOf(previewed));
@@ -6379,28 +6414,133 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
       const moving_ = live && motion() ? motionPick(target) : null;
       // ⌥ outlines the column under the pointer, whatever layer covers it, as an ⌥-click picks it.
       const altCol = live && alt && !isUi(target) ? columnAt(x) : null;
+      const now = current();
+      // ⌥ with layers selected outlines what the measure measures to (besidePick). Not while a layout guide shows,
+      // where ⌥ is for its columns, nor with ⌘, which measures to the deepest layer as a ⌘-click picks it.
+      const toMeasure = live && alt && !deep && !motion() && now.length > 0 && !shownGuide();
       // Over the one layer selected, a press keeps it (see the press handler), so that's what's outlined: nothing new.
-      const keep = live && !motion() && !altCol && !deep && !column && !!selected && selected.contains(target) && !!pickable(target);
-      const t = !live || altCol ? null : keep ? selected : moving_ || levelPick(target, deep).pick;
+      const keep = live && !toMeasure && !motion() && !altCol && !deep && !column && !!selected && selected.contains(target) && !!pickable(target);
+      const t = !live || altCol ? null : toMeasure ? besidePick(target, now[0]) : keep ? selected : moving_ || levelPick(target, deep).pick;
       const unit = moving_ ? { list: motionGroupOf(moving_) } : deep || keep ? null : unitOf(t);
       const over = unit ? unit.list : t ? [t] : [];
-      const now = current();
       // On the page itself, a column of the layout that shows outlines as a click would pick it.
       const col = altCol || (live && !t && !isUi(target) ? columnAt(x) : null);
       if (col && !over.length) {
         hovered = null;
+        measuring = false;
         hoverBox.hidden = !!column && column.cols.includes(col.i);
         if (!hoverBox.hidden) frameRect(hoverBox, columnRect(col.i));
-        hoverBox.classList.remove("is-comp");
+        hoverBox.classList.remove("is-comp", "is-measure");
+        drawMeasure();
         return;
       }
       hoverBox.hidden = !over.length || over.every((o) => now.includes(o));
       hovered = hoverBox.hidden ? null : { over, g: unit && unit.g };
+      // ⌥ with layers selected measures from them to what's outlined, as in Figma (in a gutter of a guide too, where
+      // ⌥ isn't on a column, so nothing).
+      measuring = !!hovered && alt && now.length > 0 && (motion() || !shownGuide());
+      hoverBox.classList.toggle("is-measure", measuring);
       if (!hoverBox.hidden) {
         frameRect(hoverBox, hovered.g ? boxOf(over, hovered.g) : unionRect(over), hovered.g ? null : over);
         trackHover();
       }
+      drawMeasure();
       hoverBox.classList.toggle("is-comp", !motion() && over.length === 1 && !!componentOf(over[0]));
+    }
+
+    // Figma's measure: hold ⌥ (Alt) over a layer with layers selected and the gaps between them show as red lines with
+    // their px. What's measured is what's outlined, so it works at every level (besidePick); ⌥⌘ (Ctrl+Alt) the deepest
+    // layer, as a ⌘-click picks it. hoverAt sets measuring.
+    let measuring = false;
+    let measured = "";
+    // What ⌥ measures to: the layer under the pointer that sits beside the selection or beside a layer around it (the
+    // child of the innermost layer holding both), so a layer in the next group over measures to that group, not to
+    // the outermost layer; over the selection itself, the layer around it, as Figma shows the gaps to a frame's edges.
+    function besidePick(target, s) {
+      const t = pickable(target);
+      if (!t) return null;
+      const chain = levelOf(t);
+      const around = levelOf(s);
+      let i = -1;
+      chain.forEach((e, k) => {
+        if (around.includes(e)) i = k;
+      });
+      const pick = chain[i + 1] || chain[i];
+      return pick === s ? around[around.length - 2] || null : pick;
+    }
+    function endMeasure() {
+      if (!measuring) return;
+      measuring = false;
+      hoverBox.classList.remove("is-measure");
+      drawMeasure();
+    }
+    // The middle of the part of lo..hi inside 0..max, so a line or label beside a layer taller or wider than the
+    // window stays on screen.
+    function onScreen(lo, hi, max) {
+      const a = Math.max(lo, 0);
+      const b = Math.min(hi, max);
+      return a < b ? (a + b) / 2 : (lo + hi) / 2;
+    }
+    function drawMeasure() {
+      const a = measuring && hovered ? (selected ? selected.getBoundingClientRect() : many.length ? boxOf(many, group) : null) : null;
+      const b = a && (hovered.g ? boxOf(hovered.over, hovered.g) : unionRect(hovered.over));
+      if (measureBox.hidden !== !b) measureBox.hidden = !b;
+      if (!b) {
+        measured = "";
+        return;
+      }
+      // Drawn again only when either box moves (trackHover calls this each frame).
+      const key = [a.left, a.top, a.right, a.bottom, b.left, b.top, b.right, b.bottom].map((v) => Math.round(v * 100)).join();
+      if (key === measured) return;
+      measured = key;
+      measureBox.textContent = "";
+      gapLines(a, b).forEach((l) => {
+        const line = el("div", "ft-measure-line " + (l.across ? "is-x" : "is-y") + (l.dashed ? " is-dashed" : ""));
+        // Centred on its coordinate: a 1px line at y covers y - 0.5 to y + 0.5.
+        Object.assign(line.style, l.across
+          ? { left: l.from + "px", top: l.at - 0.5 + "px", width: l.to - l.from + "px" }
+          : { left: l.at - 0.5 + "px", top: l.from + "px", height: l.to - l.from + "px" });
+        measureBox.appendChild(line);
+        if (!l.n) return;
+        const label = el("span", "ft-measure-label " + (l.across ? "is-x" : "is-y"), l.n);
+        const mid = onScreen(l.from, l.to, l.across ? window.innerWidth : window.innerHeight);
+        Object.assign(label.style, l.across ? { left: mid + "px", top: l.at + "px" } : { left: l.at + "px", top: mid + "px" });
+        measureBox.appendChild(label);
+      });
+    }
+    // The lines between a (the selection) and b, as Figma draws them. On an axis where they're apart: one line across
+    // the gap, through the middle of where they overlap on the other axis, or from a's middle when they don't, with a
+    // dashed line along b's near edge out to it. Overlapping on both axes (one inside the other, or crossing): a line
+    // from each of a's edges to b's matching one. A gap that rounds to 0 draws nothing.
+    function gapLines(a, b) {
+      const out = [];
+      const span = (r, across) => (across ? [r.left, r.right] : [r.top, r.bottom]);
+      const overlaps = (p, q) => p[0] < q[1] && q[0] < p[1];
+      const both = overlaps(span(a, true), span(b, true)) && overlaps(span(a, false), span(b, false));
+      [true, false].forEach((across) => {
+        const [a0, a1] = span(a, across);
+        const [b0, b1] = span(b, across);
+        const [c0, c1] = span(a, !across);
+        const [d0, d1] = span(b, !across);
+        const side = overlaps([c0, c1], [d0, d1]);
+        const lim = across ? window.innerHeight : window.innerWidth;
+        const at = side ? onScreen(Math.max(c0, d0), Math.min(c1, d1), lim) : onScreen(c0, c1, lim);
+        const add = (from, to, end) => {
+          const n = fmt2(to - from);
+          if (!+n) return;
+          out.push({ across, from, to, at, n });
+          if (side || end == null) return;
+          const reach = d0 >= at ? d0 : d1;
+          out.push({ across: !across, from: Math.min(at, reach), to: Math.max(at, reach), at: end, dashed: true });
+        };
+        if (a1 <= b0) add(a1, b0, b0);
+        else if (b1 <= a0) add(b1, a0, b1);
+        else if (both) {
+          add(Math.min(a0, b0), Math.max(a0, b0));
+          add(Math.min(a1, b1), Math.max(a1, b1));
+        }
+      });
+      return out;
     }
     // What the hover outline frames, so it stays on a layer that moves under a still pointer (an animation, a
     // script moving it each frame), as the selection box does: its box is read each frame while the outline shows,
@@ -6422,6 +6562,7 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
           last = key;
           frameRect(hoverBox, r, hovered.g ? null : hovered.over);
         }
+        if (measuring) drawMeasure();
         hoverLoop = requestAnimationFrame(tick);
       };
       hoverLoop = requestAnimationFrame(tick);
@@ -6434,8 +6575,13 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     // Pressing or letting go of ⌘ (Ctrl) or ⌥ (Alt) changes what a click would pick, so the outline follows without a
     // move.
     ["keydown", "keyup"].forEach((type) => document.addEventListener(type, (e) => {
-      if (/^(Meta|Control|Alt)$/.test(e.key) && pointer && pointer.target.isConnected) hoverAt(pointer.target, pointer.x, e.metaKey || e.ctrlKey, e.altKey);
+      if (!/^(Meta|Control|Alt)$/.test(e.key)) return;
+      if (pointer && pointer.target.isConnected) hoverAt(pointer.target, pointer.x, e.metaKey || e.ctrlKey, e.altKey);
+      // The page swapped the layer under a still pointer: letting go of ⌥ still ends the measure.
+      else if (!e.altKey) endMeasure();
     }, true));
+    // An ⌥ let go in another window never arrives here.
+    window.addEventListener("blur", endMeasure);
 
     // mousedown, not pointerdown: preventing it is what stops the page starting a text selection.
     document.addEventListener("mousedown", (e) => {
@@ -15652,7 +15798,12 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
     function row(k) {
       const c = ctl[k];
       const r = el("div", "ft-row");
-      r.appendChild(el("div", "ft-label", c.label));
+      // Each control's own Reset (2026-10-25): at the end of its label, only while it's off its default; one click puts
+      // that one value back, the rest stay as tuned
+      const label = r.appendChild(el("div", "ft-label", c.label));
+      const undo = iconButton(ICON.refresh, "Reset to " + cssValue(c, c.value), () => set(k, c.value));
+      undo.classList.add("ft-row-reset");
+      label.appendChild(undo);
 
       if (c.type === "range") {
         const line = el("div", "ft-line");
@@ -15796,6 +15947,11 @@ html.ft-bare :is(.ft-inspector, .ft-toolbar, .ft-ui, .ft-resources, .ft-resource
         };
         r.appendChild(field);
       }
+      const draw = sync[k];
+      sync[k] = () => {
+        draw();
+        undo.hidden = String(values[k]).toLowerCase() === String(c.value).toLowerCase();
+      };
       return r;
     }
 

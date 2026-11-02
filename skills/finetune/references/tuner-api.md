@@ -123,4 +123,4 @@ If the browser blocks the clipboard, the panel shows the text in a box to copy b
 
 ## What the panel remembers
 
-The last values per `id`, in localStorage under `finetune:tuner:<id>`. On load, a stored key that no longer matches a control is dropped, and a stored value that no longer fits its control falls back to the schema. **Reset** returns every control to its `value`. finetune never writes to disk.
+The last values per `id`, in localStorage under `finetune:tuner:<id>`. On load, a stored key that no longer matches a control is dropped, and a stored value that no longer fits its control falls back to the schema. **Reset** returns every control to its `value`; each control also has its own Reset, a small icon at the end of its label that shows only while that one is off its `value` and puts just that one back (its tip says the value it goes back to). finetune never writes to disk.

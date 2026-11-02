@@ -72,6 +72,8 @@ None of these fire while you type in a field or edit words on the page. Most are
 | Select | click | click |
 | Add to or take from the selection | Shift-click | Shift-click |
 | Select the deepest layer under the pointer | ⌘-click | Ctrl-click |
+| Measure the gaps from the selection to a layer | hold ⌥ over it | hold Alt over it |
+| Measure to the deepest layer under the pointer | hold ⌥⌘ over it | hold Ctrl+Alt over it |
 | Pick the column under the pointer | ⌥-click | Alt-click |
 | Add or remove a column | ⇧⌥-click | Shift+Alt-click |
 | Layer list under the pointer | right-click | right-click |
@@ -180,6 +182,15 @@ Drag from empty page space to draw a marquee. It selects every layer it touches 
 ### Right-click: Select layer
 
 Right-click (in Design) opens **Select layer**, a menu of every layer under the pointer, indented by level, named as their kind line reads. Hover a row to outline that layer. Click to select it. Escape or a click elsewhere closes it. On finetune's own UI, in Motion, or while editing words, the browser's own menu opens instead.
+
+### Measuring gaps
+
+As in Figma: select a layer, then hold **⌥** (Alt) over another one. It's outlined in red, and red lines show the gaps between the two, each with its px.
+
+- It works at every level. Inside a group you've gone into, hold ⌥ over the layer beside the one selected. A layer in the next group over measures to that group. Over the selection itself, or the layer around it, it shows the four gaps to that layer's edges.
+- **⌥⌘** (Ctrl+Alt) measures to the deepest layer under the pointer, as a ⌘-click picks it.
+- Layers apart on both axes get a line for each, with a dashed line along the other layer's edge out to it. Layers that overlap get a line from each edge to the other's.
+- Let go of ⌥ and the lines go. While a Horizontal layout shows, ⌥ is for its columns (see Aligning to columns), so nothing is measured.
 
 ### Groups
 
